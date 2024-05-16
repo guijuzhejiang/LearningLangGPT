@@ -1,6 +1,6 @@
 'use client'
 
-import {IconOpenAI, IconPlayMedia, IconUser} from '@/components/ui/icons'
+import {IconOpenAI, IconPlayMedia, IconStop, IconUser} from '@/components/ui/icons'
 import {cn} from '@/lib/utils'
 import {spinner} from './spinner'
 import {CodeBlock} from '../ui/codeblock'
@@ -13,6 +13,9 @@ import AudioPlayer, {RHAP_UI} from 'react-h5-audio-player';
 import '@/components/auioPlayer/audioPlayer.scss';
 import * as React from "react";
 import {useEffect} from "react";
+import { toast } from 'sonner'
+import {AI} from "@/lib/chat/actions";
+import {useAIState, useUIState, useActions} from 'ai/rsc';
 
 // Different types of message bubbles.
 
@@ -30,27 +33,41 @@ export function UserMessage({children}: { children: React.ReactNode }) {
     )
 }
 
-export function BotMessage({
-                               content,
-                               className,
-                               tts,
-                           }: {
+// function myComponentShouldRerender(prevProps, nextProps) {
+//     // 返回 true 表示不重新渲染,返回 false 表示重新渲染
+//     // 这里你可以自定义比较逻辑
+//     console.log("prevProps.data");
+//     console.log(prevProps.data);
+//     console.log(nextProps.data);
+//
+//
+//     return prevProps.data === nextProps.data;
+// }
+
+export const BotMessage = React.memo(({
+                                   content,
+                                   className,
+                                          msgID,
+                                   tts,
+                               }: {
     content: string | StreamableValue<string>
     className?: string
+    msgID?: string
     tts?: boolean
-}) {
+}) => {
     const text = useStreamableText(content)
-    // const test = useStreamableValue(content)
+    const [aiState, setAIState] = useAIState<typeof AI>()
+    const [_, setMessages] = useUIState<typeof AI>()
     const [canPlayThrough, setCanPlayThrough] = React.useState(false)
-    const [playTTS, setPlayTTS] = React.useState(false)
     const [autoTTS, setAutoTTS] = React.useState(tts)
-    const [wavB64, setWavB64] = React.useState('')
+    const [wavB64, setWavB64] = React.useState<string|undefined>('')
+    const {abortStreaming} = useActions()
 
     const handleTTS = () => {
         const formData = new FormData();
-        formData.append('text', content);
+        formData.append('text', text);
         const startTime = performance.now();
-        fetch('http://127.0.0.1:5004/tts', {
+        fetch(process.env.TTS_URL, {
             method: 'POST',
             body: formData
         })
@@ -69,18 +86,18 @@ export function BotMessage({
             })
             .catch(error => {
                 toast.error('Failed to generate voice');
-                textStream.done();
+                // textStream.done();
             });
     }
 
     useEffect(() => {
         if (tts) {
-            const intervalId = setInterval(() => {
+            // const intervalId = setInterval(() => {
                 if (typeof content === 'string') {
-                    clearInterval(intervalId);
+                    // clearInterval(intervalId);
                     handleTTS();
                 }
-            }, 300);
+            // }, 300);
         } else {
             if (localStorage.getItem('tts') === content) {
                 localStorage.removeItem('tts')
@@ -138,6 +155,30 @@ export function BotMessage({
                 >
                     {text}
                 </MemoizedReactMarkdown>
+                {typeof content === 'object' && (
+                    <div className={"absolute right-1 top-0"}>
+                        <button className={"btn rounded-full hover:bg-gray-200"} onClick={() => {
+                            // const filterMsgs = aiState.messages.filter(item => item.id !== msgID)
+                            // console.log(tts);
+                            // console.log(msgID);
+                            // console.log(filterMsgs);
+                            setAutoTTS(false);
+                            setMessages(currentMessages => {
+                                console.log(currentMessages.filter(item => item.id !== msgID));
+                                return [...currentMessages.map(item => {
+                                    if (item.id === msgID) {
+                                        return { ...item, msg: text }; // 返回更新后的字典
+                                    }
+                                    return item; // 其他字典保持不变
+                                })]
+                            })
+                            abortStreaming(msgID);
+                        }}>
+                            <IconStop className={"size-8"}/>
+                        </button>
+                    </div>
+                )}
+
                 <div>
                     {autoTTS && typeof content === 'string' ? (
                         <>
@@ -155,15 +196,18 @@ export function BotMessage({
                                 }
                                 customControlsSection={
                                     [
-                                        <div></div>,
+                                        <div key={'empty'}></div>,
                                         RHAP_UI.MAIN_CONTROLS,
                                     ]
                                 }
                                 // // progressJumpSteps={{ backward: 1000, forward: 1000 }}
-                                onCanPlay={e => {
+                                onCanPlay={(e) => {
                                     const audioElements = document.querySelectorAll('audio');
                                     audioElements.forEach(audio => audio.pause());
-                                    e.target.play();
+                                    if (e.target) {
+                                        const element = e.target as HTMLMediaElement;
+                                        element.play();
+                                    }
                                 }}
                                 // onCanPlayThrough={e=>setCanPlayThrough(true)}
                                 // showDownloadProgress={true}
@@ -199,7 +243,9 @@ export function BotMessage({
             {/*<audio src={wavUrl} autoPlay={true}></audio>*/}
         </div>
     )
-}
+});
+
+BotMessage.displayName = "BotMessage";
 
 export function BotCard({
                             children,
@@ -248,3 +294,4 @@ export function SpinnerMessage() {
         </div>
     )
 }
+

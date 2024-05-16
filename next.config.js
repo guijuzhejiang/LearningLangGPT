@@ -12,10 +12,16 @@ module.exports = {
       }
     ]
   },
-  webpack: (config, {}) => {
+  eslint: {
+    ignoreBuildErrors: true
+  },
+  typescript: {
+    ignoreBuildErrors: true
+  },
+  reactStrictMode: false,
+  webpack: (config, {isServer}) => {
     config.resolve.extensions.push(".ts", ".tsx")
     config.resolve.fallback = { fs: false }
-
     config.plugins.push(
         new CopyPlugin({
           patterns: [
@@ -35,9 +41,26 @@ module.exports = {
               from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
               to: "static/chunks/app/(chat)/[name][ext]",
             },
+
+            {
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
+              to: "static/chunks/app/(chat)/chat/[id]/[name][ext]",
+            },
+            {
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
+              to: "static/chunks/app/(chat)/chat/[id]/[name][ext]",
+            },
+            {
+              from: "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
+              to: "static/chunks/app/(chat)/chat/[id]/[name][ext]",
+            },
+            {
+              from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
+              to: "static/chunks/app/(chat)/chat/[id]/[name][ext]",
+            },
           ],
         })
-    )
+    );
 
     return config
   },

@@ -28,6 +28,7 @@
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@ricky0123/vad-web": "^0.0.17",
+    "@ricky0123/vad-react": "^0.0.23",
     "@sentry/nextjs": "^7.114.0",
     "@vercel/analytics": "^1.1.2",
     "@vercel/kv": "^1.0.1",

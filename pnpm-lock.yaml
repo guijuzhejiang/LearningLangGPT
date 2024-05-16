@@ -47,6 +47,9 @@ dependencies:
   '@radix-ui/react-tooltip':
     specifier: ^1.0.7
     version: 1.0.7(@types/react-dom@18.3.0)(@types/react@18.3.2)(react-dom@18.3.1)(react@18.3.1)
+  '@ricky0123/vad-react':
+    specifier: ^0.0.23
+    version: 0.0.23(react-dom@18.3.1)(react@18.3.1)
   '@ricky0123/vad-web':
     specifier: ^0.0.17
     version: 0.0.17
@@ -1748,6 +1751,18 @@ packages:
   /@resvg/resvg-wasm@2.4.0:
     resolution: {integrity: sha512-C7c51Nn4yTxXFKvgh2txJFNweaVcfUPQxwEUFw4aWsCmfiBDJsTSwviIF8EcwjQ6k8bPyMWCl1vw4BdxE569Cg==}
     engines: {node: '>= 10'}
+    dev: false
+
+  /@ricky0123/vad-react@0.0.23(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-A1qsBELlygO2+WV8rNnNR+Svr0eCDkswFq5RRlC5LMbcYAZPJWjFr0Glro3monRvZ7km3mdVyla1ZTxdvZV2tA==}
+    peerDependencies:
+      react: ^18
+      react-dom: ^18
+    dependencies:
+      '@ricky0123/vad-web': 0.0.17
+      onnxruntime-web: 1.17.3
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
     dev: false
 
   /@ricky0123/vad-web@0.0.17:

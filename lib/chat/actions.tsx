@@ -31,11 +31,10 @@ import Groq from "groq-sdk";
 import {ChatGroq} from "@langchain/groq";
 import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {ConversationChain} from "langchain/chains";
-import {toast} from "sonner";
-import {BaseChatMessageHistory} from "@langchain/core/chat_history";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
 
-const chatChainDB = {}
+const chatChainDB = {} as { [key: string]: any };
+const abortSignal = {} as { [key: string]: any };
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
     'use server'
@@ -124,13 +123,13 @@ async function submitUserMessage(content: string) {
     const aiState = getMutableAIState<typeof AI>()
 
 //     const chain = await initChatModel();
-
+    const msgID = nanoid();
     aiState.update({
         ...aiState.get(),
         messages: [
             ...aiState.get().messages,
             {
-                id: nanoid(),
+                id: msgID,
                 role: 'user',
                 content
             }
@@ -160,64 +159,58 @@ async function submitUserMessage(content: string) {
         }
 
         try {
+            let emojiFlag = false;
             const res = await chatChainDB[chatId].chatChain.call({
                 input: content,
                 callbacks: [
                     {
                         handleLLMNewToken(token: any) {
-                            buf += token;
-                            textStream.update(<BotMessage content={buf}/>);
+                            if (token) {
+                                if (token.includes('*')) {
+                                    emojiFlag = !emojiFlag;
+                                }
+                                if (!emojiFlag) {
+                                    buf += token;
+                                }
+
+                                if (!abortSignal.hasOwnProperty(msgID)) {
+                                    textStream.update(<BotMessage content={buf} tts={false} msgID={msgID}/>);
+                                }
+                                console.log(token);
+                            }else{
+                                console.log('done');
+                            }
                         },
-                        // handleLLMEnd(token) {
-                        //     // emitter.emit("data", { event: "end" });
-                        //   console.log("stream:\n", token);
-                        //   textStream.done(<BotMessage content={buf} />);
-                        // },
+                        handleLLMEnd(token:any) {
+                            if (!abortSignal.hasOwnProperty(msgID)) {
+                                textStream.done(<BotMessage content={buf} tts={true} msgID={msgID}/>);
+                            }
+
+                            // emitter.emit("data", { event: "end" });
+                          console.log("stream:\n", token);
+                            aiState.done({
+                                ...aiState.get(),
+                                messages: [
+                                    ...aiState.get().messages,
+                                    {
+                                        id: nanoid(),
+                                        role: 'assistant',
+                                        content: buf,
+                                        data:false
+                                    }
+                                ]
+                            });
+                        },
                     },
                 ],
             });
         } catch (e) {
             console.error(e);
         } finally {
-            textStream.done(<BotMessage content={buf} tts={true}/>);
-            aiState.done({
-                ...aiState.get(),
-                messages: [
-                    ...aiState.get().messages,
-                    {
-                        id: nanoid(),
-                        role: 'assistant',
-                        content:buf,
-                        data: 'false'
-                    }
-                ]
-            })
-
-            // const formData = new FormData();
-            // formData.append('text', buf);
-            // const startTime = performance.now();
-            // fetch('http://127.0.0.1:5004/tts', {
-            //     method: 'POST',
-            //     body: formData
-            // })
-            //     .then(response => {
-            //         if (response.ok) {
-            //             return response.text();
-            //         } else {
-            //             toast.error('Failed to generate voice');
-            //         }
-            //     })
-            //     .then(wavBuffer => {
-            //         // const wavData = new Uint8Array(wavBuffer);
-            //         // const wavUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
-            //
-            //         console.log("tts elapsed "+(performance.now()-startTime) + 'ms')
-            //
-            //     })
-            //     .catch(error => {
-            //         toast.error('Failed to generate voice');
-            //         textStream.done();
-            //     });
+            if (abortSignal.hasOwnProperty(msgID)) {
+                textStream.done();
+                delete abortSignal[msgID];
+            }
         }
     });
 
@@ -227,7 +220,20 @@ async function submitUserMessage(content: string) {
     }
 }
 
+async function abortStreaming(id: string, msg:string) {
+    'use server'
+    abortSignal[id] = true;
+    const aiState = getMutableAIState<typeof AI>()
+    aiState.done({
+        ...aiState.get(),
+        messages: [
+            ...aiState.get().messages.filter(item => item.id !== id),
+        ]
+    });
+}
+
 const createChatChain = async (msgs)=>{
+    'use server'
     const prompt = ChatPromptTemplate.fromTemplate(
         `
         You are an {language} teacher and improver.Your name is {name}.
@@ -237,9 +243,9 @@ const createChatChain = async (msgs)=>{
         Don't use English unless you're an English teacher.
         Do not notes, annotate, or comment in English other than the foreign language being taught.
         Please use {language} for all replies.Do not include any language other than {language} in your response!
-        I want you to keep your replies neat and tidy and limit your replies to 50 words or less.
+        I want you to keep your replies neat and tidy and limit your replies to 40 words or less.
         If I speak {language}, you will strictly correct my grammatical errors, typos and factual errors.
-        You are a gentle {language} teacher and you ask me questions in your replies.
+        You are a gentle, funny and humorous {language} teacher and you ask me questions in your replies.
         Now we start practicing and you can ask me questions first.
         You can start practicing with simple {language} and adjust the difficulty of the {language} you reply to according to my {language} level.
         {history}
@@ -251,10 +257,13 @@ const createChatChain = async (msgs)=>{
         language: 'English',
         name: 'Mary'
     });
-    const { HttpsProxyAgent } = require('https-proxy-agent');
+    // const { HttpsProxyAgent } = require('https-proxy-agent');
+    // if (typeof window === 'undefined') {
+    //     const { HttpsProxyAgent } = await import('https-proxy-agent');
 
+    // }
     const groqClient = new Groq(
-        {httpAgent: new HttpsProxyAgent('http://127.0.0.1:7891'),}
+        // {httpAgent: new HttpsProxyAgent('http://127.0.0.1:7891'),}
     );
     const model = new ChatGroq({
         modelName: "llama3-70b-8192",
@@ -309,6 +318,7 @@ export type UIState = {
 export const AI = createAI<AIState, UIState>({
     actions: {
         submitUserMessage,
+        abortStreaming,
         confirmPurchase
     },
     initialUIState: [],
@@ -331,7 +341,7 @@ export const AI = createAI<AIState, UIState>({
     },
     onSetAIState: async ({state, done}) => {
         'use server'
-
+        console.log("onSetAIState");
         const session = await auth()
 
         if (session && session.user) {
@@ -385,7 +395,7 @@ export const getUIStateFromAIState = (aiState: Chat) => {
                 ) : message.role === 'user' ? (
                     <UserMessage>{message.content}</UserMessage>
                 ) : (
-                    <BotMessage content={message.content} wavUrl={message.data}/>
+                    <BotMessage content={message.content} tts={message.data} msgID={message.id}/>
                 )
         }))
 }

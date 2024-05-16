@@ -87,3 +87,18 @@ export const getMessageFromCode = (resultCode: string) => {
       return 'Logged in!'
   }
 }
+
+
+export function checkMicrophoneAccess() {
+  try {
+    // 请求用户媒体设备权限
+    const stream = navigator.mediaDevices.getUserMedia({ audio: true });
+
+    // 如果成功获取到媒体流，则表示麦克风可用
+    return true;
+  } catch (error) {
+    // 如果出现错误，可能是用户拒绝了权限请求或者设备不可用
+    console.error('Error accessing microphone:', error);
+    return false;
+  }
+}
