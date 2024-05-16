@@ -2,6 +2,7 @@
 const CopyPlugin = require("copy-webpack-plugin")
 
 module.exports = {
+  basePath:'/learninglang',
   images: {
     remotePatterns: [
       {
