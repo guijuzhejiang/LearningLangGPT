@@ -11,7 +11,7 @@ module.exports = {
     STT_URL: process.env.STT_URL,
     TTS_URL: process.env.TTS_URL,
   },
-  basePath:process.env.NODE_ENV === "development"? '':'/learninglang',
+  // basePath:process.env.NODE_ENV === "development"? '':'/learninglang',
   images: {
     remotePatterns: [
       {
