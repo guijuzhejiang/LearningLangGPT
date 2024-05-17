@@ -1,5 +1,5 @@
 {
-  "routes": [
+  "rewrites": [
     { "src": "/learninglang(.*)", "dest": "https://learning-lang-gpt.vercel.app$1" }
   ]
 }
