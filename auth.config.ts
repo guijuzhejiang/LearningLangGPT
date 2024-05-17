@@ -3,8 +3,8 @@ import type { NextAuthConfig } from 'next-auth'
 export const authConfig = {
   secret: process.env.AUTH_SECRET,
   pages: {
-    signIn: '/login',
-    newUser: '/signup'
+    signIn: process.env.NODE_ENV === "development"? '/login': '/learninglang/login',
+    newUser: process.env.NODE_ENV === "development"? '/login':'/learninglang/signup'
   },
   callbacks: {
     async authorized({ auth, request: { nextUrl } }) {
