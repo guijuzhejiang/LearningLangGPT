@@ -2,7 +2,11 @@
 const CopyPlugin = require("copy-webpack-plugin")
 
 module.exports = {
-  basePath:'/learninglang',
+  env: {
+    STT_URL: process.env.STT_URL,
+    TTS_URL: process.env.TTS_URL,
+  },
+  basePath:process.env.NODE_ENV === "development"? '':'/learninglang',
   images: {
     remotePatterns: [
       {
@@ -28,36 +32,36 @@ module.exports = {
           patterns: [
             {
               from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
-              to: "static/chunks/app/(chat)/[name][ext]",
+              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
               from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
-              to: "static/chunks/app/(chat)/[name][ext]",
+              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
               from: "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
-              to: "static/chunks/app/(chat)/[name][ext]",
+              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
               from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
-              to: "static/chunks/app/(chat)/[name][ext]",
+              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
 
             {
               from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
-              to: "static/chunks/app/(chat)/chat/[id]/[name][ext]",
+              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}chat/[id]/[name][ext]`,
             },
             {
               from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
-              to: "static/chunks/app/(chat)/chat/[id]/[name][ext]",
+              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}chat/[id]/[name][ext]`,
             },
             {
               from: "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
-              to: "static/chunks/app/(chat)/chat/[id]/[name][ext]",
+              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}chat/[id]/[name][ext]`,
             },
             {
               from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
-              to: "static/chunks/app/(chat)/chat/[id]/[name][ext]",
+              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}chat/[id]/[name][ext]`,
             },
           ],
         })

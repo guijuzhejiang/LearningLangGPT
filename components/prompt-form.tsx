@@ -189,16 +189,7 @@ export function PromptForm({
                 setMicOn(false);
             } else {
                 setMicOn(true);
-                if (!vad) {
-                    const vadObj = await initVAD()
-                    setVad(vadObj)
-
-                    vadObj.start()
-
-                } else {
-                    vad.start()
-
-                }
+                vad.start();
             }
         } catch (e) {
             console.log(e);
@@ -315,9 +306,9 @@ export function PromptForm({
                     ref={inputRef}
                     tabIndex={0}
                     onKeyDown={onKeyDown}
-                    disabled={STTIng}
+                    disabled={micOn ? STTIng:false}
                     placeholder={voiceContinuationEnable ? "Listening...":"Send a message."}
-                    className="min-h-[60px] w-full resize-none bg-transparent pl-2 pr-14 py-[1.3rem] focus-within:outline-none sm:text-sm"
+                    className={`min-h-[60px] w-full resize-none bg-transparent pl-2 pr-${micOn && !voiceContinuationEnable ? '16':'14'} py-[1.3rem] focus-within:outline-none sm:text-sm`}
                     autoFocus
                     spellCheck={false}
                     autoComplete="off"
@@ -331,21 +322,21 @@ export function PromptForm({
                 {/* 右边div */}
                 <div className="absolute right-0 top-[13px] sm:right-4 z-50">
                     {/*提交按钮*/}
-                    {/*<Tooltip>*/}
-                    {/*    <TooltipTrigger asChild className={`${isRecording && ('hidden')}`}>*/}
-                    {/*        <Button type="submit" size="icon" disabled={input === ''}>*/}
-                    {/*            <IconKeyboard style={{width:'2rem', height:'2rem'}}/>*/}
-                    {/*            <span className="sr-only">Send message</span>*/}
-                    {/*        </Button>*/}
-                    {/*    </TooltipTrigger>*/}
-                    {/*    <TooltipContent>Send message</TooltipContent>*/}
-                    {/*</Tooltip>*/}
+                    <Tooltip>
+                        <TooltipTrigger asChild className={`${voiceContinuationEnable && ('hidden')}`}>
+                            <Button type="submit" size="icon" disabled={input === ''}>
+                                <IconArrowElbow />
+                                <span className="sr-only">Send message</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Send message</TooltipContent>
+                    </Tooltip>
 
                     {/*语音*/}
                     <Tooltip>
-                        <TooltipTrigger asChild>
+                        <TooltipTrigger asChild className="ml-1">
                             <Button className={micOn ? "":"bg-gray-400 opti"} size="icon" onClick={handleToggleSTT} disabled={!micAvailable}>
-                                <IconMicroPhone className={isTalking ? "text-blue-400":""}/>
+                                <IconMicroPhone className={isTalking && micOn ? "text-blue-400":""}/>
                                 <span className="sr-only">Voice</span>
                             </Button>
                         </TooltipTrigger>
@@ -354,7 +345,7 @@ export function PromptForm({
 
                     {/*只有语音*/}
                     <Tooltip>
-                        <TooltipTrigger asChild className="ml-1">
+                        <TooltipTrigger asChild className={`ml-1 ${!micOn && ('hidden')}`}>
                             <Button className={voiceContinuationEnable ? "":"bg-gray-400 opti"} size="icon" onClick={(e)=>{e.preventDefault();setVoiceContinuationEnable(!voiceContinuationEnable);}} disabled={!micAvailable}>
                                 <IconVoiceContinuation/>
                                 <span className="sr-only">Voice Continuation</span>
@@ -365,7 +356,7 @@ export function PromptForm({
                 </div>
 
                 <div
-                    className={`absolute left-0 top-0 w-full h-full bg-yellow-600 bg-opacity-10 ${voiceContinuationEnable ? ('block'):(!STTIng && ('hidden'))}`}>
+                    className={`absolute left-0 top-0 w-full h-full bg-yellow-600 bg-opacity-10 ${voiceContinuationEnable ? ('block'):((!STTIng || !micOn) && ('hidden'))}`}>
                 </div>
             </div>
         </form>
