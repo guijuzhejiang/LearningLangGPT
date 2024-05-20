@@ -32,6 +32,7 @@ import {ChatGroq} from "@langchain/groq";
 import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {ConversationChain} from "langchain/chains";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
+const { HttpsProxyAgent } = process.env.NODE_ENV === "development"? require('https-proxy-agent'):"";
 
 const chatChainDB = {} as { [key: string]: any };
 const abortSignal = {} as { [key: string]: any };
@@ -255,14 +256,9 @@ const createChatChain = async (msgs)=>{
         language: 'English',
         name: 'Mary'
     });
-    // const { HttpsProxyAgent } = require('https-proxy-agent');
-    // if (typeof window === 'undefined') {
-    //     const { HttpsProxyAgent } = await import('https-proxy-agent');
 
-    // }
-    const groqClient = new Groq(
-        // {httpAgent: new HttpsProxyAgent('http://127.0.0.1:7891'),}
-    );
+
+    const groqClient = process.env.NODE_ENV === "development"? new Groq({httpAgent: new HttpsProxyAgent('http://127.0.0.1:7891'),}): new Groq();
     const model = new ChatGroq({
         modelName: "llama3-70b-8192",
         apiKey: process.env.GROQ_API_KEY,
@@ -347,7 +343,7 @@ export const AI = createAI<AIState, UIState>({
 
             const createdAt = new Date()
             const userId = session.user.id as string
-            const path = `/chat/${chatId}`
+            const path = process.env.NODE_ENV === "development"? `/chat/${chatId}`:`/chat/${chatId}`
             const title = messages[0].content.substring(0, 100)
 
             const chat: Chat = {

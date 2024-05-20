@@ -74,17 +74,17 @@ export enum ResultCode {
 export const getMessageFromCode = (resultCode: string) => {
   switch (resultCode) {
     case ResultCode.InvalidCredentials:
-      return 'Invalid credentials!'
+      return '密码错误!'
     case ResultCode.InvalidSubmission:
       return 'Invalid submission, please try again!'
     case ResultCode.UserAlreadyExists:
-      return 'User already exists, please log in!'
+      return '用户已存在,请登录'
     case ResultCode.UserCreated:
-      return 'User created, welcome!'
+      return '注册成功!'
     case ResultCode.UnknownError:
-      return 'Something went wrong, please try again!'
+      return '遇到了错误, 请重试!'
     case ResultCode.UserLoggedIn:
-      return 'Logged in!'
+      return '登录成功!'
   }
 }
 

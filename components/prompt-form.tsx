@@ -307,7 +307,7 @@ export function PromptForm({
                     tabIndex={0}
                     onKeyDown={onKeyDown}
                     disabled={micOn ? STTIng:false}
-                    placeholder={voiceContinuationEnable ? "Listening...":"Send a message."}
+                    placeholder={voiceContinuationEnable ? "Listening...":"发送消息."}
                     className={`min-h-[60px] w-full resize-none bg-transparent pl-2 pr-${micOn && !voiceContinuationEnable ? '16':'14'} py-[1.3rem] focus-within:outline-none sm:text-sm`}
                     autoFocus
                     spellCheck={false}

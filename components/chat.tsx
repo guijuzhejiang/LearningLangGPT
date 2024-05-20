@@ -32,7 +32,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   useEffect(() => {
     if (session?.user) {
       if (!path.includes('chat') && messages.length === 2) {
-        window.history.replaceState({}, '', `/chat/${id}`)
+        window.history.replaceState({}, '', `/learninglang/chat/${id}`)
         // window.localStorage.setItem('tts', true);
         // router.refresh()
       }
@@ -41,7 +41,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   useEffect(() => {
     const messagesLength = aiState.messages?.length
-    if (messagesLength === 2) {
+    if (messagesLength === 2 && session?.user) {
       // alert('refresh');
       window.localStorage.setItem('tts', aiState.messages[1].content);
       router.refresh()
