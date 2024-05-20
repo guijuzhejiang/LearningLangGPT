@@ -345,7 +345,7 @@ export const AI = createAI<AIState, UIState>({
 
             const createdAt = new Date()
             const userId = session.user.id as string
-            const path = `/chat/${chatId}`
+            const path = process.env.NODE_ENV === "development"? `/chat/${chatId}`:`/chat/${chatId}`
             const title = messages[0].content.substring(0, 100)
 
             const chat: Chat = {
