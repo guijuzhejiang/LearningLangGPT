@@ -1,0 +1,14 @@
+version: '3'
+services:
+  redis:
+    image: redis
+    ports:
+      - '8078:6379'
+  serverless-redis-http:
+    ports:
+      - '8079:80'
+    image: hiett/serverless-redis-http:latest
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: a2dc2ac3f0d13b58e236d830f989b3c5
+      SRH_CONNECTION_STRING: 'redis://redis:6379' # Using `redis` hostname since they're in the same Docker network.
