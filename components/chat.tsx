@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import {checkMicrophoneAccess, cn, mergeFloat32Arrays, pauseAllAudio} from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
@@ -9,9 +9,14 @@ import { useEffect, useState } from 'react'
 import { useUIState, useAIState } from 'ai/rsc'
 import { Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
-import { Message } from '@/lib/chat/actions'
+import {AI, Message} from '@/lib/chat/actions'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
+import { useMicVAD, utils } from "@ricky0123/vad-react"
+import {nanoid} from 'nanoid'
+
+import * as React from "react";
+import {useActions} from "ai/rsc";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -21,13 +26,62 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, className, session, missingKeys }: ChatProps) {
-  const router = useRouter()
-  const path = usePathname()
-  const [input, setInput] = useState('')
-  const [messages] = useUIState()
-  const [aiState] = useAIState()
-
+  const router = useRouter();
+  const path = usePathname();
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useUIState();
+  const [aiState] = useAIState();
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
+  const {submitUserMessage} = useActions()
+
+  const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
+      useScrollAnchor()
+
+  /* PART VAD */
+  // mic 是否可用
+  const [micAvailable, setMicAvailable] = React.useState(false)
+  // mic 是否打开
+  const [micOn, setMicOn] = React.useState(true)
+  // 是否正在处理STT
+  const [STTIng, setSTTIng] = React.useState(false)
+  // 持续讲话模式
+  const [voiceContinuationEnable, setVoiceContinuationEnable] = React.useState(false)
+  // stt文本
+  const [voiceText, setVoiceText] = React.useState('');
+  // wav float32数组缓存
+  const [audioBuffer, setAudioBuffer] = React.useState([]);
+  const [silence, setSilence] = React.useState(false);
+  const silenceDurationMS = 400;
+
+  useEffect(() => {
+    // 在状态变化后打印最新的值
+    console.log('input updated:', voiceText);
+    if (voiceContinuationEnable) {
+      console.log("voiceContinuationEnable:" + voiceContinuationEnable)
+      const asyncSubmit = async ()=>{
+        const value = (input + voiceText).trim()
+        setInput('')
+        if (!value) return
+
+        // Optimistically add user message UI
+        setMessages(currentMessages => [
+          ...currentMessages,
+          {
+            id: nanoid(),
+            display: <UserMessage>{value}</UserMessage>
+          }
+        ])
+
+        // Submit and get response message
+        const responseMessage = await submitUserMessage(value)
+        setMessages(currentMessages => [...currentMessages, responseMessage])
+      }
+      asyncSubmit();
+    } else {
+      setInput(input + voiceText);
+    }
+    setSTTIng(false)
+  }, [voiceText]);
 
   useEffect(() => {
     if (session?.user) {
@@ -49,17 +103,100 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   }, [aiState.messages, router])
 
   useEffect(() => {
-    setNewChatId(id)
+    setNewChatId(id);
   })
 
   useEffect(() => {
-    missingKeys.map(key => {
-      toast.error(`Missing ${key} environment variable!`)
-    })
-  }, [missingKeys])
+    const haveMic = checkMicrophoneAccess()
+    setMicAvailable(haveMic);
+    setMicOn(haveMic);
+  }, []);
 
-  const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
-    useScrollAnchor()
+
+  useEffect(() => {
+    let prevLengthID = nanoid()
+    localStorage.setItem(prevLengthID, audioBuffer.length+"")
+    console.log('State changed!!!');
+    // console.log(audioBuffer.length+"");
+    // console.log(prevLength);
+    if (audioBuffer.length > 0) {
+      const timeoutId = setTimeout(() => {
+        console.log(localStorage.getItem(prevLengthID));
+        console.log(audioBuffer.length);
+        if (localStorage.getItem(prevLengthID) === audioBuffer.length+"") {
+          console.log('State not changed in silenceDurationMS seconds????????????');
+          const formData = new FormData();
+          audioBuffer.map((wavBuf, i)=>{
+            const wavBlob = new Blob([wavBuf], {type: 'audio/wav'});
+            formData.append('wavFiles', wavBlob, 'audio.wav');
+          });
+
+          const startTime = performance.now();
+          fetch(process.env.STT_URL, {
+            method: 'POST',
+            body: formData
+          })
+              .then(response => {
+                setAudioBuffer([])
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  toast.error('Failed to upload');
+                }
+              })
+              .then(data => {
+                if (data.success) {
+                  console.log(data.result.text);
+                  setVoiceText(data.result.text);
+                  // if (voiceContinuationEnable) {
+                  //     console.log("voiceContinuationEnable:" + voiceContinuationEnable)
+                  //     formRef.current.dispatchEvent(new Event('submit', { bubbles: true }));
+                  // }
+                } else {
+                  toast.error('failed');
+                }
+
+                console.log("stt elapsed " + (performance.now() - startTime) + 'ms')
+              })
+              .catch(error => {
+                toast.error('Failed to upload');
+                setAudioBuffer([])
+                console.error('上传错误:', error);
+              });
+        } else {
+          console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
+        }
+        localStorage.removeItem(prevLengthID);
+      }, silenceDurationMS);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+
+    // Clean up the timeout if the component unmounts or the state changes before 3 seconds
+
+  }, [audioBuffer]);
+
+  const vad = useMicVAD({
+    onSpeechStart: () => {
+      try {
+        console.log("onSpeechStart");
+        pauseAllAudio()
+        setSTTIng(true);
+      } catch (e) {
+        console.error("onSpeechStart error:" + e)
+      }
+    },
+    onSpeechEnd: (float32Audio) => {
+      try {
+        console.log("onSpeechEnd");
+        setAudioBuffer((prevItems) => [...prevItems, utils.encodeWAV(float32Audio)]);
+      } catch (e) {
+        console.error("onSpeechEnd error:" + e)
+      }
+    },
+  });
 
   return (
     <div
@@ -83,6 +220,13 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         setInput={setInput}
         isAtBottom={isAtBottom}
         scrollToBottom={scrollToBottom}
+        micOn={micOn}
+        setMicOn={setMicOn}
+        STTIng={STTIng}
+        voiceContinuationEnable={voiceContinuationEnable}
+        setVoiceContinuationEnable={setVoiceContinuationEnable}
+        micAvailable={micAvailable}
+        vad={vad}
       />
     </div>
   )

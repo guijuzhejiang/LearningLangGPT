@@ -102,3 +102,33 @@ export function checkMicrophoneAccess() {
     return false;
   }
 }
+
+export function pauseAllAudio() {
+  try {
+    const audioElements = document.querySelectorAll('audio');
+    audioElements.forEach(audio => audio.pause());
+  } catch (error) {
+    // 如果出现错误，可能是用户拒绝了权限请求或者设备不可用
+    console.error('Error pauseAllAudio:', error);
+  }
+}
+
+export function arrayBufferToAudioBuffer(arrayBuffer, context) {
+  return new Promise((resolve, reject) => {
+    if (context) {
+      if (Object.prototype.toString.call(context) !==
+          '[object AudioContext]') {
+        throw new TypeError('`context` must be an AudioContext')
+      }
+    } else {
+      if (typeof window !== 'undefined') {
+        context = new (window.AudioContext ||
+            window.webkitAudioContext)
+      }
+    }
+
+    context.decodeAudioData(arrayBuffer, function(data) {
+      resolve(data)
+    }, reject)
+  })
+}

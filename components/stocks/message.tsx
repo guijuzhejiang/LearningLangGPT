@@ -1,7 +1,7 @@
 'use client'
 
 import {IconOpenAI, IconPlayMedia, IconStop, IconUser} from '@/components/ui/icons'
-import {cn} from '@/lib/utils'
+import {cn, pauseAllAudio} from '@/lib/utils'
 import {spinner} from './spinner'
 import {CodeBlock} from '../ui/codeblock'
 import {MemoizedReactMarkdown} from '../markdown'
@@ -202,8 +202,7 @@ export const BotMessage = React.memo(({
                                 }
                                 // // progressJumpSteps={{ backward: 1000, forward: 1000 }}
                                 onCanPlay={(e) => {
-                                    const audioElements = document.querySelectorAll('audio');
-                                    audioElements.forEach(audio => audio.pause());
+                                    pauseAllAudio();
                                     if (e.target) {
                                         const element = e.target as HTMLMediaElement;
                                         element.play();

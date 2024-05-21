@@ -4,11 +4,17 @@ import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
 
 import {useActions, useUIState} from 'ai/rsc'
-import dynamic from "next/dynamic"
 import {UserMessage} from './stocks/message'
 import {type AI} from '@/lib/chat/actions'
 import {Button} from '@/components/ui/button'
-import {IconArrowElbow, IconPlus, IconMicroPhone, IconKeyboard, IconVoiceContinuation} from '@/components/ui/icons'
+import {
+    IconArrowElbow,
+    IconPlus,
+    IconMicroPhone,
+    IconKeyboard,
+    IconVoiceContinuation,
+    IconSpinner
+} from '@/components/ui/icons'
 import {
     Tooltip,
     TooltipContent,
@@ -17,30 +23,33 @@ import {
 import {useEnterSubmit} from '@/lib/hooks/use-enter-submit'
 import {nanoid} from 'nanoid'
 import {useRouter} from 'next/navigation'
-import { useMicVAD, utils } from "@ricky0123/vad-react"
-// import {MicVAD, utils} from "@ricky0123/vad-web"
-import {tr} from "date-fns/locale";
 import {toast} from "sonner";
-import {checkMicrophoneAccess} from "@/lib/utils";
+import {ChatPanel} from "@/components/chat-panel";
+
+
+export interface PromptFormProps {
+    input: string
+    setInput: (value: string) => void
+    micOn: boolean
+    setMicOn: (value: boolean) => void
+    STTIng: boolean
+    voiceContinuationEnable: boolean
+    setVoiceContinuationEnable: (value: boolean) => void
+    micAvailable: boolean
+    vad: object
+}
 
 export function PromptForm({
                                input,
-                               setInput
-                           }: {
-    input: string
-    setInput: (value: string) => void
-}) {
-    // const vad = useMicVAD({
-    //     startOnLoad: false,
-    //     // workletURL: "/vad.worklet.bundle.min.js",
-    //     // modelURL: "/silero_vad.onnx",
-    //     onSpeechEnd: (float32Audio) => {
-    //         const wavBuffer = utils.encodeWAV(float32Audio)
-    //         const base64 = utils.arrayBufferToBase64(wavBuffer)
-    //         const url = `data:audio/wav;base64,${base64}`
-    //
-    //     },
-    // });
+                               setInput,
+                               micOn,
+                               setMicOn,
+                               STTIng,
+                               voiceContinuationEnable,
+                               setVoiceContinuationEnable,
+                               micAvailable,
+                               vad
+                           }: PromptFormProps) {
 
     const router = useRouter()
     const {formRef, onKeyDown} = useEnterSubmit()
@@ -48,139 +57,8 @@ export function PromptForm({
     const {submitUserMessage} = useActions()
     const [_, setMessages] = useUIState<typeof AI>()
 
-    const [isTalking, setIsTalking] = React.useState(false)
-    const [STTIng, setSTTIng] = React.useState(false)
-    // const [keyboardEnable, setKeyboardEnable] = React.useState(true)
-    const [micOn, setMicOn] = React.useState(true)
-    const [micAvailable, setMicAvailable] = React.useState(false)
-    const [voiceContinuationEnable, setVoiceContinuationEnable] = React.useState(false)
-    const [voiceText, setVoiceText] = React.useState('')
-    // const [vad, setVad] = React.useState<any>(null)
-    const vad = useMicVAD({
-        onSpeechStart: () => {
-            try {
-                console.log("onSpeechStart");
-                // setKeyboardEnable(false);
-                setIsTalking(true);
-                setSTTIng(true);
-            } catch (e) {
-                console.error("onSpeechStart error:" + e)
-            }
-        },
-        onSpeechEnd: (float32Audio) => {
-            try {
-                console.log("onSpeechEnd");
 
-                // setKeyboardEnable(true);
-
-                // vadObj.pause()
-
-                // do something with `audio` (Float32Array of audio samples at sample rate 16000)...
-                const wavBuffer = utils.encodeWAV(float32Audio)
-                // const base64 = utils.arrayBufferToBase64(wavBuffer)
-                // myvad.pause()
-                setIsTalking(false);
-                const wavBlob = new Blob([wavBuffer], {type: 'audio/wav'});
-                const formData = new FormData();
-                formData.append('wavFile', wavBlob, 'audio.wav');
-
-                const startTime = performance.now();
-                fetch(process.env.STT_URL, {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => {
-                        if (response.ok) {
-                            return response.json();
-                        } else {
-                            toast.error('Failed to upload');
-                        }
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            console.log(input);
-                            console.log(data.result.text);
-                            setVoiceText(data.result.text);
-                            // if (voiceContinuationEnable) {
-                            //     console.log("voiceContinuationEnable:" + voiceContinuationEnable)
-                            //     formRef.current.dispatchEvent(new Event('submit', { bubbles: true }));
-                            // }
-                        } else {
-                            toast.error('failed');
-                        }
-
-                        console.log("stt elapsed "+(performance.now()-startTime) + 'ms')
-                    })
-                    .catch(error => {
-                        toast.error('Failed to upload');
-
-                        console.error('上传错误:', error);
-                    });
-            } catch (e) {
-                console.error("onSpeechEnd error:" + e)
-            }
-        },
-    })
-    // const initVAD = async ()=>{
-    //     return await MicVAD.new({
-    //         onSpeechStart: () => {
-    //             console.log("onSpeechStart");
-    //             // setKeyboardEnable(false);
-    //             setIsTalking(true);
-    //             setSTTIng(true);
-    //         },
-    //         onSpeechEnd: (float32Audio) => {
-    //             console.log("onSpeechEnd");
-    //
-    //             // setKeyboardEnable(true);
-    //
-    //             // vadObj.pause()
-    //
-    //             // do something with `audio` (Float32Array of audio samples at sample rate 16000)...
-    //             const wavBuffer = utils.encodeWAV(float32Audio)
-    //             // const base64 = utils.arrayBufferToBase64(wavBuffer)
-    //             // myvad.pause()
-    //             setIsTalking(false);
-    //             const wavBlob = new Blob([wavBuffer], {type: 'audio/wav'});
-    //             const formData = new FormData();
-    //             formData.append('wavFile', wavBlob, 'audio.wav');
-    //
-    //             const startTime = performance.now();
-    //             fetch('http://127.0.0.1:5004/stt', {
-    //                 method: 'POST',
-    //                 body: formData
-    //             })
-    //                 .then(response => {
-    //                     if (response.ok) {
-    //                         return response.json();
-    //                     } else {
-    //                         toast.error('Failed to upload');
-    //                     }
-    //                 })
-    //                 .then(data => {
-    //                     if (data.success) {
-    //                         console.log(input);
-    //                         console.log(data.result.text);
-    //                         setVoiceText(data.result.text);
-    //                         if (voiceContinuationEnable) {
-    //                             formRef.current.submit();
-    //                         }
-    //                     } else {
-    //                         toast.error('failed');
-    //                     }
-    //
-    //                     console.log("stt elapsed "+(performance.now()-startTime) + 'ms')
-    //                 })
-    //                 .catch(error => {
-    //                     toast.error('Failed to upload');
-    //
-    //                     console.error('上传错误:', error);
-    //                 });
-    //         },
-    //     })
-    // }
-
-    const handleToggleSTT = async (e: any) => {
+    const handleToggleMic = async (e: any) => {
         e.preventDefault();
 
         try {
@@ -193,62 +71,14 @@ export function PromptForm({
             }
         } catch (e) {
             console.log(e);
-            toast.error('Failed to open mic')
+            toast.error('麦克风开启失败')
         }
     }
-
-    React.useEffect(() => {
-        // 在状态变化后打印最新的值
-        console.log('input updated:', voiceText);
-        if (voiceContinuationEnable) {
-            console.log("voiceContinuationEnable:" + voiceContinuationEnable)
-            const asyncSubmit = async ()=>{
-                const value = (input + voiceText).trim()
-                setInput('')
-                if (!value) return
-
-                // Optimistically add user message UI
-                setMessages(currentMessages => [
-                    ...currentMessages,
-                    {
-                        id: nanoid(),
-                        display: <UserMessage>{value}</UserMessage>
-                    }
-                ])
-
-                // Submit and get response message
-                const responseMessage = await submitUserMessage(value)
-                setMessages(currentMessages => [...currentMessages, responseMessage])
-            }
-            asyncSubmit();
-        } else {
-            setInput(input + voiceText);
-        }
-        setSTTIng(false)
-    }, [voiceText]); // 仅在 count 发生变化时执行
 
     React.useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus()
         }
-
-        const haveMic = checkMicrophoneAccess()
-        setMicAvailable(haveMic);
-        setMicOn(haveMic);
-        // if (haveMic) {
-        //     const asyncInit = async () => {
-        //         try {
-        //             const vadObj = await initVAD()
-        //             setVad(vadObj)
-        //
-        //             vadObj.start()
-        //         } catch (e) {
-        //             setMicAvailable(false);
-        //         } finally {
-        //         }
-        //     };
-        //     asyncInit();
-        // }
     }, [])
 
     return (
@@ -335,10 +165,20 @@ export function PromptForm({
                     {/*语音*/}
                     <Tooltip>
                         <TooltipTrigger asChild className="ml-1">
-                            <Button className={micOn ? "":"bg-gray-400 opti"} size="icon" onClick={handleToggleSTT} disabled={!micAvailable}>
-                                <IconMicroPhone className={isTalking && micOn ? "text-blue-400":""}/>
-                                <span className="sr-only">Voice</span>
-                            </Button>
+                            {
+                                vad.loading ? (
+                                    <Button size="icon">
+                                        <IconSpinner/>
+                                        <span className="sr-only">Voice</span>
+                                    </Button>
+                                ):(
+                                    <Button className={micOn ? "":"bg-gray-400 opti"} size="icon" onClick={handleToggleMic} disabled={!micAvailable}>
+                                        <IconMicroPhone className={vad.userSpeaking && micOn ? "text-blue-400":""}/>
+                                        <span className="sr-only">Voice</span>
+                                    </Button>
+                                )
+                            }
+
                         </TooltipTrigger>
                         <TooltipContent>Voice</TooltipContent>
                     </Tooltip>
