@@ -282,6 +282,13 @@ async function abortStreaming(id: string, msg: string="@save") {
                 ...aiState.get().messages.filter(item => item.id !== id),
             ]
         });
+
+        const msgs = aiState.get().messages;
+        const chatId = aiState.get().chatId;
+        chatChainDB[chatId] = {
+            createTime: new Date().getTime(),
+            chatChain: await createChatChain(msgs)
+        }
     }
 
 }
