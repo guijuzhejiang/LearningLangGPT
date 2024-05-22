@@ -56,9 +56,9 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   useEffect(() => {
     // 在状态变化后打印最新的值
-    console.log('input updated:', voiceText);
+    // console.log('input updated:', voiceText);
     if (voiceContinuationEnable) {
-      console.log("voiceContinuationEnable:" + voiceContinuationEnable)
+      // console.log("voiceContinuationEnable:" + voiceContinuationEnable)
       const asyncSubmit = async ()=>{
         const value = (input + voiceText).trim()
         setInput('')
@@ -122,7 +122,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     if (audioBuffer.length > 0) {
       timerRef.current = setTimeout(() => {
         if (!speakTimer) {
-          console.log('State not changed in silenceDurationMS seconds????????????');
+          // console.log('State not changed in silenceDurationMS seconds????????????');
           const formData = new FormData();
           audioBuffer.map((wavBuf, i)=>{
             const wavBlob = new Blob([wavBuf], {type: 'audio/wav'});
@@ -144,7 +144,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
               })
               .then(data => {
                 if (data.success) {
-                  console.log(data.result.text);
+                  // console.log(data.result.text);
                   setVoiceText(data.result.text);
                   // if (voiceContinuationEnable) {
                   //     console.log("voiceContinuationEnable:" + voiceContinuationEnable)
@@ -162,7 +162,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
                 console.error('上传错误:', error);
               });
         } else {
-          console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
+          // console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
         }
       }, silenceDurationMS);
 
