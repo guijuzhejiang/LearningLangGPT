@@ -65,6 +65,7 @@ export function PromptForm({
             if (micOn) {
                 vad.pause()
                 setMicOn(false);
+                setVoiceContinuationEnable(false);
             } else {
                 setMicOn(true);
                 vad.start();

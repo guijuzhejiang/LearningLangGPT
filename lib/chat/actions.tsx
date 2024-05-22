@@ -31,8 +31,9 @@ import Groq from "groq-sdk";
 import {ChatGroq} from "@langchain/groq";
 import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {ConversationChain} from "langchain/chains";
-import { HumanMessage, AIMessage } from "@langchain/core/messages";
-const { HttpsProxyAgent } = process.env.NODE_ENV === "development"? require('https-proxy-agent'):"";
+import {HumanMessage, AIMessage} from "@langchain/core/messages";
+
+const {HttpsProxyAgent} = process.env.NODE_ENV === "development" ? require('https-proxy-agent') : "";
 
 const chatChainDB = {} as { [key: string]: any };
 const abortSignal = {} as { [key: string]: any };
@@ -144,7 +145,7 @@ async function submitUserMessage(content: string) {
     runAsyncFnWithoutBlocking(async () => {
         let buf = "";
 
-        console.log("id: "+ chatId);
+        console.log("id: " + chatId);
 
         if (!chatChainDB.hasOwnProperty(chatId)) {
             chatChainDB[chatId] = {
@@ -176,31 +177,65 @@ async function submitUserMessage(content: string) {
 
                                 if (!abortSignal.hasOwnProperty(msgID)) {
                                     textStream.update(<BotMessage content={buf} tts={false} msgID={msgID}/>);
+                                } else {
+                                    textStream.done(<BotMessage content={buf} tts={false} msgID={msgID}/>);
+
+                                    aiState.done({
+                                        ...aiState.get(),
+                                        messages: [
+                                            ...aiState.get().messages,
+                                            {
+                                                id: nanoid(),
+                                                role: 'assistant',
+                                                content: buf,
+                                                data: false
+                                            }
+                                        ]
+                                    });
+
+                                    delete abortSignal[msgID];
                                 }
                                 console.log(token);
-                            }else{
+                            } else {
                                 console.log('done');
                             }
                         },
-                        handleLLMEnd(token:any) {
+                        handleLLMEnd(token: any) {
                             if (!abortSignal.hasOwnProperty(msgID)) {
                                 textStream.done(<BotMessage content={buf} tts={true} msgID={msgID}/>);
-                            }
 
-                            // emitter.emit("data", { event: "end" });
-                          console.log("stream:\n", token);
-                            aiState.done({
-                                ...aiState.get(),
-                                messages: [
-                                    ...aiState.get().messages,
-                                    {
-                                        id: nanoid(),
-                                        role: 'assistant',
-                                        content: buf,
-                                        data:false
-                                    }
-                                ]
-                            });
+                                aiState.done({
+                                    ...aiState.get(),
+                                    messages: [
+                                        ...aiState.get().messages,
+                                        {
+                                            id: nanoid(),
+                                            role: 'assistant',
+                                            content: buf,
+                                            data: false
+                                        }
+                                    ]
+                                });
+                            } else {
+                                textStream.done(<BotMessage content={buf} tts={false} msgID={msgID}/>);
+
+                                aiState.done({
+                                    ...aiState.get(),
+                                    messages: [
+                                        ...aiState.get().messages,
+                                        {
+                                            id: nanoid(),
+                                            role: 'assistant',
+                                            content: buf,
+                                            data: false
+                                        }
+                                    ]
+                                });
+
+                                delete abortSignal[msgID];
+                            }
+                            console.log("stream:\n", token);
+
                         },
                     },
                 ],
@@ -208,10 +243,25 @@ async function submitUserMessage(content: string) {
         } catch (e) {
             console.error(e);
         } finally {
-            if (abortSignal.hasOwnProperty(msgID)) {
-                textStream.done();
-                delete abortSignal[msgID];
-            }
+            // if (abortSignal.hasOwnProperty(msgID)) {
+            //     textStream.done(<BotMessage content={buf} tts={false} msgID={msgID}/>);
+            //
+            //     aiState.done({
+            //         ...aiState.get(),
+            //         messages: [
+            //             ...aiState.get().messages,
+            //             {
+            //                 id: nanoid(),
+            //                 role: 'assistant',
+            //                 content: buf,
+            //                 data: false
+            //             }
+            //         ]
+            //     });
+            //
+            //     delete abortSignal[msgID];
+            //
+            // }
         }
     });
 
@@ -221,19 +271,22 @@ async function submitUserMessage(content: string) {
     }
 }
 
-async function abortStreaming(id: string, msg:string) {
+async function abortStreaming(id: string, msg: string="@save") {
     'use server'
     abortSignal[id] = true;
     const aiState = getMutableAIState<typeof AI>()
-    aiState.done({
-        ...aiState.get(),
-        messages: [
-            ...aiState.get().messages.filter(item => item.id !== id),
-        ]
-    });
+    if (msg !== '@save') {
+        aiState.done({
+            ...aiState.get(),
+            messages: [
+                ...aiState.get().messages.filter(item => item.id !== id),
+            ]
+        });
+    }
+
 }
 
-const createChatChain = async (msgs)=>{
+const createChatChain = async (msgs) => {
     'use server'
     const prompt = ChatPromptTemplate.fromTemplate(
         `
@@ -258,7 +311,7 @@ const createChatChain = async (msgs)=>{
     });
 
 
-    const groqClient = process.env.NODE_ENV === "development"? new Groq({httpAgent: new HttpsProxyAgent('http://127.0.0.1:7891'),}): new Groq();
+    const groqClient = process.env.NODE_ENV === "development" ? new Groq({httpAgent: new HttpsProxyAgent('http://127.0.0.1:7891'),}) : new Groq();
     const model = new ChatGroq({
         modelName: "llama3-70b-8192",
         apiKey: process.env.GROQ_API_KEY,
@@ -277,7 +330,7 @@ const createChatChain = async (msgs)=>{
     });
     if (msgs.length > 0) {
         const chatHistory = new ChatMessageHistory();
-        msgs.forEach(async function(value, index) {
+        msgs.forEach(async function (value, index) {
             if (value.role === 'assistant') {
                 await chatHistory.addMessage(new AIMessage(value.content));
             }
@@ -343,7 +396,7 @@ export const AI = createAI<AIState, UIState>({
 
             const createdAt = new Date()
             const userId = session.user.id as string
-            const path = process.env.NODE_ENV === "development"? `/chat/${chatId}`:`/chat/${chatId}`
+            const path = process.env.NODE_ENV === "development" ? `/chat/${chatId}` : `/chat/${chatId}`
             const title = messages[0].content.substring(0, 100)
 
             const chat: Chat = {

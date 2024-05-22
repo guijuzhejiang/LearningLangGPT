@@ -163,15 +163,15 @@ export const BotMessage = React.memo(({
                             // console.log(msgID);
                             // console.log(filterMsgs);
                             setAutoTTS(false);
-                            setMessages(currentMessages => {
-                                console.log(currentMessages.filter(item => item.id !== msgID));
-                                return [...currentMessages.map(item => {
-                                    if (item.id === msgID) {
-                                        return { ...item, msg: text }; // 返回更新后的字典
-                                    }
-                                    return item; // 其他字典保持不变
-                                })]
-                            })
+                            // setMessages(currentMessages => {
+                            //     console.log(currentMessages.filter(item => item.id !== msgID));
+                            //     return [...currentMessages.map(item => {
+                            //         if (item.id === msgID) {
+                            //             return { ...item, msg: text }; // 返回更新后的字典
+                            //         }
+                            //         return item; // 其他字典保持不变
+                            //     })]
+                            // })
                             abortStreaming(msgID);
                         }}>
                             <IconStop className={"size-8"}/>

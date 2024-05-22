@@ -17,6 +17,8 @@ import {nanoid} from 'nanoid'
 
 import * as React from "react";
 import {useActions} from "ai/rsc";
+import {tr} from "date-fns/locale";
+import {UserMessage} from "@/components/stocks/message";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -32,10 +34,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [messages, setMessages] = useUIState();
   const [aiState] = useAIState();
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
-  const {submitUserMessage} = useActions()
-
-  const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
-      useScrollAnchor()
+  const {submitUserMessage, abortStreaming} = useActions()
 
   /* PART VAD */
   // mic 是否可用
@@ -50,8 +49,10 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [voiceText, setVoiceText] = React.useState('');
   // wav float32数组缓存
   const [audioBuffer, setAudioBuffer] = React.useState([]);
-  const [silence, setSilence] = React.useState(false);
-  const silenceDurationMS = 400;
+  const [speakTimer, setSpeakTimer] = React.useState(false);
+  const timerRef = React.useRef(null);
+  // 无声间隔ms
+  const silenceDurationMS = 300;
 
   useEffect(() => {
     // 在状态变化后打印最新的值
@@ -106,24 +107,21 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     setNewChatId(id);
   })
 
+  // useEffect(() => {
+  //   console.log("timer change!!!!");
+  // }, [speakTimer]);
+
+
   useEffect(() => {
     const haveMic = checkMicrophoneAccess()
     setMicAvailable(haveMic);
     setMicOn(haveMic);
   }, []);
 
-
   useEffect(() => {
-    let prevLengthID = nanoid()
-    localStorage.setItem(prevLengthID, audioBuffer.length+"")
-    console.log('State changed!!!');
-    // console.log(audioBuffer.length+"");
-    // console.log(prevLength);
     if (audioBuffer.length > 0) {
-      const timeoutId = setTimeout(() => {
-        console.log(localStorage.getItem(prevLengthID));
-        console.log(audioBuffer.length);
-        if (localStorage.getItem(prevLengthID) === audioBuffer.length+"") {
+      timerRef.current = setTimeout(() => {
+        if (!speakTimer) {
           console.log('State not changed in silenceDurationMS seconds????????????');
           const formData = new FormData();
           audioBuffer.map((wavBuf, i)=>{
@@ -166,11 +164,10 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         } else {
           console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
         }
-        localStorage.removeItem(prevLengthID);
       }, silenceDurationMS);
 
       return () => {
-        clearTimeout(timeoutId);
+        clearTimeout(timerRef.current);
       };
     }
 
@@ -182,8 +179,27 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     onSpeechStart: () => {
       try {
         console.log("onSpeechStart");
-        pauseAllAudio()
-        setSTTIng(true);
+        pauseAllAudio();
+
+        if (messages.length > 0) {
+          setSTTIng(true);
+
+          setSpeakTimer(true);
+          clearTimeout(timerRef.current);
+          if (typeof messages[messages.length - 1].display.content === 'object') {
+            abortStreaming(messages[messages.length - 1].display.msgID, "no")
+            // setMessages(currentMessages => {
+            //     console.log(currentMessages.filter(item => item.id !== msgID));
+            //     return [...currentMessages.map(item => {
+            //         if (item.id === messages[messages.length - 1].display.msgID) {
+            //             return { ...item, msg: text }; // 返回更新后的字典
+            //         }
+            //         return item; // 其他字典保持不变
+            //     })]
+            // })
+          }
+        }
+
       } catch (e) {
         console.error("onSpeechStart error:" + e)
       }
@@ -192,11 +208,15 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       try {
         console.log("onSpeechEnd");
         setAudioBuffer((prevItems) => [...prevItems, utils.encodeWAV(float32Audio)]);
+        setSpeakTimer(false);
       } catch (e) {
         console.error("onSpeechEnd error:" + e)
       }
     },
   });
+
+  const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
+      useScrollAnchor()
 
   return (
     <div
