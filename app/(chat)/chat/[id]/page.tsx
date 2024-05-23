@@ -33,18 +33,19 @@ export default async function ChatPage({ params }: ChatPageProps) {
   const missingKeys = await getMissingKeys()
 
   if (!session?.user) {
-    redirect(`${process.env.NODE_ENV === "development"?'/learninglang':'/learninglang'}/login?next=/learninglang/chat/${params.id}`)
+    redirect(`${process.env.NODE_ENV === "development"?'/':'/'}/login?next=/learninglang/chat/${params.id}`)
   }
 
   const userId = session.user.id as string
   const chat = await getChat(params.id, userId)
 
   if (!chat) {
-    redirect('/learninglang')
+    redirect('/')
   }
 
   if (chat?.userId !== session?.user?.id) {
-    notFound()
+    // notFound()
+    redirect(`${process.env.NODE_ENV === "development"?'/':'/'}/login?next=/learninglang/chat/${params.id}`)
   }
 
   return (
