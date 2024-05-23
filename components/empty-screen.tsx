@@ -29,10 +29,7 @@ export function EmptyScreen() {
           你可以随时随地与一位幽默风趣、耐心十足的外语老师对话。无论你说中文还是英文,它都能用纯正流利的外语来回应,循循善诱地帮你练习口语。
         </p>
         <p className="leading-normal text-muted-foreground">
-          她可以聊人生，聊梦想，分享快乐和尴尬趣事。她可以是你的外语老师，也可以是你的红颜知己。
-        </p>
-        <p className="leading-normal text-muted-foreground">
-          现在开始免费体验,让外语学习不再是枯燥乏味，让你在轻松愉快的互动中提升外语口语水平！
+          点击按钮后可自动发送语音。
         </p>
       </div>
     </div>
