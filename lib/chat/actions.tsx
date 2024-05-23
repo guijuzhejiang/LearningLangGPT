@@ -298,7 +298,7 @@ const createChatChain = async (msgs) => {
     const prompt = ChatPromptTemplate.fromTemplate(
         `
         You are an {language} teacher and improver.Your name is {name}.
-        I am an elementary school student.
+        I am a beginner in {language}.
         I will communicate with you in my native language or in {language} and you have to answer me in {language} to practice my {language}.
         If I don't communicate in {language}, after you respond in {language},reassure and encourage me that I can say this in {language}.
         Please use {language} for all replies.Do not include any language other than {language} in your response!
