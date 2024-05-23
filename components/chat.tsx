@@ -120,8 +120,8 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   useEffect(() => {
     if (audioBuffer.length > 0) {
-      timerRef.current = setTimeout(() => {
-        if (!speakTimer) {
+    //   timerRef.current = setTimeout(() => {
+    //     if (!speakTimer) {
           // console.log('State not changed in silenceDurationMS seconds????????????');
           const formData = new FormData();
           audioBuffer.map((wavBuf, i)=>{
@@ -164,18 +164,23 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         } else {
           // console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
         }
-      }, silenceDurationMS);
+      // }, silenceDurationMS);
 
-      return () => {
-        clearTimeout(timerRef.current);
-      };
-    }
+      // return () => {
+      //   clearTimeout(timerRef.current);
+      // };
+    // }
 
     // Clean up the timeout if the component unmounts or the state changes before 3 seconds
 
   }, [audioBuffer]);
 
   const vad = useMicVAD({
+    positiveSpeechThreshold: 0.8,
+    negativeSpeechThreshold: 0.8 - 0.15,
+    minSpeechFrames: 5,
+    preSpeechPadFrames: 1,
+    redemptionFrames: parseInt(String(8)),
     onSpeechStart: () => {
       try {
         console.log("onSpeechStart");
@@ -184,8 +189,8 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         if (messages.length > 0) {
           setSTTIng(true);
 
-          setSpeakTimer(true);
-          clearTimeout(timerRef.current);
+          // setSpeakTimer(true);
+          // clearTimeout(timerRef.current);
           if (typeof messages[messages.length - 1].display.content === 'object') {
             abortStreaming(messages[messages.length - 1].display.msgID, "no")
             // setMessages(currentMessages => {
@@ -208,7 +213,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       try {
         console.log("onSpeechEnd");
         setAudioBuffer((prevItems) => [...prevItems, utils.encodeWAV(float32Audio)]);
-        setSpeakTimer(false);
+        // setSpeakTimer(false);
       } catch (e) {
         console.error("onSpeechEnd error:" + e)
       }
