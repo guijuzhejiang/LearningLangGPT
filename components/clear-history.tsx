@@ -48,7 +48,7 @@ export function ClearHistory({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>取消</AlertDialogCancel>
           <AlertDialogAction
             disabled={isPending}
             onClick={event => {
