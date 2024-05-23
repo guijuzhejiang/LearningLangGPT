@@ -24,7 +24,6 @@ import {useEnterSubmit} from '@/lib/hooks/use-enter-submit'
 import {nanoid} from 'nanoid'
 import {useRouter} from 'next/navigation'
 import {toast} from "sonner";
-import {ChatPanel} from "@/components/chat-panel";
 
 
 export interface PromptFormProps {
@@ -126,10 +125,10 @@ export function PromptForm({
                             }}
                         >
                             <IconPlus/>
-                            <span className="sr-only">New Chat</span>
+                            <span className="sr-only">新建对话</span>
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>New Chat</TooltipContent>
+                    <TooltipContent>新建对话</TooltipContent>
                 </Tooltip>
 
                 {/*输入内容*/}
@@ -157,10 +156,10 @@ export function PromptForm({
                         <TooltipTrigger asChild className={`${voiceContinuationEnable && ('hidden')}`}>
                             <Button type="submit" size="icon" disabled={input === ''}>
                                 <IconArrowElbow />
-                                <span className="sr-only">Send message</span>
+                                <span className="sr-only">发送</span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Send message</TooltipContent>
+                        <TooltipContent>发送</TooltipContent>
                     </Tooltip>
 
                     {/*语音*/}
@@ -170,12 +169,12 @@ export function PromptForm({
                                 vad.loading ? (
                                     <Button size="icon">
                                         <IconSpinner/>
-                                        <span className="sr-only">Voice</span>
+                                        <span className="sr-only">语音转文字</span>
                                     </Button>
                                 ):(
                                     <Button className={micOn ? "":"bg-gray-400 opti"} size="icon" onClick={handleToggleMic} disabled={!micAvailable}>
                                         <IconMicroPhone className={vad.userSpeaking && micOn ? "text-blue-400":""}/>
-                                        <span className="sr-only">Voice</span>
+                                        <span className="sr-only">语音转文字</span>
                                     </Button>
                                 )
                             }
@@ -189,10 +188,10 @@ export function PromptForm({
                         <TooltipTrigger asChild className={`ml-1 ${!micOn && ('hidden')}`}>
                             <Button className={voiceContinuationEnable ? "":"bg-gray-400 opti"} size="icon" onClick={(e)=>{e.preventDefault();setVoiceContinuationEnable(!voiceContinuationEnable);}} disabled={!micAvailable}>
                                 <IconVoiceContinuation/>
-                                <span className="sr-only">Voice Continuation</span>
+                                <span className="sr-only">自动语音</span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Voice Continuation</TooltipContent>
+                        <TooltipContent>自动语音</TooltipContent>
                     </Tooltip>
                 </div>
 
