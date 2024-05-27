@@ -171,7 +171,6 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       // };
     // }
 
-    // Clean up the timeout if the component unmounts or the state changes before 3 seconds
 
   }, [audioBuffer]);
 
