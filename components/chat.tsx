@@ -176,6 +176,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   }, [audioBuffer]);
 
   const vad = useMicVAD({
+    startOnLoad: false,
     positiveSpeechThreshold: 0.8,
     negativeSpeechThreshold: 0.8 - 0.15,
     minSpeechFrames: 5,
