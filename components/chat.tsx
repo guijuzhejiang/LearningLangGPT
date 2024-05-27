@@ -115,7 +115,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   useEffect(() => {
     const haveMic = checkMicrophoneAccess()
     setMicAvailable(haveMic);
-    setMicOn(haveMic);
+    setMicOn(false);
   }, []);
 
   useEffect(() => {

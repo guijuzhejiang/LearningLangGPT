@@ -33,7 +33,7 @@ import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {ConversationChain} from "langchain/chains";
 import {HumanMessage, AIMessage} from "@langchain/core/messages";
 
-const {HttpsProxyAgent} = process.env.NODE_ENV === "development" ? require('https-proxy-agent') : "";
+const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
 const chatChainDB = {} as { [key: string]: any };
 const abortSignal = {} as { [key: string]: any };
@@ -318,7 +318,7 @@ const createChatChain = async (msgs) => {
     });
 
 
-    const groqClient = process.env.NODE_ENV === "development" ? new Groq({httpAgent: new HttpsProxyAgent('http://127.0.0.1:7891'),}) : new Groq();
+    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
     const model = new ChatGroq({
         modelName: "llama3-70b-8192",
         apiKey: process.env.GROQ_API_KEY,
