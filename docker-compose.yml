@@ -4,10 +4,12 @@ services:
     image: redis
     ports:
       - '8078:6379'
+    restart: always
   serverless-redis-http:
     ports:
       - '8079:80'
     image: hiett/serverless-redis-http:latest
+    restart: always
     environment:
       SRH_MODE: env
       SRH_TOKEN: a2dc2ac3f0d13b58e236d830f989b3c5
