@@ -5,7 +5,7 @@ export const authConfig = {
   secret: process.env.AUTH_SECRET,
   pages: {
     signIn: process.env.NODE_ENV === "development"? '/learninglang/login': '/learninglang/login',
-    signOut: process.env.NODE_ENV === "development"? '/learninglang': '/learninglang',
+    signOut: process.env.NODE_ENV === "development"? '/': '/',
     newUser: process.env.NODE_ENV === "development"? '/learninglang/signup':'/learninglang/signup'
   },
   callbacks: {
