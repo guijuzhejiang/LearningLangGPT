@@ -62,7 +62,7 @@ export function PromptForm({
     const [_, setMessages] = useUIState<typeof AI>()
     const timerRef = React.useRef(null);
     const [timerInterval, setTimerInterval] = React.useState<any>(null);
-    const vadTimeoutMS = 60 * 1000;
+    const vadTimeoutMS = 120 * 1000;
 
     useEffect(() => {
         if (timerInterval) {
