@@ -24,6 +24,7 @@ import {useEnterSubmit} from '@/lib/hooks/use-enter-submit'
 import {nanoid} from 'nanoid'
 import {useRouter} from 'next/navigation'
 import {toast} from "sonner";
+import {useEffect} from "react";
 
 
 export interface PromptFormProps {
@@ -34,6 +35,8 @@ export interface PromptFormProps {
     STTIng: boolean
     voiceContinuationEnable: boolean
     setVoiceContinuationEnable: (value: boolean) => void
+    userSpeakLately: boolean
+    setUserSpeakLately: (value: boolean) => void
     micAvailable: boolean
     vad: object
 }
@@ -46,6 +49,8 @@ export function PromptForm({
                                STTIng,
                                voiceContinuationEnable,
                                setVoiceContinuationEnable,
+                               userSpeakLately,
+                               setUserSpeakLately,
                                micAvailable,
                                vad
                            }: PromptFormProps) {
@@ -55,7 +60,25 @@ export function PromptForm({
     const inputRef = React.useRef<HTMLTextAreaElement>(null)
     const {submitUserMessage} = useActions()
     const [_, setMessages] = useUIState<typeof AI>()
+    const timerRef = React.useRef(null);
+    const [timerInterval, setTimerInterval] = React.useState<any>(null);
+    const vadTimeoutMS = 60 * 1000;
 
+    useEffect(() => {
+        if (timerInterval) {
+            setTimerInterval(false);
+            const curDate = new Date();
+            if (userSpeakLately) {
+                const diffInMilliseconds = Math.abs(userSpeakLately.getTime() - curDate.getTime());
+                if (diffInMilliseconds>vadTimeoutMS) {
+                    vad.pause()
+                    setMicOn(false);
+                    setVoiceContinuationEnable(false);
+                    clearInterval(timerRef.current);
+                }
+            }
+        }
+    },[userSpeakLately, timerInterval])
 
     const handleToggleMic = async (e: any) => {
         e.preventDefault();
@@ -65,9 +88,27 @@ export function PromptForm({
                 vad.pause()
                 setMicOn(false);
                 setVoiceContinuationEnable(false);
+
+                if (timerRef.current) {
+                    clearInterval(timerRef.current);
+                    setUserSpeakLately(false);
+                }
             } else {
                 setMicOn(true);
                 vad.start();
+
+                timerRef.current =setInterval(() => {
+                    setTimerInterval(true);
+                    // if (!userSpeakLately) {
+                    //     vad.pause()
+                    //     setMicOn(false);
+                    //     setVoiceContinuationEnable(false);
+                    //     clearInterval(timerRef.current);
+                    // }
+
+                    // setUserSpeakLately(false);
+
+                }, vadTimeoutMS);
             }
         } catch (e) {
             console.log(e);

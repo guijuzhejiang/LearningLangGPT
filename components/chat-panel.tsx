@@ -1,162 +1,169 @@
 import * as React from 'react'
 
-import { shareChat } from '@/app/actions'
-import { Button } from '@/components/ui/button'
-import { PromptForm } from '@/components/prompt-form'
-import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
-import { IconShare } from '@/components/ui/icons'
-import { FooterText } from '@/components/footer'
-import { ChatShareDialog } from '@/components/chat-share-dialog'
-import { useAIState, useActions, useUIState } from 'ai/rsc'
-import type { AI } from '@/lib/chat/actions'
-import { nanoid } from 'nanoid'
-import { UserMessage } from './stocks/message'
+import {shareChat} from '@/app/actions'
+import {Button} from '@/components/ui/button'
+import {PromptForm} from '@/components/prompt-form'
+import {ButtonScrollToBottom} from '@/components/button-scroll-to-bottom'
+import {IconShare} from '@/components/ui/icons'
+import {FooterText} from '@/components/footer'
+import {ChatShareDialog} from '@/components/chat-share-dialog'
+import {useAIState, useActions, useUIState} from 'ai/rsc'
+import type {AI} from '@/lib/chat/actions'
+import {nanoid} from 'nanoid'
+import {UserMessage} from './stocks/message'
 
 export interface ChatPanelProps {
-  id?: string
-  title?: string
-  input: string
-  setInput: (value: string) => void
-  isAtBottom: boolean
-  scrollToBottom: () => void
-  micOn: boolean
-  setMicOn: (value: boolean) => void
-  STTIng: boolean
-  voiceContinuationEnable: boolean
-  setVoiceContinuationEnable: (value: boolean) => void
-  micAvailable: boolean
-  vad: object
+    id?: string,
+    title?: string,
+    input: string,
+    setInput: (value: string) => void,
+    isAtBottom: boolean,
+    scrollToBottom: () => void,
+    micOn: boolean,
+    setMicOn: (value: boolean) => void,
+    STTIng: boolean,
+    voiceContinuationEnable: boolean,
+    setVoiceContinuationEnable: (value: boolean) => void,
+    userSpeakLately: boolean
+    setUserSpeakLately: (value: boolean) => void
+    micAvailable: boolean,
+    vad: object,
 }
 
 export function ChatPanel({
-  id,
-  title,
-  input,
-  setInput,
-  isAtBottom,
-  scrollToBottom,
-  micOn,
-  setMicOn,
-  STTIng,
-  voiceContinuationEnable,
-  setVoiceContinuationEnable,
-  micAvailable,
-  vad
-}: ChatPanelProps) {
-  const [aiState] = useAIState()
-  const [messages, setMessages] = useUIState<typeof AI>()
-  const { submitUserMessage } = useActions()
-  const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
+                              id,
+                              title,
+                              input,
+                              setInput,
+                              isAtBottom,
+                              scrollToBottom,
+                              micOn,
+                              setMicOn,
+                              STTIng,
+                              voiceContinuationEnable,
+                              setVoiceContinuationEnable,
+                              userSpeakLately,
+                              setUserSpeakLately,
+                              micAvailable,
+                              vad,
+                          }: ChatPanelProps) {
+    const [aiState] = useAIState()
+    const [messages, setMessages] = useUIState<typeof AI>()
+    const {submitUserMessage} = useActions()
+    const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
-  const exampleMessages = [
-    {
-      heading: '我想学习旅游相关的英语',
-      subheading: '我喜欢旅游',
-      message: `我想学习旅游相关的英语,我喜欢旅游`
-    },
-    {
-      heading: '应该如何有效的学习英语',
-      subheading: '你可以教教我吗?',
-      message: '应该如何有效的学习英语,你可以教教我吗?'
-    },
-    // {
-    //   heading: 'I would like to buy',
-    //   subheading: '42 $DOGE',
-    //   message: `I would like to buy 42 $DOGE`
-    // },
-    // {
-    //   heading: 'What are some',
-    //   subheading: `recent events about $DOGE?`,
-    //   message: `What are some recent events about $DOGE?`
-    // }
-  ]
+    const exampleMessages = [
+        {
+            heading: '我想学习旅游相关的英语',
+            subheading: '我喜欢旅游',
+            message: `我想学习旅游相关的英语,我喜欢旅游`
+        },
+        {
+            heading: '应该如何有效的学习英语',
+            subheading: '你可以教教我吗?',
+            message: '应该如何有效的学习英语,你可以教教我吗?'
+        },
+        // {
+        //   heading: 'I would like to buy',
+        //   subheading: '42 $DOGE',
+        //   message: `I would like to buy 42 $DOGE`
+        // },
+        // {
+        //   heading: 'What are some',
+        //   subheading: `recent events about $DOGE?`,
+        //   message: `What are some recent events about $DOGE?`
+        // }
+    ]
 
-  return (
-    <div className="fixed inset-x-0 bottom-0 w-full bg-gradient-to-b from-muted/30 from-0% to-muted/30 to-50% duration-300 ease-in-out animate-in dark:from-background/10 dark:from-10% dark:to-background/80 peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]">
-      <ButtonScrollToBottom
-        isAtBottom={isAtBottom}
-        scrollToBottom={scrollToBottom}
-      />
+    return (
+        <div
+            className="fixed inset-x-0 bottom-0 w-full bg-gradient-to-b from-muted/30 from-0% to-muted/30 to-50% duration-300 ease-in-out animate-in dark:from-background/10 dark:from-10% dark:to-background/80 peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]">
+            <ButtonScrollToBottom
+                isAtBottom={isAtBottom}
+                scrollToBottom={scrollToBottom}
+            />
 
-      <div className="mx-auto sm:max-w-2xl sm:px-4">
-        <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
-          {messages.length === 0 &&
-            exampleMessages.map((example, index) => (
-              <div
-                key={example.heading}
-                className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
-                  index > 1 && 'hidden md:block'
-                }`}
-                onClick={async () => {
-                  setMessages(currentMessages => [
-                    ...currentMessages,
-                    {
-                      id: nanoid(),
-                      display: <UserMessage>{example.message}</UserMessage>
-                    }
-                  ])
+            <div className="mx-auto sm:max-w-2xl sm:px-4">
+                <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
+                    {messages.length === 0 &&
+                        exampleMessages.map((example, index) => (
+                            <div
+                                key={example.heading}
+                                className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
+                                    index > 1 && 'hidden md:block'
+                                }`}
+                                onClick={async () => {
+                                    setMessages(currentMessages => [
+                                        ...currentMessages,
+                                        {
+                                            id: nanoid(),
+                                            display: <UserMessage>{example.message}</UserMessage>
+                                        }
+                                    ])
 
-                  const responseMessage = await submitUserMessage(
-                    example.message
-                  )
+                                    const responseMessage = await submitUserMessage(
+                                        example.message
+                                    )
 
-                  setMessages(currentMessages => [
-                    ...currentMessages,
-                    responseMessage
-                  ])
-                }}
-              >
-                <div className="text-sm font-semibold">{example.heading}</div>
-                <div className="text-sm text-zinc-600">
-                  {example.subheading}
+                                    setMessages(currentMessages => [
+                                        ...currentMessages,
+                                        responseMessage
+                                    ])
+                                }}
+                            >
+                                <div className="text-sm font-semibold">{example.heading}</div>
+                                <div className="text-sm text-zinc-600">
+                                    {example.subheading}
+                                </div>
+                            </div>
+                        ))}
                 </div>
-              </div>
-            ))}
-        </div>
 
-        {messages?.length >= 2 ? (
-          <div className="flex h-12 items-center justify-center">
-            <div className="flex space-x-2">
-              {id && title ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShareDialogOpen(true)}
-                  >
-                    <IconShare className="mr-2" />
-                    Share
-                  </Button>
-                  <ChatShareDialog
-                    open={shareDialogOpen}
-                    onOpenChange={setShareDialogOpen}
-                    onCopy={() => setShareDialogOpen(false)}
-                    shareChat={shareChat}
-                    chat={{
-                      id,
-                      title,
-                      messages: aiState.messages
-                    }}
-                  />
-                </>
-              ) : null}
+                {messages?.length >= 2 ? (
+                    <div className="flex h-12 items-center justify-center">
+                        <div className="flex space-x-2">
+                            {id && title ? (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShareDialogOpen(true)}
+                                    >
+                                        <IconShare className="mr-2"/>
+                                        Share
+                                    </Button>
+                                    <ChatShareDialog
+                                        open={shareDialogOpen}
+                                        onOpenChange={setShareDialogOpen}
+                                        onCopy={() => setShareDialogOpen(false)}
+                                        shareChat={shareChat}
+                                        chat={{
+                                            id,
+                                            title,
+                                            messages: aiState.messages
+                                        }}
+                                    />
+                                </>
+                            ) : null}
+                        </div>
+                    </div>
+                ) : null}
+
+                <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
+                    <PromptForm input={input}
+                                setInput={setInput}
+                                micOn={micOn}
+                                setMicOn={setMicOn}
+                                STTIng={STTIng}
+                                voiceContinuationEnable={voiceContinuationEnable}
+                                setVoiceContinuationEnable={setVoiceContinuationEnable}
+                                userSpeakLately={userSpeakLately}
+                                setUserSpeakLately={setUserSpeakLately}
+                                micAvailable={micAvailable}
+                                vad={vad}
+                    />
+                    {/*<FooterText className="hidden sm:block" />*/}
+                </div>
             </div>
-          </div>
-        ) : null}
-
-        <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
-          <PromptForm input={input}
-                      setInput={setInput}
-                      micOn={micOn}
-                      setMicOn={setMicOn}
-                      STTIng={STTIng}
-                      voiceContinuationEnable={voiceContinuationEnable}
-                      setVoiceContinuationEnable={setVoiceContinuationEnable}
-                      micAvailable={micAvailable}
-                      vad={vad}
-          />
-          {/*<FooterText className="hidden sm:block" />*/}
         </div>
-      </div>
-    </div>
-  )
+    )
 }

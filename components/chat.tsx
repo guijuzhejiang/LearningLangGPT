@@ -47,7 +47,8 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [voiceText, setVoiceText] = React.useState('');
   // wav float32数组缓存
   const [audioBuffer, setAudioBuffer] = React.useState([]);
-  const [speakTimer, setSpeakTimer] = React.useState(false);
+  // 1min有没有讲话
+  const [userSpeakLately, setUserSpeakLately] = React.useState(false);
   const timerRef = React.useRef(null);
   // 无声间隔ms
   const silenceDurationMS = 300;
@@ -189,6 +190,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     onSpeechStart: () => {
       try {
         console.log("onSpeechStart");
+        setUserSpeakLately(new Date());
         pauseAllAudio();
 
         if (messages.length > 0) {
@@ -255,6 +257,8 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         STTIng={STTIng}
         voiceContinuationEnable={voiceContinuationEnable}
         setVoiceContinuationEnable={setVoiceContinuationEnable}
+        userSpeakLately={userSpeakLately}
+        setUserSpeakLately={setUserSpeakLately}
         micAvailable={micAvailable}
         vad={vad}
       />
