@@ -91,6 +91,11 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         // router.refresh()
       }
     }
+
+    if (path === '/') {
+      window.history.replaceState({}, '', `/learninglang`)
+
+    }
   }, [id, path, session?.user, messages])
 
   useEffect(() => {
