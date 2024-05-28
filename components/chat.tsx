@@ -13,7 +13,7 @@ import {Message} from '@/lib/chat/actions'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { useMicVAD, utils } from "@ricky0123/vad-react"
 import {nanoid} from 'nanoid'
-
+import { toast } from 'sonner'
 import * as React from "react";
 import {useActions} from "ai/rsc";
 import {UserMessage} from "@/components/stocks/message";
@@ -116,61 +116,61 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     setMicOn(false);
   }, []);
 
-  // useEffect(() => {
-  //   if (audioBuffer.length > 0) {
-  //   //   timerRef.current = setTimeout(() => {
-  //   //     if (!speakTimer) {
-  //         // console.log('State not changed in silenceDurationMS seconds????????????');
-  //         const formData = new FormData();
-  //         audioBuffer.map((wavBuf, i)=>{
-  //           const wavBlob = new Blob([wavBuf], {type: 'audio/wav'});
-  //           formData.append('wavFiles', wavBlob, 'audio.wav');
-  //         });
-  //
-  //         const startTime = performance.now();
-  //         fetch(process.env.STT_URL, {
-  //           method: 'POST',
-  //           body: formData
-  //         })
-  //             .then(response => {
-  //               setAudioBuffer([])
-  //               if (response.ok) {
-  //                 return response.json();
-  //               } else {
-  //                 toast.error('Failed to upload');
-  //               }
-  //             })
-  //             .then(data => {
-  //               if (data.success) {
-  //                 // console.log(data.result.text);
-  //                 setVoiceText(data.result.text);
-  //                 // if (voiceContinuationEnable) {
-  //                 //     console.log("voiceContinuationEnable:" + voiceContinuationEnable)
-  //                 //     formRef.current.dispatchEvent(new Event('submit', { bubbles: true }));
-  //                 // }
-  //               } else {
-  //                 toast.error('failed');
-  //               }
-  //
-  //               console.log("stt elapsed " + (performance.now() - startTime) + 'ms')
-  //             })
-  //             .catch(error => {
-  //               toast.error('Failed to upload');
-  //               setAudioBuffer([])
-  //               console.error('上传错误:', error);
-  //             });
-  //       } else {
-  //         // console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
-  //       }
-  //     // }, silenceDurationMS);
-  //
-  //     // return () => {
-  //     //   clearTimeout(timerRef.current);
-  //     // };
-  //   // }
-  //
-  //
-  // }, [audioBuffer]);
+  useEffect(() => {
+    if (audioBuffer.length > 0) {
+    //   timerRef.current = setTimeout(() => {
+    //     if (!speakTimer) {
+          // console.log('State not changed in silenceDurationMS seconds????????????');
+          const formData = new FormData();
+          audioBuffer.map((wavBuf, i)=>{
+            const wavBlob = new Blob([wavBuf], {type: 'audio/wav'});
+            formData.append('wavFiles', wavBlob, 'audio.wav');
+          });
+
+          const startTime = performance.now();
+          fetch(process.env.STT_URL, {
+            method: 'POST',
+            body: formData
+          })
+              .then(response => {
+                setAudioBuffer([])
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  toast.error('Failed to upload');
+                }
+              })
+              .then(data => {
+                if (data.success) {
+                  // console.log(data.result.text);
+                  setVoiceText(data.result.text);
+                  // if (voiceContinuationEnable) {
+                  //     console.log("voiceContinuationEnable:" + voiceContinuationEnable)
+                  //     formRef.current.dispatchEvent(new Event('submit', { bubbles: true }));
+                  // }
+                } else {
+                  toast.error('failed');
+                }
+
+                console.log("stt elapsed " + (performance.now() - startTime) + 'ms')
+              })
+              .catch(error => {
+                toast.error('Failed to upload');
+                setAudioBuffer([])
+                console.error('上传错误:', error);
+              });
+        } else {
+          // console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
+        }
+      // }, silenceDurationMS);
+
+      // return () => {
+      //   clearTimeout(timerRef.current);
+      // };
+    // }
+
+
+  }, [audioBuffer]);
 
   const vad = useMicVAD({
     startOnLoad: false,
