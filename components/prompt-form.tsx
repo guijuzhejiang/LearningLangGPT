@@ -69,10 +69,8 @@ export function PromptForm({
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             stream.getTracks().forEach(track => track.stop());
             micAvailable = true;
-            setMicOn(true);
-            vad.start()
         } catch (err) {
-            setMicOn(false);
+            // setMicOn(false);
             // vad.stop()
         }
         try {
@@ -93,14 +91,6 @@ export function PromptForm({
 
                     timerRef.current =setInterval(() => {
                         setTimerInterval(true);
-                        // if (!userSpeakLately) {
-                        //     vad.pause()
-                        //     setMicOn(false);
-                        //     setVoiceContinuationEnable(false);
-                        //     clearInterval(timerRef.current);
-                        // }
-
-                        // setUserSpeakLately(false);
 
                     }, vadTimeoutMS);
                 }
