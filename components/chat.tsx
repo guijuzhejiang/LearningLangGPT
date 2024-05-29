@@ -99,11 +99,12 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       if (!path.includes('chat') && messages.length === 2) {
         window.history.replaceState({}, '', `/learninglang/chat/${id}`)
         // window.localStorage.setItem('tts', true);
-        // router.refresh()
+        // router.push(`/chat/${id}`)
+
       }
     }
 
-    if (path === '/') {
+    if (!session?.user && path === '/') {
       window.history.replaceState({}, '', `/learninglang`)
 
     }
