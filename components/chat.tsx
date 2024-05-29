@@ -11,7 +11,7 @@ import { Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import {Message} from '@/lib/chat/actions'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
-import { useMicVAD, utils } from "@ricky0123/vad-react"
+import { useMicVAD, utils } from "@ray8716397/vad-react"
 import {nanoid} from 'nanoid'
 import { toast } from 'sonner'
 import * as React from "react";
