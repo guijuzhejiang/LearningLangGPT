@@ -98,8 +98,6 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     if (session?.user) {
       if (!path.includes('chat') && messages.length === 2) {
         window.history.replaceState({}, '', `/learninglang/chat/${id}`)
-        // window.localStorage.setItem('tts', true);
-        router.refresh()
       }
     }
 
