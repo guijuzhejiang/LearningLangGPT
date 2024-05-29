@@ -11,7 +11,6 @@ import {
     IconArrowElbow,
     IconPlus,
     IconMicroPhone,
-    IconKeyboard,
     IconVoiceContinuation,
     IconSpinner
 } from '@/components/ui/icons'
@@ -35,9 +34,8 @@ export interface PromptFormProps {
     STTIng: boolean
     voiceContinuationEnable: boolean
     setVoiceContinuationEnable: (value: boolean) => void
-    userSpeakLately: boolean
-    setUserSpeakLately: (value: boolean) => void
-    micAvailable: boolean
+    userSpeakLately: Date | boolean
+    setUserSpeakLately: (value: Date | boolean) => void
     vad: object
 }
 
@@ -51,7 +49,6 @@ export function PromptForm({
                                setVoiceContinuationEnable,
                                userSpeakLately,
                                setUserSpeakLately,
-                               micAvailable,
                                vad
                            }: PromptFormProps) {
 
@@ -64,6 +61,60 @@ export function PromptForm({
     const [timerInterval, setTimerInterval] = React.useState<any>(null);
     const vadTimeoutMS = 120 * 1000;
 
+    const handleToggleMic = async (e: any) => {
+        e.preventDefault();
+
+        let micAvailable = false;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            micAvailable = true;
+            setMicOn(true);
+            vad.start()
+        } catch (err) {
+            setMicOn(false);
+            // vad.stop()
+        }
+        try {
+            if (micAvailable) {
+                if (micOn) {
+                    vad.stop()
+                    // vad.pause();
+                    setMicOn(false);
+                    setVoiceContinuationEnable(false);
+
+                    if (timerRef.current) {
+                        clearInterval(timerRef.current);
+                        setUserSpeakLately(false);
+                    }
+                } else {
+                    setMicOn(true);
+                    vad.start();
+
+                    timerRef.current =setInterval(() => {
+                        setTimerInterval(true);
+                        // if (!userSpeakLately) {
+                        //     vad.pause()
+                        //     setMicOn(false);
+                        //     setVoiceContinuationEnable(false);
+                        //     clearInterval(timerRef.current);
+                        // }
+
+                        // setUserSpeakLately(false);
+
+                    }, vadTimeoutMS);
+                }
+            } else {
+                toast.error("麦克风不可用")
+            }
+
+        } catch (e) {
+            console.log(e);
+            toast.error('麦克风开启失败')
+        }
+    }
+
+
     useEffect(() => {
         if (timerInterval) {
             setTimerInterval(false);
@@ -71,7 +122,7 @@ export function PromptForm({
             if (userSpeakLately) {
                 const diffInMilliseconds = Math.abs(userSpeakLately.getTime() - curDate.getTime());
                 if (diffInMilliseconds>vadTimeoutMS) {
-                    vad.pause()
+                    vad.stop()
                     setMicOn(false);
                     setVoiceContinuationEnable(false);
                     clearInterval(timerRef.current);
@@ -80,46 +131,22 @@ export function PromptForm({
         }
     },[userSpeakLately, timerInterval])
 
-    const handleToggleMic = async (e: any) => {
-        e.preventDefault();
-
-        try {
-            if (micOn) {
-                vad.pause()
-                setMicOn(false);
-                setVoiceContinuationEnable(false);
-
-                if (timerRef.current) {
-                    clearInterval(timerRef.current);
-                    setUserSpeakLately(false);
-                }
-            } else {
-                setMicOn(true);
-                vad.start();
-
-                timerRef.current =setInterval(() => {
-                    setTimerInterval(true);
-                    // if (!userSpeakLately) {
-                    //     vad.pause()
-                    //     setMicOn(false);
-                    //     setVoiceContinuationEnable(false);
-                    //     clearInterval(timerRef.current);
-                    // }
-
-                    // setUserSpeakLately(false);
-
-                }, vadTimeoutMS);
-            }
-        } catch (e) {
-            console.log(e);
-            toast.error('麦克风开启失败')
-        }
-    }
-
     React.useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus()
         }
+        timerRef.current =setInterval(() => {
+            setTimerInterval(true);
+            // if (!userSpeakLately) {
+            //     vad.pause()
+            //     setMicOn(false);
+            //     setVoiceContinuationEnable(false);
+            //     clearInterval(timerRef.current);
+            // }
+
+            // setUserSpeakLately(false);
+
+        }, vadTimeoutMS);
     }, [])
 
     return (
@@ -213,7 +240,7 @@ export function PromptForm({
                                         <span className="sr-only">语音转文字</span>
                                     </Button>
                                 ):(
-                                    <Button className={micOn ? "":"bg-gray-400 opti"} size="icon" onClick={handleToggleMic} disabled={!micAvailable}>
+                                    <Button className={micOn ? "":"bg-gray-400 opti"} size="icon" onClick={handleToggleMic}>
                                         <IconMicroPhone className={vad.userSpeaking && micOn ? "text-blue-400":""}/>
                                         <span className="sr-only">语音转文字</span>
                                     </Button>
@@ -221,13 +248,13 @@ export function PromptForm({
                             }
 
                         </TooltipTrigger>
-                        <TooltipContent>Voice</TooltipContent>
+                        <TooltipContent>语音转文字</TooltipContent>
                     </Tooltip>
 
                     {/*只有语音*/}
                     <Tooltip>
                         <TooltipTrigger asChild className={`ml-1 ${!micOn && ('hidden')}`}>
-                            <Button className={voiceContinuationEnable ? "":"bg-gray-400 opti"} size="icon" onClick={(e)=>{e.preventDefault();setVoiceContinuationEnable(!voiceContinuationEnable);}} disabled={!micAvailable}>
+                            <Button className={voiceContinuationEnable ? "":"bg-gray-400 opti"} size="icon" onClick={(e)=>{e.preventDefault();setVoiceContinuationEnable(!voiceContinuationEnable);}} >
                                 <IconVoiceContinuation/>
                                 <span className="sr-only">自动语音</span>
                             </Button>

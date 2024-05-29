@@ -1,6 +1,6 @@
 'use client'
 
-import {checkMicrophoneAccess, cn, mergeFloat32Arrays, pauseAllAudio} from '@/lib/utils'
+import {getUserMediaAudio, cn, pauseAllAudio, checkUserMediaAudio} from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
@@ -36,7 +36,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   /* PART VAD */
   // mic 是否可用
-  const [micAvailable, setMicAvailable] = React.useState(false)
+  // const [micAvailable, setMicAvailable] = React.useState(false)
   // mic 是否打开
   const [micOn, setMicOn] = React.useState(false)
   // 是否正在处理STT
@@ -48,10 +48,21 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   // wav float32数组缓存
   const [audioBuffer, setAudioBuffer] = React.useState([]);
   // 1min有没有讲话
-  const [userSpeakLately, setUserSpeakLately] = React.useState(false);
-  const timerRef = React.useRef(null);
+  const [userSpeakLately, setUserSpeakLately] = React.useState<Date>(new Date());
+  const [userAudioMedia, setUserAudioMedia] = React.useState(null);
   // 无声间隔ms
-  const silenceDurationMS = 300;
+  // const { stream, error, getAudioStream } = useAudioStream();
+  //
+  // useEffect(() => {
+  //   if (stream) {
+  //     alert("stream on");
+  //     setMicAvailable(true);
+  //     vad.start();
+  //     setMicOn(true);
+  //   } else {
+  //     alert("stream off");
+  //   }
+  // }, [stream]);
 
   useEffect(() => {
     // 在状态变化后打印最新的值
@@ -111,17 +122,31 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     setNewChatId(id);
   })
 
-  // useEffect(() => {
-  //   console.log("timer change!!!!");
-  // }, [speakTimer]);
-
-
   useEffect(() => {
-    const haveMic = checkMicrophoneAccess()
-    if (haveMic) {
-      setMicOn(true);
-    }
-    setMicAvailable(haveMic);
+    const checkMicrophone = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        // setMicAvailable(true);
+        setMicOn(true);
+        // vad.start();
+      } catch (err) {
+        // setMicAvailable(false);
+        setMicOn(false);
+        // vad.stop()
+      }
+    };
+
+    checkMicrophone();
+    // const audioStream = getUserMediaAudio();
+    // console.log(stream);
+    // if (stream !== null) {
+    //   setMicAvailable(true);
+    //   setMicOn(true);
+    // } else {
+    //   setMicAvailable(false);
+    //   setMicOn(false);
+    // }
 
   }, []);
 
@@ -171,25 +196,18 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         } else {
           // console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
         }
-      // }, silenceDurationMS);
-
-      // return () => {
-      //   clearTimeout(timerRef.current);
-      // };
-    // }
-
 
   }, [audioBuffer]);
 
   const vad = useMicVAD({
-    startOnLoad: false,
+    startOnLoad: true,
     positiveSpeechThreshold: 0.8,
     negativeSpeechThreshold: 0.8 - 0.15,
     minSpeechFrames: 3,
     preSpeechPadFrames: 1,
     redemptionFrames: parseInt(String(8)),
     onVADMisfire:()=>{
-      console.log('asdasd')
+      console.log('onVADMisfire')
     },
     // onFrameProcessed:(probabilities)=>{
     //   alert("asd");
@@ -267,7 +285,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         setVoiceContinuationEnable={setVoiceContinuationEnable}
         userSpeakLately={userSpeakLately}
         setUserSpeakLately={setUserSpeakLately}
-        micAvailable={micAvailable}
+        // micAvailable={micAvailable}
         vad={vad}
       />
     </div>

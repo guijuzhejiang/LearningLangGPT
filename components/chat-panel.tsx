@@ -24,9 +24,8 @@ export interface ChatPanelProps {
     STTIng: boolean,
     voiceContinuationEnable: boolean,
     setVoiceContinuationEnable: (value: boolean) => void,
-    userSpeakLately: boolean
-    setUserSpeakLately: (value: boolean) => void
-    micAvailable: boolean,
+    userSpeakLately: Date | boolean
+    setUserSpeakLately: (value: Date | boolean) => void
     vad: object,
 }
 
@@ -44,7 +43,6 @@ export function ChatPanel({
                               setVoiceContinuationEnable,
                               userSpeakLately,
                               setUserSpeakLately,
-                              micAvailable,
                               vad,
                           }: ChatPanelProps) {
     const [aiState] = useAIState()
@@ -158,7 +156,6 @@ export function ChatPanel({
                                 setVoiceContinuationEnable={setVoiceContinuationEnable}
                                 userSpeakLately={userSpeakLately}
                                 setUserSpeakLately={setUserSpeakLately}
-                                micAvailable={micAvailable}
                                 vad={vad}
                     />
                     {/*<FooterText className="hidden sm:block" />*/}

@@ -2,11 +2,6 @@
 const CopyPlugin = require("copy-webpack-plugin")
 
 module.exports = {
-  experimental: {
-    serverActions: {
-      allowedOrigins: process.env.NODE_ENV === "development"?[]:['aidu.org.cn'],
-    },
-  },
   env: {
     STT_URL: process.env.STT_URL,
     TTS_URL: process.env.TTS_URL,
