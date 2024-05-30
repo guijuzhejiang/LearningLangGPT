@@ -250,7 +250,7 @@ export function PromptForm({
                                     onClick={(e)=>{
                                         e.preventDefault();
                                         if (!path.includes('chat')) {
-                                            localStorage.setItem("fromRoot", "true")
+                                            sessionStorage.setItem("fromRoot", "true")
                                         }
                                         setVoiceContinuationEnable(!voiceContinuationEnable);
                                     }}

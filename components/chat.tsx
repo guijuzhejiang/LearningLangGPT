@@ -137,8 +137,8 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
     checkMicrophone();
 
-    if (localStorage.getItem("fromRoot")) {
-      localStorage.removeItem("fromRoot");
+    if (sessionStorage.getItem("fromRoot")) {
+      sessionStorage.removeItem("fromRoot");
       setVoiceContinuationEnable(true);
     }
 
