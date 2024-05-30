@@ -245,7 +245,7 @@ export const BotMessage = React.memo(({
                         </button>
                     )}
 
-                    {!autoTTS && typeof content === 'string' && (
+                    {typeof content === 'string' && (
                         <button className={"btn rounded-full hover:bg-gray-200"} onClick={async () => {
                             setShowTranslate(true);
                             const translatedText = await translate(text);
