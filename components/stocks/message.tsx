@@ -182,12 +182,43 @@ export const BotMessage = React.memo(({
                     </div>
                 )}
 
-                <div className={`bg-yellow-50 bg-opacity-40 ${showTranslate ? '':'hidden'}`}>
-                    <span>{transTexts === '<SpinnerMessage/>' ? (
-                        <SpinnerMessage/>
-                    ):(
-                        transTexts
-                    )}</span>
+                <div className={"items-center flex"}>
+                    {!autoTTS && typeof content === 'string' && content.length > 0 && (
+                        <button className={"btn rounded-full hover:bg-gray-200"} onClick={() => {
+                            setAutoTTS(true);
+                            handleTTS();
+                        }}>
+                            <IconPlayMedia/>
+                        </button>
+                    )}
+
+
+                    {typeof content === 'string' && (
+                        <button className={"btn rounded-full hover:bg-gray-200"} onClick={async () => {
+                            setShowTranslate(true);
+                            const translatedText = await translate(text);
+                            if (typeof translatedText === 'object') {
+                                let value = ''
+                                for await (const delta of readStreamableValue(translatedText)) {
+                                    if (typeof delta === 'string') {
+                                        setTransTexts(delta)
+                                    }
+                                }
+                            } else {
+                                setTransTexts(translatedText)
+                            }
+                        }}>
+                            <IconTranslate/>
+                        </button>
+                    )}
+
+                    <div className={`${showTranslate ? '' : 'hidden'}`}>{transTexts === '<SpinnerMessage/>' ? (
+                        <>{spinner}</>
+                    ) : (
+                        <span className={`bg-yellow-50 bg-opacity-40`}>
+                            {transTexts}
+                        </span>
+                    )}</div>
                 </div>
 
                 <div>
@@ -235,36 +266,7 @@ export const BotMessage = React.memo(({
                     )}
                 </div>
 
-                <div>
-                    {!autoTTS && typeof content === 'string' && content.length > 0 && (
-                        <button className={"btn rounded-full hover:bg-gray-200"} onClick={() => {
-                            setAutoTTS(true);
-                            handleTTS();
-                        }}>
-                            <IconPlayMedia/>
-                        </button>
-                    )}
 
-                    {typeof content === 'string' && (
-                        <button className={"btn rounded-full hover:bg-gray-200"} onClick={async () => {
-                            setShowTranslate(true);
-                            const translatedText = await translate(text);
-                            if (typeof translatedText === 'object') {
-                                let value = ''
-                                for await (const delta of readStreamableValue(translatedText)) {
-                                    if (typeof delta === 'string') {
-                                        setTransTexts(delta)
-                                    }
-                                }
-                            } else {
-                                setTransTexts(translatedText)
-                            }
-                        }}>
-                            <IconTranslate/>
-                        </button>
-                    )}
-
-                </div>
                 {/*<audio style={{display:'block'}} className={"w-8 absolute"} src={`data:audio/wav;base64,${wavUrl}`} autoPlay={true}></audio>*/}
 
 
