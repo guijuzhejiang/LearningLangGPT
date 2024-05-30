@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/tooltip'
 import {useEnterSubmit} from '@/lib/hooks/use-enter-submit'
 import {nanoid} from 'nanoid'
-import {useRouter} from 'next/navigation'
+import {usePathname, useRouter} from 'next/navigation'
 import {toast} from "sonner";
 import {useEffect} from "react";
 
@@ -60,6 +60,7 @@ export function PromptForm({
     const timerRef = React.useRef(null);
     const [timerInterval, setTimerInterval] = React.useState<any>(null);
     const vadTimeoutMS = 120 * 1000;
+    const path = usePathname();
 
     const handleToggleMic = async (e: any) => {
         e.preventDefault();
@@ -244,7 +245,16 @@ export function PromptForm({
                     {/*只有语音*/}
                     <Tooltip>
                         <TooltipTrigger asChild className={`ml-1 ${!micOn && ('hidden')}`}>
-                            <Button className={voiceContinuationEnable ? "":"bg-gray-400 opti"} size="icon" onClick={(e)=>{e.preventDefault();setVoiceContinuationEnable(!voiceContinuationEnable);}} >
+                            <Button className={voiceContinuationEnable ? "":"bg-gray-400 opti"}
+                                    size="icon"
+                                    onClick={(e)=>{
+                                        e.preventDefault();
+                                        if (!path.includes('chat')) {
+                                            localStorage.setItem("fromRoot", "true")
+                                        }
+                                        setVoiceContinuationEnable(!voiceContinuationEnable);
+                                    }}
+                            >
                                 <IconVoiceContinuation/>
                                 <span className="sr-only">自动语音</span>
                             </Button>

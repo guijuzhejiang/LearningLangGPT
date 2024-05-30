@@ -136,15 +136,11 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     };
 
     checkMicrophone();
-    // const audioStream = getUserMediaAudio();
-    // console.log(stream);
-    // if (stream !== null) {
-    //   setMicAvailable(true);
-    //   setMicOn(true);
-    // } else {
-    //   setMicAvailable(false);
-    //   setMicOn(false);
-    // }
+
+    if (localStorage.getItem("fromRoot")) {
+      localStorage.removeItem("fromRoot");
+      setVoiceContinuationEnable(true);
+    }
 
   }, []);
 
