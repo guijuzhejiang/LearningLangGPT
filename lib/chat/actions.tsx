@@ -32,11 +32,78 @@ import {ChatGroq} from "@langchain/groq";
 import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {ConversationChain} from "langchain/chains";
 import {HumanMessage, AIMessage} from "@langchain/core/messages";
+import {createStreamableValue} from "ai/rsc";
 
 const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
 const chatChainDB = {} as { [key: string]: any };
 const abortSignal = {} as { [key: string]: any };
+const translator = [];
+
+async function translate(content: string) {
+    'use server'
+    console.log(content);
+    if (translator.length === 0) {
+        translator.push(await createTranslator())
+    }
+
+    const textStream = createStreamableValue("<SpinnerMessage/>");
+
+    runAsyncFnWithoutBlocking(async () => {
+        let buf = "";
+        try {
+            let emojiFlag = false;
+            const res = await translator[0].call({
+                input: content,
+                callbacks: [
+                    {
+                        handleLLMNewToken(token: any) {
+                            console.log(token);
+                            if (token) {
+                                buf += token;
+                                textStream.update(buf);
+                            } else {
+                                console.log('done11111 ' + token);
+                                console.log(token);
+                            }
+                        },
+                        handleLLMEnd(token: any) {
+                            textStream.done(buf);
+                        },
+                    },
+                ],
+            });
+        } catch (e) {
+            console.error(e);
+        } finally {
+        }
+    });
+
+    return textStream.value
+}
+
+async function createTranslator() {
+    // 你是一个翻译英文的翻译器，你的目标是把任何语言翻译成中文，请翻译时不要带翻译腔，而是要翻译得自然、流畅和地道，使用优美和高雅的表达方式,必须使用中文输出。
+
+    const prompt = ChatPromptTemplate.fromTemplate(
+        `
+        下面我让你来充当翻译家，你的目标是把任何语言翻译成中文，请翻译时不要带翻译腔，而是要翻译得自然、流畅和地道，使用优美和高雅的表达方式,不要添加原文没有的标点符号,只回复翻译的内容。
+        Human:请翻译下面这句话：“{input}”
+        AI:
+      `
+    );
+    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+    const model = new ChatGroq({
+        modelName: "llama3-70b-8192",
+        apiKey: process.env.GROQ_API_KEY,
+        streaming: true,
+        temperature: 0.8,
+    });
+
+    model.client = groqClient;
+
+    return new ConversationChain({llm: model, prompt: prompt});
+}
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
     'use server'
@@ -271,7 +338,7 @@ async function submitUserMessage(content: string) {
     }
 }
 
-async function abortStreaming(id: string, msg: string="@save") {
+async function abortStreaming(id: string, msg: string = "@save") {
     'use server'
     abortSignal[id] = true;
     const aiState = getMutableAIState<typeof AI>()
@@ -375,6 +442,7 @@ export const AI = createAI<AIState, UIState>({
     actions: {
         submitUserMessage,
         abortStreaming,
+        translate,
         confirmPurchase
     },
     initialUIState: [],

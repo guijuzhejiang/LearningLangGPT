@@ -1,13 +1,13 @@
 'use client'
 
-import {IconOpenAI, IconPlayMedia, IconStop, IconUser} from '@/components/ui/icons'
+import {IconOpenAI, IconPlayMedia, IconStop, IconTranslate, IconUser} from '@/components/ui/icons'
 import {cn, pauseAllAudio} from '@/lib/utils'
 import {spinner} from './spinner'
 import {CodeBlock} from '../ui/codeblock'
 import {MemoizedReactMarkdown} from '../markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
-import {StreamableValue, useStreamableValue} from 'ai/rsc'
+import {StreamableValue, useStreamableValue, readStreamableValue} from 'ai/rsc'
 import {useStreamableText} from '@/lib/hooks/use-streamable-text'
 import AudioPlayer, {RHAP_UI} from 'react-h5-audio-player';
 import '@/components/auioPlayer/audioPlayer.scss';
@@ -56,12 +56,15 @@ export const BotMessage = React.memo(({
     tts?: boolean
 }) => {
     const text = useStreamableText(content)
+    // const transText = useStreamableText(content)
     const [aiState, setAIState] = useAIState<typeof AI>()
     const [_, setMessages] = useUIState<typeof AI>()
     const [canPlayThrough, setCanPlayThrough] = React.useState(false)
+    const [showTranslate, setShowTranslate] = React.useState(false)
     const [autoTTS, setAutoTTS] = React.useState(tts)
     const [wavB64, setWavB64] = React.useState<string|undefined>('')
-    const {abortStreaming} = useActions()
+    const [transTexts, setTransTexts] = React.useState<string|undefined>('')
+    const {abortStreaming, translate} = useActions()
 
     const handleTTS = () => {
         const formData = new FormData();
@@ -179,8 +182,16 @@ export const BotMessage = React.memo(({
                     </div>
                 )}
 
+                <div className={`bg-yellow-50 bg-opacity-40 ${showTranslate ? '':'hidden'}`}>
+                    <span>{transTexts === '<SpinnerMessage/>' ? (
+                        <SpinnerMessage/>
+                    ):(
+                        transTexts
+                    )}</span>
+                </div>
+
                 <div>
-                    {autoTTS && typeof content === 'string' ? (
+                    {autoTTS && typeof content === 'string' && (
                         <>
                             <AudioPlayer
                                 layout="horizontal"
@@ -221,20 +232,39 @@ export const BotMessage = React.memo(({
                         </>
 
 
-                    ) : (
-                        <>
-                            {!autoTTS && typeof content === 'string' && content.length > 0 && (
-                                <button className={"btn rounded-full hover:bg-gray-200"} onClick={() => {
-                                    setAutoTTS(true);
-                                    handleTTS();
-                                }}>
-                                    <IconPlayMedia/>
-                                </button>
-                            )}
-                        </>
                     )}
                 </div>
 
+                <div>
+                    {!autoTTS && typeof content === 'string' && content.length > 0 && (
+                        <button className={"btn rounded-full hover:bg-gray-200"} onClick={() => {
+                            setAutoTTS(true);
+                            handleTTS();
+                        }}>
+                            <IconPlayMedia/>
+                        </button>
+                    )}
+
+                    {!autoTTS && typeof content === 'string' && (
+                        <button className={"btn rounded-full hover:bg-gray-200"} onClick={async () => {
+                            setShowTranslate(true);
+                            const translatedText = await translate(text);
+                            if (typeof translatedText === 'object') {
+                                let value = ''
+                                for await (const delta of readStreamableValue(translatedText)) {
+                                    if (typeof delta === 'string') {
+                                        setTransTexts(delta)
+                                    }
+                                }
+                            } else {
+                                setTransTexts(translatedText)
+                            }
+                        }}>
+                            <IconTranslate/>
+                        </button>
+                    )}
+
+                </div>
                 {/*<audio style={{display:'block'}} className={"w-8 absolute"} src={`data:audio/wav;base64,${wavUrl}`} autoPlay={true}></audio>*/}
 
 
@@ -245,6 +275,64 @@ export const BotMessage = React.memo(({
 });
 
 BotMessage.displayName = "BotMessage";
+
+export const TranslatedMessage = React.memo(({
+                                          content,
+                                          className,
+                                      }: {
+    content: string | StreamableValue<string>
+    className?: string
+}) => {
+    const text = useStreamableText(content)
+
+    useEffect(() => {
+    }, [])
+    return (
+        <div className={cn('flex items-start', className)}>
+            <MemoizedReactMarkdown
+                className="prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0"
+                remarkPlugins={[remarkGfm, remarkMath]}
+                components={{
+                    p({children}) {
+                        return <p className="mb-2 last:mb-0">{children}</p>
+                    },
+                    code({node, inline, className, children, ...props}) {
+                        if (children.length) {
+                            if (children[0] == '▍') {
+                                return (
+                                    <span className="mt-1 animate-pulse cursor-default">▍</span>
+                                )
+                            }
+
+                            children[0] = (children[0] as string).replace('`▍`', '▍')
+                        }
+
+                        const match = /language-(\w+)/.exec(className || '')
+
+                        if (inline) {
+                            return (
+                                <code className={className} {...props}>
+                                    {children}
+                                </code>
+                            )
+                        }
+
+                        return (
+                            <CodeBlock
+                                key={Math.random()}
+                                language={(match && match[1]) || ''}
+                                value={String(children).replace(/\n$/, '')}
+                                {...props}
+                            />
+                        )
+                    }
+                }}
+            >
+                {text}
+            </MemoizedReactMarkdown>
+        </div>
+    )
+});
 
 export function BotCard({
                             children,

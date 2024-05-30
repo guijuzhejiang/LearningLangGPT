@@ -2,6 +2,7 @@
 const CopyPlugin = require("copy-webpack-plugin")
 
 module.exports = {
+  // output: 'export',
   experimental: {
     serverActions: {
       allowedOrigins: process.env.NODE_ENV === "development"?[]:['aidu.org.cn'],
@@ -29,6 +30,19 @@ module.exports = {
     ignoreBuildErrors: true
   },
   reactStrictMode: false,
+  async headers() {
+    return [
+      {
+        source: '/:path*{/}?',
+        headers: [
+          {
+            key: 'X-Accel-Buffering',
+            value: 'no',
+          },
+        ],
+      },
+    ]
+  },
   webpack: (config, {isServer}) => {
     config.resolve.extensions.push(".ts", ".tsx")
     config.resolve.fallback = { fs: false }
