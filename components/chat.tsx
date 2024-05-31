@@ -199,7 +199,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     negativeSpeechThreshold: 0.8 - 0.15,
     minSpeechFrames: 3,
     preSpeechPadFrames: 1,
-    redemptionFrames: parseInt(String(8)),
+    redemptionFrames: parseInt(String(16)),
     onVADMisfire:()=>{
       console.log('onVADMisfire')
     },
