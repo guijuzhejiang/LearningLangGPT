@@ -7,9 +7,11 @@ export const useStreamableText = (
   const [rawContent, setRawContent] = useState(
     typeof content === 'string' ? content : ''
   )
+  const [completed, setCompleted] = useState(false)
 
   useEffect(() => {
     ;(async () => {
+
       if (typeof content === 'object') {
         let value = ''
         for await (const delta of readStreamableValue(content)) {
@@ -17,9 +19,14 @@ export const useStreamableText = (
             setRawContent((value = value + delta))
           }
         }
+        setCompleted(true)
       }
     })()
   }, [content])
 
-  return rawContent
+  // useEffect(() => {
+  //   console.log(completed);
+  // }, [completed])
+
+  return [rawContent, completed]
 }

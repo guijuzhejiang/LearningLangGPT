@@ -207,7 +207,7 @@ async function submitUserMessage(content: string) {
 
     const msgs = aiState.get().messages;
     const chatId = aiState.get().chatId;
-    const textStream = createStreamableUI(<SpinnerMessage/>)
+    const textStream = createStreamableValue('')
 
     runAsyncFnWithoutBlocking(async () => {
         let buf = "";
@@ -243,9 +243,9 @@ async function submitUserMessage(content: string) {
                                 }
 
                                 if (!abortSignal.hasOwnProperty(msgID)) {
-                                    textStream.update(<BotMessage content={buf} tts={false} msgID={msgID}/>);
+                                    textStream.update(token);
                                 } else {
-                                    textStream.done(<BotMessage content={buf} tts={false} msgID={msgID}/>);
+                                    textStream.done();
 
                                     aiState.done({
                                         ...aiState.get(),
@@ -269,7 +269,7 @@ async function submitUserMessage(content: string) {
                         },
                         handleLLMEnd(token: any) {
                             if (!abortSignal.hasOwnProperty(msgID)) {
-                                textStream.done(<BotMessage content={buf} tts={true} msgID={msgID}/>);
+                                textStream.done();
 
                                 aiState.done({
                                     ...aiState.get(),
@@ -284,7 +284,7 @@ async function submitUserMessage(content: string) {
                                     ]
                                 });
                             } else {
-                                textStream.done(<BotMessage content={buf} tts={false} msgID={msgID}/>);
+                                textStream.done();
 
                                 aiState.done({
                                     ...aiState.get(),
@@ -334,7 +334,7 @@ async function submitUserMessage(content: string) {
 
     return {
         id: nanoid(),
-        display: textStream.value
+        display: <BotMessage content={textStream.value} msgID={msgID} tts={false}/>
     }
 }
 
@@ -519,7 +519,7 @@ export const getUIStateFromAIState = (aiState: Chat) => {
                 ) : message.role === 'user' ? (
                     <UserMessage>{message.content}</UserMessage>
                 ) : (
-                    <BotMessage content={message.content} tts={message.data} msgID={message.id}/>
+                    <BotMessage content={message.content} tts={false} msgID={message.id}/>
                 )
         }))
 }

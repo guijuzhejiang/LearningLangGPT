@@ -59,6 +59,7 @@ export function PromptForm({
     const [_, setMessages] = useUIState<typeof AI>()
     const timerRef = React.useRef(null);
     const [timerInterval, setTimerInterval] = React.useState<any>(null);
+    const [lastMsgCompleted, setLastMsgCompleted] = React.useState<boolean>(true);
     const vadTimeoutMS = 120 * 1000;
     const path = usePathname();
 
@@ -169,6 +170,36 @@ export function PromptForm({
                 setMessages(currentMessages => [...currentMessages, responseMessage])
             }}
         >
+            {/*<div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">*/}
+            {/*    <div*/}
+            {/*        key={"example.heading"}*/}
+            {/*        className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 'hidden md:block'`}*/}
+            {/*        onClick={async () => {*/}
+            {/*            setMessages(currentMessages => [*/}
+            {/*                ...currentMessages,*/}
+            {/*                {*/}
+            {/*                    id: nanoid(),*/}
+            {/*                    display: <UserMessage>{"example.message"}</UserMessage>*/}
+            {/*                }*/}
+            {/*            ])*/}
+
+            {/*            const responseMessage = await submitUserMessage(*/}
+            {/*                "example.message"*/}
+            {/*            )*/}
+
+            {/*            setMessages(currentMessages => [*/}
+            {/*                ...currentMessages,*/}
+            {/*                responseMessage*/}
+            {/*            ])*/}
+            {/*        }}*/}
+            {/*    >*/}
+            {/*        <div className="text-sm font-semibold">{"example.heading"}</div>*/}
+            {/*        <div className="text-sm text-zinc-600">*/}
+            {/*            {"example.subheading"}*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
+
             <div
                 className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
 
@@ -195,9 +226,9 @@ export function PromptForm({
                     ref={inputRef}
                     tabIndex={0}
                     onKeyDown={onKeyDown}
-                    disabled={micOn ? STTIng:false}
-                    placeholder={voiceContinuationEnable ? "正在听...":"发送消息."}
-                    className={`min-h-[60px] w-full resize-none bg-transparent pl-2 pr-${micOn && !voiceContinuationEnable ? '16':'14'} py-[1.3rem] focus-within:outline-none sm:text-sm`}
+                    disabled={micOn ? STTIng : false}
+                    placeholder={voiceContinuationEnable ? "正在听..." : "发送消息."}
+                    className={`min-h-[60px] w-full resize-none bg-transparent pl-2 pr-${micOn && !voiceContinuationEnable ? '16' : '14'} py-[1.3rem] focus-within:outline-none sm:text-sm`}
                     autoFocus
                     spellCheck={false}
                     autoComplete="off"
@@ -214,7 +245,7 @@ export function PromptForm({
                     <Tooltip>
                         <TooltipTrigger asChild className={`${voiceContinuationEnable && ('hidden')}`}>
                             <Button type="submit" size="icon" disabled={input === ''}>
-                                <IconArrowElbow />
+                                <IconArrowElbow/>
                                 <span className="sr-only">发送</span>
                             </Button>
                         </TooltipTrigger>
@@ -230,9 +261,11 @@ export function PromptForm({
                                         <IconSpinner/>
                                         <span className="sr-only">语音转文字</span>
                                     </Button>
-                                ):(
-                                    <Button className={micOn ? "":"bg-gray-400 opti"} size="icon" onClick={handleToggleMic}>
-                                        <IconMicroPhone className={vad.userSpeaking && micOn ? "text-blue-400":""}/>
+                                ) : (
+                                    <Button className={micOn ? "" : "bg-gray-400 opti"} size="icon"
+                                            onClick={handleToggleMic}>
+                                        <IconMicroPhone
+                                            className={vad.userSpeaking && micOn ? "text-blue-400" : ""}/>
                                         <span className="sr-only">语音转文字</span>
                                     </Button>
                                 )
@@ -245,9 +278,9 @@ export function PromptForm({
                     {/*只有语音*/}
                     <Tooltip>
                         <TooltipTrigger asChild className={`ml-1 ${!micOn && ('hidden')}`}>
-                            <Button className={voiceContinuationEnable ? "":"bg-gray-400 opti"}
+                            <Button className={voiceContinuationEnable ? "" : "bg-gray-400 opti"}
                                     size="icon"
-                                    onClick={(e)=>{
+                                    onClick={(e) => {
                                         e.preventDefault();
                                         if (!path.includes('chat')) {
                                             sessionStorage.setItem("fromRoot", "true")
@@ -264,7 +297,7 @@ export function PromptForm({
                 </div>
 
                 <div
-                    className={`absolute left-0 top-0 w-full h-full bg-yellow-600 bg-opacity-10 ${voiceContinuationEnable ? ('block'):((!STTIng || !micOn) && ('hidden'))}`}>
+                    className={`absolute left-0 top-0 w-full h-full bg-yellow-600 bg-opacity-10 ${voiceContinuationEnable ? ('block') : ((!STTIng || !micOn) && ('hidden'))}`}>
                 </div>
             </div>
         </form>
