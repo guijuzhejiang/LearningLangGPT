@@ -52,25 +52,45 @@ export function ChatPanel({
 
     const exampleMessages = [
         {
-            heading: '我想学习旅游相关的英语',
-            subheading: '我喜欢旅游',
-            message: `我想学习旅游相关的英语,我喜欢旅游`
+            heading: '旅游相关英语',
+            subheading: '旅游',
+            message: `我喜欢旅游，请教我旅游相关的英语`
         },
         {
-            heading: '应该如何有效的学习英语',
-            subheading: '你可以教教我吗?',
-            message: '应该如何有效的学习英语,你可以教教我吗?'
+            heading: '英语学习方法',
+            subheading: '学习',
+            message: '请教我如何有效的学习英语'
         },
-        // {
-        //   heading: 'I would like to buy',
-        //   subheading: '42 $DOGE',
-        //   message: `I would like to buy 42 $DOGE`
-        // },
-        // {
-        //   heading: 'What are some',
-        //   subheading: `recent events about $DOGE?`,
-        //   message: `What are some recent events about $DOGE?`
-        // }
+        {
+          heading: '英语自我介绍',
+          subheading: '介绍',
+          message: `请教我如何使用英语自我介绍`
+        },
+        {
+            heading: '参加英语面试',
+            subheading: '面试',
+            message: `请教我如何使用英语参加面试，并回答考官的英语问题`
+        },
+        {
+            heading: '参加英语会议',
+            subheading: '会议',
+            message: `请教我如何使用英语参加会议，并在会议中用英语发言`
+        },
+        {
+            heading: '英语购物',
+            subheading: '购物',
+            message: `请教我在国外如何使用英语咨询产品并购买`
+        },
+        {
+            heading: '英语邀约女孩',
+            subheading: '约会',
+            message: `请教我如何使用英语约喜欢的女孩吃饭或者看电影等活动`
+        },
+        {
+            heading: '英语邀约男孩',
+            subheading: '约会',
+            message: `请教我如何使用英语约喜欢的男孩吃饭或者看电影等活动`
+        },
     ]
 
     return (
