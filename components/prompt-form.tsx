@@ -24,6 +24,7 @@ import {nanoid} from 'nanoid'
 import {usePathname, useRouter} from 'next/navigation'
 import {toast} from "sonner";
 import {useEffect} from "react";
+import {readStreamableValue} from "ai/rsc";
 
 
 export interface PromptFormProps {
@@ -55,13 +56,18 @@ export function PromptForm({
     const router = useRouter()
     const {formRef, onKeyDown} = useEnterSubmit()
     const inputRef = React.useRef<HTMLTextAreaElement>(null)
-    const {submitUserMessage} = useActions()
-    const [_, setMessages] = useUIState<typeof AI>()
+    const {submitUserMessage, getHint} = useActions()
+    const [messages, setMessages] = useUIState<typeof AI>()
     const timerRef = React.useRef(null);
+    const lastMsgRef = React.useRef(null);
     const [timerInterval, setTimerInterval] = React.useState<any>(null);
-    const [lastMsgCompleted, setLastMsgCompleted] = React.useState<boolean>(true);
+    const [lastMessage, setLastMessage] = React.useState<any>(null);
+    const [rawContent, setRawContent] = React.useState<any>('');
+    // const [_, completed] = useStreamableText(content)
+    const [lastMsgCompleted, setLastMsgCompleted] = React.useState<boolean>(false);
     const vadTimeoutMS = 120 * 1000;
     const path = usePathname();
+
 
     const handleToggleMic = async (e: any) => {
         e.preventDefault();
@@ -127,7 +133,7 @@ export function PromptForm({
         if (inputRef.current) {
             inputRef.current.focus()
         }
-        timerRef.current =setInterval(() => {
+        timerRef.current = setInterval(() => {
             setTimerInterval(true);
             // if (!userSpeakLately) {
             //     vad.pause()
@@ -139,7 +145,37 @@ export function PromptForm({
             // setUserSpeakLately(false);
 
         }, vadTimeoutMS);
-    }, [])
+    }, []);
+    //
+    useEffect(() => {
+        if (lastMessage) {
+            console.log(lastMessage.display.ref?.current?.completed);
+            if (lastMessage.display.ref?.current?.completed) {
+                setLastMsgCompleted(true);
+                ;(async () => {
+                    const hintText = await getHint();
+
+                    if (typeof hintText === 'object') {
+                        let value = ''
+                        for await (const delta of readStreamableValue(hintText)) {
+                            if (typeof delta === 'string') {
+                                setRawContent((value = value + delta))
+                            }
+                        }
+                        console.log("completed!!!!!!!!!!!!!!!");
+                    }
+                })()
+            } else {
+                setLastMsgCompleted(false);
+            }
+        }
+        // const lastContent = messages[messages.length - 1]['display'].props.content;
+        // if (typeof lastContent === "string") {
+        //     setLastMsgCompleted(true);
+        // } else {
+        //     setLastMsgCompleted(false);
+        // }
+    }, [lastMessage?.display.ref?.current?.completed])
 
     return (
         <form
@@ -167,38 +203,44 @@ export function PromptForm({
 
                 // Submit and get response message
                 const responseMessage = await submitUserMessage(value)
+                responseMessage.display.ref = lastMsgRef;
+                // console.log("responseMessage.display.ref?.current.completed");
+                // console.log(responseMessage.display.ref?.current?.completed);
                 setMessages(currentMessages => [...currentMessages, responseMessage])
+                setLastMessage(responseMessage);
             }}
         >
-            {/*<div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">*/}
-            {/*    <div*/}
-            {/*        key={"example.heading"}*/}
-            {/*        className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 'hidden md:block'`}*/}
-            {/*        onClick={async () => {*/}
-            {/*            setMessages(currentMessages => [*/}
-            {/*                ...currentMessages,*/}
-            {/*                {*/}
-            {/*                    id: nanoid(),*/}
-            {/*                    display: <UserMessage>{"example.message"}</UserMessage>*/}
-            {/*                }*/}
-            {/*            ])*/}
-
-            {/*            const responseMessage = await submitUserMessage(*/}
-            {/*                "example.message"*/}
-            {/*            )*/}
-
-            {/*            setMessages(currentMessages => [*/}
-            {/*                ...currentMessages,*/}
-            {/*                responseMessage*/}
-            {/*            ])*/}
-            {/*        }}*/}
-            {/*    >*/}
-            {/*        <div className="text-sm font-semibold">{"example.heading"}</div>*/}
-            {/*        <div className="text-sm text-zinc-600">*/}
-            {/*            {"example.subheading"}*/}
-            {/*        </div>*/}
-            {/*    </div>*/}
-            {/*</div>*/}
+            {lastMsgCompleted && (
+                // className="peer absolute inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]"
+                <div className="peer bg-muted duration-300 ease-in-out mb-4 grid gap-2 px-4 sm:px-0">
+                    <div
+                        key={"example.heading"}
+                        className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 'hidden md:block'`}
+                        onClick={async () => {
+                            // setMessages(currentMessages => [
+                            //     ...currentMessages,
+                            //     {
+                            //         id: nanoid(),
+                            //         display: <UserMessage>{"example.message"}</UserMessage>
+                            //     }
+                            // ])
+                            //
+                            // const responseMessage = await submitUserMessage(
+                            //     "example.message"
+                            // )
+                            //
+                            // setMessages(currentMessages => [
+                            //     ...currentMessages,
+                            //     responseMessage
+                            // ])
+                        }}
+                    >
+                        <div className="text-sm text-zinc-600">
+                            {rawContent}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div
                 className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">

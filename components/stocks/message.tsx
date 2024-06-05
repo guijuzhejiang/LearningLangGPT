@@ -12,7 +12,7 @@ import {useStreamableText} from '@/lib/hooks/use-streamable-text'
 import AudioPlayer, {RHAP_UI} from 'react-h5-audio-player';
 import '@/components/auioPlayer/audioPlayer.scss';
 import * as React from "react";
-import {useEffect} from "react";
+import {forwardRef, useEffect, useImperativeHandle} from "react";
 import {toast} from 'sonner'
 import {AI} from "@/lib/chat/actions";
 import {useAIState, useUIState, useActions} from 'ai/rsc';
@@ -44,17 +44,19 @@ export function UserMessage({children}: { children: React.ReactNode }) {
 //     return prevProps.data === nextProps.data;
 // }
 
-export const BotMessage = React.memo(({
+export const BotMessage = React.memo(forwardRef(({
                                           content,
                                           className,
                                           msgID,
-                                          tts,
                                       }: {
     content: string | StreamableValue<string>
     className?: string
     msgID?: string
-    tts?: boolean
-}) => {
+}, ref) => {
+    useImperativeHandle(ref, () => ({
+        completed
+    }))
+
     const [text, completed] = useStreamableText(content)
     // const transText = useStreamableText(content)
     const [aiState, setAIState] = useAIState<typeof AI>()
@@ -101,8 +103,8 @@ export const BotMessage = React.memo(({
     }, [completed])
 
     useEffect(() => {
-        console.log(typeof content);
-        console.log(content);
+        // console.log(typeof content);
+        // console.log(content);
         // const intervalId = setInterval(() => {
         // if (typeof content === 'string') {
         //     // clearInterval(intervalId);
@@ -207,7 +209,7 @@ export const BotMessage = React.memo(({
                                 let value = ''
                                 for await (const delta of readStreamableValue(translatedText)) {
                                     if (typeof delta === 'string') {
-                                        setTransTexts(delta)
+                                        setTransTexts((value = value + delta))
                                     }
                                 }
                             } else {
@@ -218,7 +220,7 @@ export const BotMessage = React.memo(({
                         </button>
                     )}
 
-                    <div className={`${showTranslate ? '' : 'hidden'}`}>{transTexts === '<SpinnerMessage/>' ? (
+                    <div className={`${showTranslate ? '' : 'hidden'}`}>{transTexts?.length === 0 ? (
                         <>{spinner}</>
                     ) : (
                         <span className={`bg-yellow-50 bg-opacity-40`}>
@@ -281,7 +283,7 @@ export const BotMessage = React.memo(({
             {/*<audio src={wavUrl} autoPlay={true}></audio>*/}
         </div>
     )
-});
+}));
 
 BotMessage.displayName = "BotMessage";
 

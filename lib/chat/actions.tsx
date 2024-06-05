@@ -38,37 +38,37 @@ const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') 
 
 const chatChainDB = {} as { [key: string]: any };
 const abortSignal = {} as { [key: string]: any };
-const translator = [];
+const langchainTools = {"translator": null, "prompter": null};
 
 async function translate(content: string) {
     'use server'
-    console.log(content);
-    if (translator.length === 0) {
-        translator.push(await createTranslator())
+    // console.log(content);
+    if (!langchainTools.translator) {
+        langchainTools.translator = await createTranslator();
     }
 
-    const textStream = createStreamableValue("<SpinnerMessage/>");
+    const textStream = createStreamableValue("");
 
     runAsyncFnWithoutBlocking(async () => {
         let buf = "";
         try {
             let emojiFlag = false;
-            const res = await translator[0].call({
+            const res = await langchainTools.translator.call({
                 input: content,
                 callbacks: [
                     {
                         handleLLMNewToken(token: any) {
-                            console.log(token);
+                            // console.log(token);
                             if (token) {
                                 buf += token;
-                                textStream.update(buf);
+                                textStream.update(token);
                             } else {
-                                console.log('done11111 ' + token);
-                                console.log(token);
+                                // console.log('done11111 ' + token);
+                                // console.log(token);
                             }
                         },
                         handleLLMEnd(token: any) {
-                            textStream.done(buf);
+                            textStream.done();
                         },
                     },
                 ],
@@ -103,6 +103,101 @@ async function createTranslator() {
     model.client = groqClient;
 
     return new ConversationChain({llm: model, prompt: prompt});
+}
+
+async function getHint() {
+    'use server'
+    const aiState = getMutableAIState<typeof AI>()
+    const msgs = aiState.get().messages;
+    const chatId = aiState.get().chatId;
+
+    const prompter = await createPrompter(msgs.slice(0, -1));
+
+    const textStream = createStreamableValue("");
+
+    runAsyncFnWithoutBlocking(async () => {
+        let buf = "";
+        try {
+            let emojiFlag = false;
+            const res = await prompter.call({
+                input: msgs[msgs.length-1],
+                callbacks: [
+                    {
+                        handleLLMNewToken(token: any) {
+                            // console.log(token);
+                            if (token) {
+                                buf += token;
+                                textStream.update(token);
+                            } else {
+                                // console.log('done11111 ' + token);
+                                // console.log(token);
+                            }
+                        },
+                        handleLLMEnd(token: any) {
+                            textStream.done();
+                        },
+                    },
+                ],
+            });
+        } catch (e) {
+            console.error(e);
+        } finally {
+        }
+    });
+
+    return textStream.value
+}
+
+async function createPrompter(msgs) {
+    'use server'
+    const prompt = ChatPromptTemplate.fromTemplate(
+        `
+        You are a student studying {language}.Please answer my question in English.
+        I am a {language} teacher and improver.My name is {name}.
+        Don't speak more than two sentences at a time.
+        Keep your replies neat and tidy and limit your replies to 16 words or less.
+        {history}
+        Human:{input}
+        AI:
+      `
+    );
+    const partialPrompt = await prompt.partial({
+        language: 'English',
+        name: 'Mary'
+    });
+    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+    const model = new ChatGroq({
+        modelName: "llama3-70b-8192",
+        apiKey: process.env.GROQ_API_KEY,
+        streaming: true,
+        temperature: 0.8,
+    });
+
+    model.client = groqClient
+
+// const chain = prompt.pipe(llm);
+    const memory = new BufferWindowMemory({
+        humanPrefix: "Human",
+        aiPrefix: "AI",
+        memoryKey: "history",
+        k: 10
+    });
+    if (msgs.length > 0) {
+        const chatHistory = new ChatMessageHistory();
+        msgs.forEach(async function (value, index) {
+            if (value.role === 'assistant') {
+                await chatHistory.addMessage(new HumanMessage(value.content));
+            }
+            if (value.role === 'user') {
+                await chatHistory.addMessage(new AIMessage(value.content));
+
+            }
+        });
+        memory.chatHistory = chatHistory;
+
+    }
+    // memory.loadMemoryVariables()
+    return new ConversationChain({llm: model, memory: memory, prompt: partialPrompt});
 }
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
@@ -212,7 +307,7 @@ async function submitUserMessage(content: string) {
     runAsyncFnWithoutBlocking(async () => {
         let buf = "";
 
-        console.log("id: " + chatId);
+        // console.log("id: " + chatId);
 
         if (!chatChainDB.hasOwnProperty(chatId)) {
             chatChainDB[chatId] = {
@@ -234,6 +329,13 @@ async function submitUserMessage(content: string) {
                 callbacks: [
                     {
                         handleLLMNewToken(token: any) {
+                            // console.log(token);
+                            // await new Promise(resolve => setTimeout(resolve, 250));
+                            // const start = Date.now();
+                            // 使用 while 循环阻塞一段时间
+                            // while (Date.now() - start < 50) {
+                                // 空循环，什么都不做
+                            // }
                             if (token) {
                                 if (token.includes('*')) {
                                     emojiFlag = !emojiFlag;
@@ -262,9 +364,9 @@ async function submitUserMessage(content: string) {
 
                                     delete abortSignal[msgID];
                                 }
-                                console.log(token);
+                                // console.log(token);
                             } else {
-                                console.log('done');
+                                // console.log('done');
                             }
                         },
                         handleLLMEnd(token: any) {
@@ -443,6 +545,7 @@ export const AI = createAI<AIState, UIState>({
         submitUserMessage,
         abortStreaming,
         translate,
+        getHint,
         confirmPurchase
     },
     initialUIState: [],
