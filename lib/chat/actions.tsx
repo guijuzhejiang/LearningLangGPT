@@ -152,8 +152,10 @@ async function createPrompter(msgs) {
     'use server'
     const prompt = ChatPromptTemplate.fromTemplate(
         `
-        You are a student studying {language}.Please answer my question in English.
+        You are a student studying {language}.
         I am a {language} teacher and improver.My name is {name}.
+        We're doing English dialogue exercises.
+        Please answer my question in {language}.
         Don't speak more than two sentences at a time.
         Keep your replies neat and tidy and limit your replies to 16 words or less.
         {history}
