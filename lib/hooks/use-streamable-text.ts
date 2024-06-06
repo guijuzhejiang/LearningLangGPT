@@ -20,7 +20,6 @@ export const useStreamableText = (
           }
         }
         setCompleted(true)
-        console.log("completed!!!!!!!!!!!!!!!");
       }
     })()
   }, [content])

@@ -54,11 +54,12 @@ export const BotMessage = React.memo(forwardRef(({
     msgID?: string
 }, ref) => {
     useImperativeHandle(ref, () => ({
-        completed
+        text,
+        completed,
     }))
 
     const [text, completed] = useStreamableText(content)
-    // const transText = useStreamableText(content)
+    // const transText = useStreamableText(content)a
     const [aiState, setAIState] = useAIState<typeof AI>()
     const [_, setMessages] = useUIState<typeof AI>()
     const [canPlayThrough, setCanPlayThrough] = React.useState(false)

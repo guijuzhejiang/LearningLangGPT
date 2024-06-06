@@ -38,7 +38,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   // mic 是否可用
   // const [micAvailable, setMicAvailable] = React.useState(false)
   // mic 是否打开
-  const [micOn, setMicOn] = React.useState(false)
+  const [micOn, setMicOn] = React.useState(true)
   // 是否正在处理STT
   const [STTIng, setSTTIng] = React.useState(false)
   // 持续讲话模式

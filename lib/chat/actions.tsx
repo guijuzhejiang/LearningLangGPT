@@ -105,13 +105,16 @@ async function createTranslator() {
     return new ConversationChain({llm: model, prompt: prompt});
 }
 
-async function getHint() {
+async function getHint(msg:string) {
     'use server'
-    const aiState = getMutableAIState<typeof AI>()
-    const msgs = aiState.get().messages;
-    const chatId = aiState.get().chatId;
-
-    const prompter = await createPrompter(msgs.slice(0, -1));
+    // const msgs = JSON.parse(jmsg);
+    console.log("msgs[msgs.length-1]")
+    console.log(msg)
+    // console.log(msgs[msgs.length-1])
+    // console.log(msgs[msgs.length-1].content)
+    if (!langchainTools.prompter) {
+        langchainTools.prompter = await createPrompter();
+    }
 
     const textStream = createStreamableValue("");
 
@@ -119,8 +122,8 @@ async function getHint() {
         let buf = "";
         try {
             let emojiFlag = false;
-            const res = await prompter.call({
-                input: msgs[msgs.length-1],
+            const res = await langchainTools.prompter.call({
+                input: msg,
                 callbacks: [
                     {
                         handleLLMNewToken(token: any) {
@@ -148,7 +151,7 @@ async function getHint() {
     return textStream.value
 }
 
-async function createPrompter(msgs) {
+async function createPrompter() {
     'use server'
     const prompt = ChatPromptTemplate.fromTemplate(
         `
@@ -184,22 +187,8 @@ async function createPrompter(msgs) {
         memoryKey: "history",
         k: 10
     });
-    if (msgs.length > 0) {
-        const chatHistory = new ChatMessageHistory();
-        msgs.forEach(async function (value, index) {
-            if (value.role === 'assistant') {
-                await chatHistory.addMessage(new HumanMessage(value.content));
-            }
-            if (value.role === 'user') {
-                await chatHistory.addMessage(new AIMessage(value.content));
-
-            }
-        });
-        memory.chatHistory = chatHistory;
-
-    }
     // memory.loadMemoryVariables()
-    return new ConversationChain({llm: model, memory: memory, prompt: partialPrompt});
+    return new ConversationChain({llm: model, prompt: partialPrompt});
 }
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
@@ -398,14 +387,13 @@ async function submitUserMessage(content: string) {
                                             id: nanoid(),
                                             role: 'assistant',
                                             content: buf,
-                                            data: false
                                         }
                                     ]
                                 });
 
                                 delete abortSignal[msgID];
                             }
-                            console.log("stream:\n", token);
+                            // console.log("stream:\n", token);
 
                         },
                     },
@@ -624,7 +612,7 @@ export const getUIStateFromAIState = (aiState: Chat) => {
                 ) : message.role === 'user' ? (
                     <UserMessage>{message.content}</UserMessage>
                 ) : (
-                    <BotMessage content={message.content} tts={false} msgID={message.id}/>
+                    <BotMessage content={message.content} msgID={message.id}/>
                 )
         }))
 }
