@@ -237,7 +237,7 @@ export function PromptForm({
                         <Button
                             variant="outline"
                             size="icon"
-                            className="absolute right-1 top-0 size-6 rounded-full bg-background p-0 sm:right-2"
+                            className="absolute bg-red-50 hover:bg-red-200 right-1 top-0 size-6 rounded-full p-0 sm:right-2"
                             onClick={async () => {
                                 setShowHint(false);
                             }}
@@ -254,7 +254,7 @@ export function PromptForm({
                         <Button
                             variant="outline"
                             size="icon"
-                            className="absolute right-9 top-0 size-6 rounded-full bg-background p-0 sm:right-10"
+                            className="absolute bg-green-50 hover:bg-green-200 right-9 top-0 size-6 rounded-full p-0 sm:right-10"
                             onClick={async (e) => {
                                 e.preventDefault()
 
@@ -358,7 +358,7 @@ export function PromptForm({
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className={`${showHint && 'hidden'} bg-yellow-100 hover:bg-yellow-200 z-50 absolute -right-1 -top-14 size-6 rounded-full p-0 sm:-right-0`}
+                                className={`${messages.length<2 && 'hidden'} ${showHint && 'hidden'} bg-yellow-100 hover:bg-yellow-200 z-50 absolute -right-1 -top-14 size-6 rounded-full p-0 sm:-right-0`}
                                 onClick={async (e) => {
                                     e.preventDefault();
                                     setShowHint(true);
