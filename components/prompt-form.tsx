@@ -359,8 +359,11 @@ export function PromptForm({
                                     // console.log(showHint && lastMsgCompleted);
                                     // console.log(showHint);
                                     // console.log(lastMsgCompleted);
-                                    audioRef.current.pause();
-                                    audioRef.current.currentTime = 0;
+                                    if (audioRef.current) {
+                                        audioRef.current.pause();
+                                        audioRef.current.currentTime = 0;
+                                    }
+
                                     setTransTexts('');
                                     setShowTranslate(false);
                                     setCanPlay(false);
