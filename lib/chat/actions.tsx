@@ -426,7 +426,7 @@ async function submitUserMessage(content: string) {
 
     return {
         id: nanoid(),
-        display: <BotMessage content={textStream.value} msgID={msgID} tts={false}/>
+        display: <BotMessage content={textStream.value}/>
     }
 }
 
@@ -612,7 +612,7 @@ export const getUIStateFromAIState = (aiState: Chat) => {
                 ) : message.role === 'user' ? (
                     <UserMessage>{message.content}</UserMessage>
                 ) : (
-                    <BotMessage content={message.content} msgID={message.id}/>
+                    <BotMessage content={message.content}/>
                 )
         }))
 }

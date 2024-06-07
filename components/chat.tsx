@@ -111,7 +111,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
     const messagesLength = aiState.messages?.length
     if (messagesLength === 2 && session?.user) {
       // alert('refresh');
-      window.localStorage.setItem('tts', aiState.messages[1].content);
+      window.sessionStorage.setItem('tts', aiState.messages[1].content);
       router.refresh()
     }
   }, [aiState.messages, router])

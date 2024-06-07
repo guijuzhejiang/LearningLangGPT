@@ -122,6 +122,21 @@ export function pauseAllAudio() {
     }
 }
 
+export function stopAllAudio() {
+    try {
+        const audioElements = document.querySelectorAll('.tts-btn-stop');
+        audioElements.forEach(audio => {
+            // audio.pause();
+            // audio.currentTime = 0;
+            // audio.removeEventListener("canplay", ()=>{});
+            audio.click()
+        });
+    } catch (error) {
+        // 如果出现错误，可能是用户拒绝了权限请求或者设备不可用
+        console.error('Error pauseAllAudio:', error);
+    }
+}
+
 export function arrayBufferToAudioBuffer(arrayBuffer, context) {
     return new Promise((resolve, reject) => {
         if (context) {

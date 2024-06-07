@@ -1,7 +1,7 @@
 'use client'
 
 import {IconOpenAI, IconPlayMedia, IconStop, IconTranslate, IconUser} from '@/components/ui/icons'
-import {cn, pauseAllAudio} from '@/lib/utils'
+import {cn, stopAllAudio} from '@/lib/utils'
 import {spinner} from './spinner'
 import {CodeBlock} from '../ui/codeblock'
 import {MemoizedReactMarkdown} from '../markdown'
@@ -9,13 +9,14 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import {StreamableValue, useStreamableValue, readStreamableValue} from 'ai/rsc'
 import {useStreamableText} from '@/lib/hooks/use-streamable-text'
-import AudioPlayer, {RHAP_UI} from 'react-h5-audio-player';
 import '@/components/auioPlayer/audioPlayer.scss';
 import * as React from "react";
 import {forwardRef, useEffect, useImperativeHandle} from "react";
 import {toast} from 'sonner'
 import {AI} from "@/lib/chat/actions";
 import {useAIState, useUIState, useActions} from 'ai/rsc';
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import {Button} from "@/components/ui/button";
 
 // Different types of message bubbles.
 
@@ -47,11 +48,9 @@ export function UserMessage({children}: { children: React.ReactNode }) {
 export const BotMessage = React.memo(forwardRef(({
                                           content,
                                           className,
-                                          msgID,
                                       }: {
     content: string | StreamableValue<string>
     className?: string
-    msgID?: string
 }, ref) => {
     useImperativeHandle(ref, () => ({
         text,
@@ -60,45 +59,74 @@ export const BotMessage = React.memo(forwardRef(({
 
     const [text, completed] = useStreamableText(content)
     // const transText = useStreamableText(content)a
-    const [aiState, setAIState] = useAIState<typeof AI>()
-    const [_, setMessages] = useUIState<typeof AI>()
+    const [messages, setMessages] = useUIState<typeof AI>()
     const [canPlayThrough, setCanPlayThrough] = React.useState(false)
     const [showTranslate, setShowTranslate] = React.useState(false)
-    const [showPlayTTS, setShowPlayTTS] = React.useState(true)
     const [wavB64, setWavB64] = React.useState<string | undefined>('')
     const [transTexts, setTransTexts] = React.useState<string | undefined>('')
-    const {abortStreaming, translate} = useActions()
+    const [readingLoud, setReadingLoud] = React.useState<boolean>(false)
+    const audioRef = React.useRef(null);
+    const {translate} = useActions()
+
+    const handleCanPlay = (e) => {
+        console.log(e);
+        if (e.target) {
+            const element = e.target as HTMLMediaElement;
+            element.play();
+            element.removeEventListener('canplay', handleCanPlay);
+        }
+    }
 
     const handleTTS = () => {
-        setShowPlayTTS(false);
-        const formData = new FormData();
-        formData.append('text', text);
-        const startTime = performance.now();
-        fetch(process.env.TTS_URL, {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
-                } else {
+        if (wavB64) {
+            // console.log(audioRef.current);
+            if (!readingLoud) {
+                audioRef.current.play();
+            } else {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+        } else {
+            const formData = new FormData();
+            formData.append('text', text);
+            const startTime = performance.now();
+            fetch(process.env.TTS_URL, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        toast.error('Failed to generate voice');
+                    }
+                })
+                .then(wavBuffer => {
+                    // const wavData = new Uint8Array(wavBuffer);
+                    // const wavUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+                    setWavB64(wavBuffer);
+                    audioRef.current = new Audio("data:audio/wav;base64,"+wavBuffer);
+                    // onCanPlayThrough={e => {*/}
+                    //     {/*                    setCanPlayThrough(true);*/}
+                    //     {/*                }}*/}
+                    //     {/*                onPause={e => setReadingLoud(false)}*/}
+                    //     {/*                onEnded={e => setReadingLoud(false)}*/}
+                    audioRef.current.addEventListener('canplay', handleCanPlay);
+                    audioRef.current.addEventListener('pause', ()=> setReadingLoud(false));
+                    audioRef.current.addEventListener('ended', ()=> setReadingLoud(false));
+                    audioRef.current.addEventListener('canplaythrough', ()=> setCanPlayThrough(true));
+                    console.log("tts elapsed " + (performance.now() - startTime) + 'ms')
+                })
+                .catch(error => {
                     toast.error('Failed to generate voice');
-                }
-            })
-            .then(wavBuffer => {
-                // const wavData = new Uint8Array(wavBuffer);
-                // const wavUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
-                setWavB64(wavBuffer);
-                console.log("tts elapsed " + (performance.now() - startTime) + 'ms')
-            })
-            .catch(error => {
-                toast.error('Failed to generate voice');
-                setShowPlayTTS(true);
-            });
+                });
+        }
     }
 
     useEffect(() => {
-        if (completed) {
+        if (completed && messages.length>2) {
+            stopAllAudio();
+            setReadingLoud(!readingLoud);
             handleTTS();
         }
     }, [completed])
@@ -111,11 +139,25 @@ export const BotMessage = React.memo(forwardRef(({
         //     // clearInterval(intervalId);
         //     handleTTS();
         // }
-        if (localStorage.getItem('tts') === content) {
-            localStorage.removeItem('tts')
+        if (sessionStorage.getItem('tts') === content) {
+            sessionStorage.removeItem('tts')
+            stopAllAudio();
+            setReadingLoud(!readingLoud);
             handleTTS();
 
         }
+
+        return () => {
+            if (audioRef.current) {
+                // 停止音频
+                audioRef.current.pause();
+                // 将播放位置重置为开始
+                audioRef.current.currentTime = 0;
+                // 清除音频对象
+                audioRef.current = null;
+                console.log('Cleanup: Audio stopped and cleaned up');
+            }
+        };
     }, [])
     return (
         <div className={cn('group relative flex items-start md:-ml-12', className)}>
@@ -169,36 +211,49 @@ export const BotMessage = React.memo(forwardRef(({
                 ) : (
                     spinner
                 )}
-                {/*{typeof content === 'object' && (*/}
-                {/*    <div className={"absolute right-1 top-0"}>*/}
-                {/*        <button className={"btn rounded-full hover:bg-gray-200"} onClick={() => {*/}
-                {/*            // const filterMsgs = aiState.messages.filter(item => item.id !== msgID)*/}
-                {/*            // console.log(tts);*/}
-                {/*            // console.log(msgID);*/}
-                {/*            // console.log(filterMsgs);*/}
-                {/*            // setMessages(currentMessages => {*/}
-                {/*            //     console.log(currentMessages.filter(item => item.id !== msgID));*/}
-                {/*            //     return [...currentMessages.map(item => {*/}
-                {/*            //         if (item.id === msgID) {*/}
-                {/*            //             return { ...item, msg: text }; // 返回更新后的字典*/}
-                {/*            //         }*/}
-                {/*            //         return item; // 其他字典保持不变*/}
-                {/*            //     })]*/}
-                {/*            // })*/}
-                {/*            abortStreaming(msgID);*/}
-                {/*        }}>*/}
-                {/*            <IconStop className={"size-8"}/>*/}
-                {/*        </button>*/}
-                {/*    </div>*/}
-                {/*)}*/}
 
                 <div className={"items-center flex"}>
-                    {typeof content === 'string' && content.length > 0 && (
-                        <button className={`btn rounded-full hover:bg-gray-200 ${!showPlayTTS ? 'hidden':''}`} onClick={() => {
-                            handleTTS();
-                        }}>
-                            <IconPlayMedia/>
-                        </button>
+                    {/*<div>*/}
+                    {/*    /!*{typeof content.curr === 'string' ? (<div>123123123</div>): (<div>{typeof content.curr}</div>)}*!/*/}
+                    {/*    {(wavB64) && (*/}
+                    {/*        <>*/}
+                    {/*            <audio*/}
+                    {/*                autoPlay={false}*/}
+                    {/*                style={{display:'none'}}*/}
+                    {/*                src={`data:audio/wav;base64,${wavB64}`}*/}
+                    {/*                ref={audioRef}*/}
+                    {/*                onCanPlayThrough={e => {*/}
+                    {/*                    setCanPlayThrough(true);*/}
+                    {/*                }}*/}
+                    {/*                onPause={e => setReadingLoud(false)}*/}
+                    {/*                onEnded={e => setReadingLoud(false)}*/}
+                    {/*            />*/}
+                    {/*        </>*/}
+                    {/*    )}*/}
+                    {/*</div>*/}
+                    {((typeof content === 'string' && content.length > 0) || completed) && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`${readingLoud && canPlayThrough && ('tts-btn-stop')} bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
+                                    onClick={() => {
+                                        stopAllAudio();
+                                        setReadingLoud(!readingLoud);
+                                        handleTTS();
+                                    }}
+                                >
+                                    {readingLoud ? (
+                                        canPlayThrough ? (<IconStop className="size-6"/>):(spinner)
+                                    ):(
+                                        <IconPlayMedia className="size-6"/>
+                                    )}
+                                    <span className="sr-only">{readingLoud ? ("停止"):("朗读")}</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{readingLoud ? ("停止"):("朗读")}</TooltipContent>
+                        </Tooltip>
                     )}
 
 
@@ -217,7 +272,7 @@ export const BotMessage = React.memo(forwardRef(({
                                 setTransTexts(translatedText)
                             }
                         }}>
-                            <IconTranslate/>
+                            <IconTranslate className="size-6"/>
                         </button>
                     )}
 
@@ -230,55 +285,7 @@ export const BotMessage = React.memo(forwardRef(({
                     )}</div>
                 </div>
 
-                <div>
-                    {/*{typeof content.curr === 'string' ? (<div>123123123</div>): (<div>{typeof content.curr}</div>)}*/}
-                    {(!showPlayTTS || completed) && (
-                        <>
-                            <AudioPlayer
-                                layout="horizontal"
-                                autoPlay={false}
-                                style={{display: canPlayThrough ? '' : 'none'}}
-                                src={`data:audio/wav;base64,${wavB64}`}
-                                customProgressBarSection={
-                                    [
-                                        RHAP_UI.CURRENT_TIME,
-                                        RHAP_UI.PROGRESS_BAR,
-                                        RHAP_UI.DURATION,
-                                    ]
-                                }
-                                customControlsSection={
-                                    [
-                                        <div key={'empty'}></div>,
-                                        RHAP_UI.MAIN_CONTROLS,
-                                    ]
-                                }
-                                // // progressJumpSteps={{ backward: 1000, forward: 1000 }}
-                                onCanPlay={(e) => {
-                                    pauseAllAudio();
-                                    if (e.target) {
-                                        const element = e.target as HTMLMediaElement;
-                                        element.play();
-                                    }
-                                }}
-                                // onCanPlayThrough={e=>setCanPlayThrough(true)}
-                                // showDownloadProgress={true}
-                                onCanPlayThrough={e => {
-                                    setCanPlayThrough(true);
-                                }}
-                                // onPause={e => setIsPlaying(false)}
-                                // onEnded={e => setIsPlaying(false)}
-                                // onAbort={e => setIsPlaying(false)}
-                            />
-                            {!canPlayThrough && (<SpinnerMessage/>)}
-                        </>
-
-
-                    )}
-                </div>
-
-
                 {/*<audio style={{display:'block'}} className={"w-8 absolute"} src={`data:audio/wav;base64,${wavUrl}`} autoPlay={true}></audio>*/}
-
 
             </div>
             {/*<audio src={wavUrl} autoPlay={true}></audio>*/}
