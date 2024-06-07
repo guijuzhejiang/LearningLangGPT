@@ -212,25 +212,15 @@ export const BotMessage = React.memo(forwardRef(({
                     spinner
                 )}
 
+                <div className={`${showTranslate ? '' : 'hidden'}`}>{transTexts?.length === 0 ? (
+                    <>{spinner}</>
+                ) : (
+                    <span className={`bg-yellow-50 bg-opacity-40`}>
+                            {transTexts}
+                        </span>
+                )}</div>
+
                 <div className={"items-center flex"}>
-                    {/*<div>*/}
-                    {/*    /!*{typeof content.curr === 'string' ? (<div>123123123</div>): (<div>{typeof content.curr}</div>)}*!/*/}
-                    {/*    {(wavB64) && (*/}
-                    {/*        <>*/}
-                    {/*            <audio*/}
-                    {/*                autoPlay={false}*/}
-                    {/*                style={{display:'none'}}*/}
-                    {/*                src={`data:audio/wav;base64,${wavB64}`}*/}
-                    {/*                ref={audioRef}*/}
-                    {/*                onCanPlayThrough={e => {*/}
-                    {/*                    setCanPlayThrough(true);*/}
-                    {/*                }}*/}
-                    {/*                onPause={e => setReadingLoud(false)}*/}
-                    {/*                onEnded={e => setReadingLoud(false)}*/}
-                    {/*            />*/}
-                    {/*        </>*/}
-                    {/*    )}*/}
-                    {/*</div>*/}
                     {((typeof content === 'string' && content.length > 0) || completed) && (
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -245,14 +235,14 @@ export const BotMessage = React.memo(forwardRef(({
                                     }}
                                 >
                                     {readingLoud ? (
-                                        canPlayThrough ? (<IconStop className="size-6"/>):(spinner)
-                                    ):(
+                                        canPlayThrough ? (<IconStop className="size-6"/>) : (spinner)
+                                    ) : (
                                         <IconPlayMedia className="size-6"/>
                                     )}
-                                    <span className="sr-only">{readingLoud ? ("停止"):("朗读")}</span>
+                                    <span className="sr-only">{readingLoud ? ("停止") : ("朗读")}</span>
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>{readingLoud ? ("停止"):("朗读")}</TooltipContent>
+                            <TooltipContent>{readingLoud ? ("停止") : ("朗读")}</TooltipContent>
                         </Tooltip>
                     )}
 
@@ -275,14 +265,6 @@ export const BotMessage = React.memo(forwardRef(({
                             <IconTranslate className="size-6"/>
                         </button>
                     )}
-
-                    <div className={`${showTranslate ? '' : 'hidden'}`}>{transTexts?.length === 0 ? (
-                        <>{spinner}</>
-                    ) : (
-                        <span className={`bg-yellow-50 bg-opacity-40`}>
-                            {transTexts}
-                        </span>
-                    )}</div>
                 </div>
 
                 {/*<audio style={{display:'block'}} className={"w-8 absolute"} src={`data:audio/wav;base64,${wavUrl}`} autoPlay={true}></audio>*/}
