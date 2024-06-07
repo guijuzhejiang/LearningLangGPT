@@ -2,19 +2,8 @@
 
 import * as React from 'react'
 import { type DialogProps } from '@radix-ui/react-dialog'
-import { toast } from 'sonner'
-
-import { ServerActionResult, type Chat } from '@/lib/types'
-import {Button, buttonVariants} from '@/components/ui/button'
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogDescription,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle
-// } from '@/components/ui/dialog'
-import {IconSpinner, IconTeacher} from '@/components/ui/icons'
+import {buttonVariants} from '@/components/ui/button'
+import {IconTeacher} from '@/components/ui/icons'
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import {cn} from "@/lib/utils";
@@ -25,7 +14,6 @@ interface ChatShareDialogProps extends DialogProps {
 export function TeacherVoiceDialog({
   ...props
 }: ChatShareDialogProps) {
-  const [isSharePending, startShareTransition] = React.useTransition()
   const [teacherDialogOpen, setTeacherDialogOpen] = React.useState(false)
 
 
@@ -44,7 +32,7 @@ export function TeacherVoiceDialog({
                           Edit profile
                       </Dialog.Title>
                       <Dialog.Description className="text-mauve11 mt-[10px] mb-5 text-[15px] leading-normal">
-                          Make changes to your profile here. Click save when you're done.
+                          {"Make changes to your profile here. Click save when you're done."}
                       </Dialog.Description>
                       <fieldset className="mb-[15px] flex items-center gap-5">
                           <label className="text-violet11 w-[90px] text-right text-[15px]" htmlFor="name">
