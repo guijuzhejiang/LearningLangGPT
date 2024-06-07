@@ -26,6 +26,7 @@ export interface ChatPanelProps {
     setVoiceContinuationEnable: (value: boolean) => void,
     userSpeakLately: Date | boolean
     setUserSpeakLately: (value: Date | boolean) => void
+    voiceText: string
     vad: object,
 }
 
@@ -43,6 +44,7 @@ export function ChatPanel({
                               setVoiceContinuationEnable,
                               userSpeakLately,
                               setUserSpeakLately,
+                              voiceText,
                               vad,
                           }: ChatPanelProps) {
     const [aiState] = useAIState()
@@ -187,34 +189,34 @@ export function ChatPanel({
                         ))}
                 </div>
 
-                {messages?.length >= 2 ? (
-                    <div className="flex h-12 items-center justify-center">
-                        <div className="flex space-x-2">
-                            {id && title ? (
-                                <>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setShareDialogOpen(true)}
-                                    >
-                                        <IconShare className="mr-2"/>
-                                        Share
-                                    </Button>
-                                    <ChatShareDialog
-                                        open={shareDialogOpen}
-                                        onOpenChange={setShareDialogOpen}
-                                        onCopy={() => setShareDialogOpen(false)}
-                                        shareChat={shareChat}
-                                        chat={{
-                                            id,
-                                            title,
-                                            messages: aiState.messages
-                                        }}
-                                    />
-                                </>
-                            ) : null}
-                        </div>
-                    </div>
-                ) : null}
+                {/*{messages?.length >= 2 ? (*/}
+                {/*    <div className="flex h-12 items-center justify-center">*/}
+                {/*        <div className="flex space-x-2">*/}
+                {/*            {id && title ? (*/}
+                {/*                <>*/}
+                {/*                    <Button*/}
+                {/*                        variant="outline"*/}
+                {/*                        onClick={() => setShareDialogOpen(true)}*/}
+                {/*                    >*/}
+                {/*                        <IconShare className="mr-2"/>*/}
+                {/*                        Share*/}
+                {/*                    </Button>*/}
+                {/*                    <ChatShareDialog*/}
+                {/*                        open={shareDialogOpen}*/}
+                {/*                        onOpenChange={setShareDialogOpen}*/}
+                {/*                        onCopy={() => setShareDialogOpen(false)}*/}
+                {/*                        shareChat={shareChat}*/}
+                {/*                        chat={{*/}
+                {/*                            id,*/}
+                {/*                            title,*/}
+                {/*                            messages: aiState.messages*/}
+                {/*                        }}*/}
+                {/*                    />*/}
+                {/*                </>*/}
+                {/*            ) : null}*/}
+                {/*        </div>*/}
+                {/*    </div>*/}
+                {/*) : null}*/}
 
                 <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
                     <PromptForm input={input}
@@ -226,6 +228,7 @@ export function ChatPanel({
                                 setVoiceContinuationEnable={setVoiceContinuationEnable}
                                 userSpeakLately={userSpeakLately}
                                 setUserSpeakLately={setUserSpeakLately}
+                                voiceText={voiceText}
                                 vad={vad}
                     />
                     {/*<FooterText className="hidden sm:block" />*/}

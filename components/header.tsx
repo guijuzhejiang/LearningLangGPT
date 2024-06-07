@@ -14,6 +14,10 @@ import {SidebarMobile} from './sidebar-mobile'
 import {SidebarToggle} from './sidebar-toggle'
 import {ChatHistory} from './chat-history'
 import {Session} from '@/lib/types'
+import * as Dialog from '@radix-ui/react-dialog';
+import { Cross2Icon } from '@radix-ui/react-icons';
+import {TeacherVoiceDialog} from "@/components/teacher-voice-dialog";
+import {shareChat} from "@/app/actions";
 
 async function UserOrLogin() {
     const session = (await auth()) as Session
@@ -56,15 +60,7 @@ export function Header() {
                 </React.Suspense>
             </div>
             <div className="flex items-center justify-end space-x-2">
-                {/*<a*/}
-                {/*    target="_blank"*/}
-                {/*    href="https://github.com/vercel/nextjs-ai-chatbot/"*/}
-                {/*    rel="noopener noreferrer"*/}
-                {/*    className={cn(buttonVariants({variant: 'outline'}))}*/}
-                {/*>*/}
-                {/*    <IconTeacher/>*/}
-                {/*    <span className="hidden ml-2 md:flex">GitHub</span>*/}
-                {/*</a>*/}
+                {/*<TeacherVoiceDialog />*/}
             </div>
         </header>
     )

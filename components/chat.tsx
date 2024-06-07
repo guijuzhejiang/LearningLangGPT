@@ -146,9 +146,6 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   useEffect(() => {
     if (audioBuffer.length > 0) {
-    //   timerRef.current = setTimeout(() => {
-    //     if (!speakTimer) {
-          // console.log('State not changed in silenceDurationMS seconds????????????');
           const formData = new FormData();
           audioBuffer.map((wavBuf, i)=>{
             const wavBlob = new Blob([wavBuf], {type: 'audio/wav'});
@@ -279,7 +276,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         setVoiceContinuationEnable={setVoiceContinuationEnable}
         userSpeakLately={userSpeakLately}
         setUserSpeakLately={setUserSpeakLately}
-        // micAvailable={micAvailable}
+        voiceText={voiceText}
         vad={vad}
       />
     </div>

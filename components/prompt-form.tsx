@@ -39,6 +39,7 @@ export interface PromptFormProps {
     setVoiceContinuationEnable: (value: boolean) => void
     userSpeakLately: Date | boolean
     setUserSpeakLately: (value: Date | boolean) => void
+    voiceText: string
     vad: object
 }
 
@@ -52,6 +53,7 @@ export function PromptForm({
                                setVoiceContinuationEnable,
                                userSpeakLately,
                                setUserSpeakLately,
+                               voiceText,
                                vad
                            }: PromptFormProps) {
 
@@ -67,7 +69,6 @@ export function PromptForm({
     const [hintContent, setHintContent] = React.useState<any>('');
     const [showHint, setShowHint] = React.useState<boolean>(false);
     const [gettingHint, setGettingHint] = React.useState<boolean>(false);
-    const [lastMsgCompleted, setLastMsgCompleted] = React.useState<boolean>(false);
     const [readingLoud, setReadingLoud] = React.useState<boolean>(false)
     const [canPlayThrough, setCanPlayThrough] = React.useState(false)
     const [canPlay, setCanPlay] = React.useState(false)
@@ -114,16 +115,8 @@ export function PromptForm({
                     }
                 })
                 .then(wavBuffer => {
-                    // const wavData = new Uint8Array(wavBuffer);
-                    // const wavUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
-                    // setWavB64(wavBuffer);
                     setCanPlay(true);
                     audioRef.current = new Audio("data:audio/wav;base64,"+wavBuffer);
-                    // onCanPlayThrough={e => {*/}
-                    //     {/*                    setCanPlayThrough(true);*/}
-                    //     {/*                }}*/}
-                    //     {/*                onPause={e => setReadingLoud(false)}*/}
-                    //     {/*                onEnded={e => setReadingLoud(false)}*/}
                     audioRef.current.addEventListener('canplay', handleCanPlay);
                     audioRef.current.addEventListener('pause', ()=> setReadingLoud(false));
                     audioRef.current.addEventListener('ended', ()=> setReadingLoud(false));
@@ -220,45 +213,35 @@ export function PromptForm({
 
         if (messages.length > 1 && showHint) {
             ;(async () => {
-                setLastMsgCompleted(true);
                 await handleUpdateHint(messages[messages.length - 1].display.props.content);
             })()
         }
     }, []);
     //
     useEffect(() => {
-        if (lastMessage && showHint) {
-            console.log(lastMessage)
-            console.log(lastMessage.display.ref?.current?.completed);
-            if (lastMessage.display.ref?.current?.completed) {
-                setLastMsgCompleted(true);
+        console.log("!xxxxxxxxxxx!!!!!!!!!!!!")
+        console.log(messages[messages.length-1])
+        if (showHint) {
+            if (lastMessage?.display?.ref?.current?.completed) {
                 ;(async () => {
-                    // const finxedMsgs = [];
-                    // for (let i = 0; i < messages.length; i++) {
-                    //     if (i % 2 === 0) {
-                    //         finxedMsgs[i] = {role:'user', content: messages[i]?.display?.props?.children}
-                    //     } else {
-                    //         finxedMsgs[i] = {role:'assistant', content: messages[i]?.display?.props?.content}
-                    //     }
-                    // }
-                    // console.log("finxedMsgs");
-                    // console.log(finxedMsgs);
-                    // console.log("lastMessage.display.ref?.current?.text")
-                    // console.log(typeof lastMessage.display.ref?.current?.text)
                     await handleUpdateHint(lastMessage.display.ref?.current?.text);
                 })()
-            } else {
-                setLastMsgCompleted(false);
+            }
+
+            if (voiceContinuationEnable) {
+                ;(async () => {
+                    await handleUpdateHint(voiceText);
+                })()
             }
         }
-    }, [lastMessage?.display.ref?.current?.completed])
+    }, [voiceText, lastMessage?.display.ref?.current?.completed])
 
     return (
         <form
             ref={formRef}
             onSubmit={async (e: any) => {
                 e.preventDefault()
-                setLastMsgCompleted(false);
+                setHintContent('');
                 // Blur focus on mobile
                 if (window.innerWidth < 600) {
                     e.target['message']?.blur()
@@ -280,14 +263,12 @@ export function PromptForm({
                 // Submit and get response message
                 const responseMessage = await submitUserMessage(value)
                 responseMessage.display.ref = lastMsgRef;
-                // console.log("responseMessage.display.ref?.current.completed");
-                // console.log(responseMessage.display.ref?.current?.completed);
                 setMessages(currentMessages => [...currentMessages, responseMessage])
                 setLastMessage(responseMessage);
             }}
         >
             {/*// className="peer absolute inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]"*/}
-            <div className={`${(showHint && lastMsgCompleted) ? '':'hidden'} relative duration-300 ease-in-out mb-4 grid gap-2 px-4 sm:px-0`}>
+            <div className={`${(showHint && messages.length > 1) ? '':'hidden'} relative duration-300 ease-in-out mb-4 grid gap-2 px-4 sm:px-0`}>
                 <div className={"absolute right-1 -top-3 sm:right-2"}>
                     {/* 播放 tts */}
                     <Tooltip>
@@ -356,9 +337,6 @@ export function PromptForm({
                                 onClick={async (e) => {
                                     e.preventDefault()
 
-                                    // console.log(showHint && lastMsgCompleted);
-                                    // console.log(showHint);
-                                    // console.log(lastMsgCompleted);
                                     if (audioRef.current) {
                                         audioRef.current.pause();
                                         audioRef.current.currentTime = 0;
@@ -406,7 +384,6 @@ export function PromptForm({
                     className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 'hidden md:block'`}
                     onClick={async (e) => {
                         e.preventDefault();
-                        // setLastMsgCompleted(false);
                         if (voiceContinuationEnable) {
                             setHintContent('');
                             setMessages(currentMessages => [
@@ -497,7 +474,6 @@ export function PromptForm({
                                 onClick={async (e) => {
                                     e.preventDefault();
                                     setShowHint(true);
-                                    setLastMsgCompleted(true);
                                     if (hintContent.length === 0) {
                                         await handleUpdateHint(messages[messages.length - 1].display.props.content);
                                     }
