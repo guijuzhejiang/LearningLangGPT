@@ -171,7 +171,7 @@ export function PromptForm({
         }
     }
 
-    const handleUpdateHint = async (msg) => {
+    const handleUpdateHint = async (msg:string) => {
         setGettingHint(true);
         const hintText = await getHint(msg);
         //
@@ -217,6 +217,7 @@ export function PromptForm({
             })()
         }
     }, []);
+
     //
     useEffect(() => {
         console.log("!xxxxxxxxxxx!!!!!!!!!!!!")
@@ -347,7 +348,7 @@ export function PromptForm({
                                     setCanPlay(false);
                                     setCanPlayThrough(false);
                                     setHintContent('');
-                                    await handleUpdateHint(messages[messages.length - 1].display.props.content);
+                                    await handleUpdateHint(messages[messages.length - 1].display.ref?.current?.text);
                                 }}
                             >
                                 <IconRefresh/>
@@ -475,7 +476,7 @@ export function PromptForm({
                                     e.preventDefault();
                                     setShowHint(true);
                                     if (hintContent.length === 0) {
-                                        await handleUpdateHint(messages[messages.length - 1].display.props.content);
+                                        await handleUpdateHint(messages[messages.length - 1].display.ref?.current?.text);
                                     }
                                 }}
                             >

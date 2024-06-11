@@ -33,6 +33,7 @@ import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {ConversationChain} from "langchain/chains";
 import {HumanMessage, AIMessage} from "@langchain/core/messages";
 import {createStreamableValue} from "ai/rsc";
+import {readStreamableValue} from "ai/rsc";
 
 const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
@@ -110,6 +111,12 @@ async function getHint(msg:string) {
     // const msgs = JSON.parse(jmsg);
     console.log("msgs[msgs.length-1]")
     console.log(msg)
+    // console.log(msg)
+    // if (typeof msg === 'object') {
+    //     for await (const delta of readStreamableValue(msg)) {
+    //         console.log(delta)
+    //     }
+    // }
     // console.log(msgs[msgs.length-1])
     // console.log(msgs[msgs.length-1].content)
     if (!langchainTools.prompter) {
