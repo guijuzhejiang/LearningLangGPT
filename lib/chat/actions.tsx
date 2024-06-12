@@ -491,7 +491,7 @@ const createChatChain = async (msgs) => {
         Use questions and answers, role-playing, and situational dialogues to enhance listening and speaking skills.
         Correct students' mistakes and provide simple explanations and suggestions.
       `
-    const prompt_easy_hard =
+    const prompt_hard_str =
         `
         You are a professional {language} teacher helping students aged 18 and above to enhance their {language} proficiency.  
         Use slightly more complex sentences and advanced vocabulary, discussing in-depth topics such as current events, and career development. 
