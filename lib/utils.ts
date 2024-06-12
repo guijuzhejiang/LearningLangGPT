@@ -1,6 +1,7 @@
 import {clsx, type ClassValue} from 'clsx'
 import {customAlphabet} from 'nanoid'
 import {twMerge} from 'tailwind-merge'
+import Cookies from "js-cookie";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -156,3 +157,50 @@ export function arrayBufferToAudioBuffer(arrayBuffer, context) {
         }, reject)
     })
 }
+
+
+export function updateUserCookies(uid:string, cid:string, key:string, value:string) {
+    if (uid === 'default') {
+        const userSession = Cookies.get(uid)
+        let userData = {}
+
+        if (userSession) {
+            userData = JSON.parse(userSession)
+            userData[key] = value
+        } else {
+            userData[key] = value;
+        }
+        Cookies.set(uid, JSON.stringify(userData), { expires: 365 });
+
+    } else {
+        const userKey = `user${uid}`;
+        const userSession = Cookies.get(userKey)
+        if (userSession) {
+            const userData = JSON.parse(userSession)
+            if (!userData.hasOwnProperty(cid)) {
+                userData[cid] = {}
+            }
+            userData[cid][key] = value;
+
+            Cookies.set(userKey, JSON.stringify(userData), { expires: 365 });
+        } else {
+            const userData = {}
+            userData[cid] = {}
+            userData[cid][key] = value;
+            Cookies.set(userKey, JSON.stringify(userData), { expires: 365 });
+        }
+    }
+}
+
+export function loadUserCookies(uid:string, cid:string) {
+    if (uid === 'default') {
+        const userSession = Cookies.get(uid);
+        const userData = JSON.parse(userSession);
+        return userData;
+    } else {
+        const userSession = Cookies.get(`user${uid}`);
+        const userData = JSON.parse(userSession);
+        return userData[cid];
+    }
+}
+

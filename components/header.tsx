@@ -50,17 +50,18 @@ async function UserOrLogin() {
     )
 }
 
-export function Header() {
+export async function Header() {
+    const session = (await auth()) as Session
     return (
         <header
-            className="sticky top-0 z-50 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
+            className="sticky top-0 z-6 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
             <div className="flex items-center">
                 <React.Suspense fallback={<div className="flex-1 overflow-auto"/>}>
                     <UserOrLogin/>
                 </React.Suspense>
             </div>
             <div className="flex items-center justify-end space-x-2">
-                {/*<TeacherVoiceDialog />*/}
+                <TeacherVoiceDialog userId={session ? session.user.id: 'default'} />
             </div>
         </header>
     )

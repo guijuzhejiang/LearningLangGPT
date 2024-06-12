@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { IconSpinner } from '@/components/ui/icons'
+import Cookies from "js-cookie";
 
 interface ClearHistoryProps {
   isEnabled: boolean
@@ -60,7 +61,12 @@ export function ClearHistory({
                   return
                 }
 
-                setOpen(false)
+                setOpen(false);
+                Object.keys(Cookies.get()).forEach(function(cookieName) {
+                  if (cookieName.startsWith('user')) {
+                    Cookies.remove(cookieName);
+                  }
+                });
               })
             }}
           >

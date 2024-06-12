@@ -1,7 +1,7 @@
 'use client'
 
 import {IconOpenAI, IconPlayMedia, IconStop, IconTranslate, IconUser} from '@/components/ui/icons'
-import {cn, stopAllAudio} from '@/lib/utils'
+import {cn, loadUserCookies, stopAllAudio} from '@/lib/utils'
 import {spinner} from './spinner'
 import {CodeBlock} from '../ui/codeblock'
 import {MemoizedReactMarkdown} from '../markdown'
@@ -17,6 +17,9 @@ import {AI} from "@/lib/chat/actions";
 import {useAIState, useUIState, useActions} from 'ai/rsc';
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
+import {usePathname} from "next/navigation";
+import {auth} from "@/auth";
+import {Session} from "@/lib/types";
 
 // Different types of message bubbles.
 
@@ -47,9 +50,13 @@ export function UserMessage({children}: { children: React.ReactNode }) {
 
 export const BotMessage = React.memo(forwardRef(({
                                           content,
+                                          chatId,
+                                          userId,
                                           className,
                                       }: {
     content: string | StreamableValue<string>
+    userId?: string
+    chatId?: string
     className?: string
 }, ref) => {
     useImperativeHandle(ref, () => ({
@@ -63,10 +70,12 @@ export const BotMessage = React.memo(forwardRef(({
     const [canPlayThrough, setCanPlayThrough] = React.useState(false)
     const [showTranslate, setShowTranslate] = React.useState(false)
     const [wavB64, setWavB64] = React.useState<string | undefined>('')
+    const [wavVoice, setWavVoice] = React.useState<string | undefined>('Mary')
     const [transTexts, setTransTexts] = React.useState<string | undefined>('')
     const [readingLoud, setReadingLoud] = React.useState<boolean>(false)
     const audioRef = React.useRef(null);
     const {translate} = useActions()
+    const path = usePathname();
 
     const handleCanPlay = (e) => {
         console.log(e);
@@ -78,7 +87,15 @@ export const BotMessage = React.memo(forwardRef(({
     }
 
     const handleTTS = () => {
-        if (wavB64) {
+        const userData = loadUserCookies(userId, chatId);
+        let teacherName = "Mary"
+        let teacherGender = "female"
+        if (userData) {
+            teacherName = userData["teacherName"];
+            teacherGender = userData["teacherGender"];
+        }
+
+        if (wavB64 && teacherName === wavVoice) {
             // console.log(audioRef.current);
             if (!readingLoud) {
                 audioRef.current.play();
@@ -90,7 +107,17 @@ export const BotMessage = React.memo(forwardRef(({
             const formData = new FormData();
             formData.append('text', text);
             const startTime = performance.now();
-            fetch(process.env.TTS_URL, {
+
+            // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
+            // const session = (await auth()) as Session
+            setCanPlayThrough(false);
+
+            setWavVoice(teacherName);
+            // alert(teacherName)
+            // alert(teacherGender)
+            formData.append('teacher_name', teacherName);
+            formData.append('teacher_gender', teacherGender);
+            fetch(`${process.env.TTS_URL}`, {
                 method: 'POST',
                 body: formData
             })
@@ -248,22 +275,49 @@ export const BotMessage = React.memo(forwardRef(({
 
 
                     {(typeof content === 'string' || completed) && (
-                        <button className={"btn rounded-full hover:bg-gray-200"} onClick={async () => {
-                            setShowTranslate(true);
-                            const translatedText = await translate(text);
-                            if (typeof translatedText === 'object') {
-                                let value = ''
-                                for await (const delta of readStreamableValue(translatedText)) {
-                                    if (typeof delta === 'string') {
-                                        setTransTexts((value = value + delta))
-                                    }
-                                }
-                            } else {
-                                setTransTexts(translatedText)
-                            }
-                        }}>
-                            <IconTranslate className="size-6"/>
-                        </button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
+                                    onClick={async () => {
+                                        setShowTranslate(true);
+                                        const translatedText = await translate(text);
+                                        if (typeof translatedText === 'object') {
+                                            let value = ''
+                                            for await (const delta of readStreamableValue(translatedText)) {
+                                                if (typeof delta === 'string') {
+                                                    setTransTexts((value = value + delta))
+                                                }
+                                            }
+                                        } else {
+                                            setTransTexts(translatedText)
+                                        }
+                                    }}
+                                >
+                                    <IconTranslate className="size-6"/>
+                                    <span className="sr-only">翻译</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>翻译</TooltipContent>
+                        </Tooltip>
+                        // <button className={"btn rounded-full hover:bg-gray-200"} onClick={async () => {
+                        //     setShowTranslate(true);
+                        //     const translatedText = await translate(text);
+                        //     if (typeof translatedText === 'object') {
+                        //         let value = ''
+                        //         for await (const delta of readStreamableValue(translatedText)) {
+                        //             if (typeof delta === 'string') {
+                        //                 setTransTexts((value = value + delta))
+                        //             }
+                        //         }
+                        //     } else {
+                        //         setTransTexts(translatedText)
+                        //     }
+                        // }}>
+                        //     <IconTranslate className="size-6"/>
+                        // </button>
                     )}
                 </div>
 

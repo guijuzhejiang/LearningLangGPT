@@ -365,7 +365,9 @@ export function PromptForm({
                                 variant="outline"
                                 size="icon"
                                 className="bg-red-50 hover:bg-red-200 size-6 rounded-full p-0 mr-1"
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                    e.preventDefault();
+
                                     setShowHint(false);
                                 }}
                             >
@@ -403,6 +405,7 @@ export function PromptForm({
                             setLastMessage(responseMessage);
                         } else {
                             setInput(hintContent);
+                            inputRef?.current?.focus();
                         }
                     }}
                 >
@@ -476,7 +479,13 @@ export function PromptForm({
                                     e.preventDefault();
                                     setShowHint(true);
                                     if (hintContent.length === 0) {
-                                        await handleUpdateHint(messages[messages.length - 1].display.ref?.current?.text);
+                                        const lastMsg = messages[messages.length - 1].display.ref?.current?.text;
+                                        if (lastMsg) {
+                                            await handleUpdateHint(lastMsg);
+                                        } else {
+                                            await handleUpdateHint(messages[messages.length - 1].display.props?.content);
+                                        }
+                                        // alert();
                                     }
                                 }}
                             >

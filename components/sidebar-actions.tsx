@@ -22,6 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip'
+import Cookies from "js-cookie";
 
 interface SidebarActionsProps {
   chat: Chat
@@ -86,6 +87,11 @@ export function SidebarActions({
                   router.refresh()
                   router.push('/')
                   toast.success('Chat deleted')
+                  Object.keys(Cookies.get()).forEach(function(cookieName) {
+                    if (cookieName.includes(chat.id)) {
+                      Cookies.remove(cookieName);
+                    }
+                  });
                 })
               }}
             >

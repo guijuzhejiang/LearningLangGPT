@@ -1,9 +1,12 @@
+const { violet, blackA, mauve, green } = require('@radix-ui/colors');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
+    './components/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}'
   ],
@@ -22,6 +25,10 @@ module.exports = {
         mono: ['var(--font-geist-mono)']
       },
       colors: {
+        ...mauve,
+        ...violet,
+        ...green,
+        ...blackA,
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

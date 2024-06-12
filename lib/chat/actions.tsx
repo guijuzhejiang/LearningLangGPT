@@ -33,7 +33,6 @@ import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {ConversationChain} from "langchain/chains";
 import {HumanMessage, AIMessage} from "@langchain/core/messages";
 import {createStreamableValue} from "ai/rsc";
-import {readStreamableValue} from "ai/rsc";
 
 const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
@@ -332,7 +331,7 @@ async function submitUserMessage(content: string) {
                             // const start = Date.now();
                             // 使用 while 循环阻塞一段时间
                             // while (Date.now() - start < 50) {
-                                // 空循环，什么都不做
+                            // 空循环，什么都不做
                             // }
                             if (token) {
                                 if (token.includes('*')) {
@@ -431,9 +430,11 @@ async function submitUserMessage(content: string) {
         }
     });
 
+    const session = await auth();
+    const userId = (session && session.user) ? session.user.id : "default";
     return {
         id: nanoid(),
-        display: <BotMessage content={textStream.value}/>
+        display: <BotMessage content={textStream.value} userId={userId} chatId={chatId}/>
     }
 }
 
@@ -572,8 +573,9 @@ export const AI = createAI<AIState, UIState>({
         const session = await auth()
 
         if (session && session.user) {
-            const aiState = getAIState()
-
+            const aiState =
+                getAIState()
+            aiState.userId = session.user.id;
             if (aiState) {
                 const uiState = getUIStateFromAIState(aiState)
                 return uiState
@@ -638,7 +640,7 @@ export const getUIStateFromAIState = (aiState: Chat) => {
                 ) : message.role === 'user' ? (
                     <UserMessage>{message.content}</UserMessage>
                 ) : (
-                    <BotMessage content={message.content}/>
+                    <BotMessage content={message.content} userId={aiState.userId} chatId={aiState.chatId}/>
                 )
         }))
 }
