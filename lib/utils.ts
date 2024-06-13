@@ -2,6 +2,7 @@ import {clsx, type ClassValue} from 'clsx'
 import {customAlphabet} from 'nanoid'
 import {twMerge} from 'tailwind-merge'
 import Cookies from "js-cookie";
+import
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -193,14 +194,30 @@ export function updateUserCookies(uid:string, cid:string, key:string, value:stri
 }
 
 export function loadUserCookies(uid:string, cid:string) {
+    let userData = {
+        "teacherName": "Mary",
+        "teacherGender": "female",
+    }
     if (uid === 'default') {
         const userSession = Cookies.get(uid);
-        const userData = JSON.parse(userSession);
-        return userData;
+        if (userSession) {
+            userData = JSON.parse(userSession);
+            return userData;
+        } else {
+            return userData;
+        }
     } else {
         const userSession = Cookies.get(`user${uid}`);
-        const userData = JSON.parse(userSession);
-        return userData[cid];
+        if (userSession) {
+            userData = JSON.parse(userSession);
+            if (userData.hasOwnProperty(cid)) {
+                return userData[cid];
+            } else {
+                return userData;
+            }
+        } else {
+            return userData;
+        }
     }
 }
 
