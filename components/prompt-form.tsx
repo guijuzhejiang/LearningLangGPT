@@ -23,44 +23,25 @@ import {useEnterSubmit} from '@/lib/hooks/use-enter-submit'
 import {nanoid} from 'nanoid'
 import {usePathname, useRouter} from 'next/navigation'
 import {toast} from "sonner";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {readStreamableValue} from "ai/rsc";
 import {spinner} from "@/components/stocks";
-import {stopAllAudio} from "@/lib/utils";
+import {pauseAllAudio, stopAllAudio} from "@/lib/utils";
+import {useMicVAD, utils} from "@ray8716397/vad-react";
 
 
 export interface PromptFormProps {
-    input: string
-    setInput: (value: string) => void
-    micOn: boolean
-    setMicOn: (value: boolean) => void
-    STTIng: boolean
-    voiceContinuationEnable: boolean
-    setVoiceContinuationEnable: (value: boolean) => void
-    userSpeakLately: Date | boolean
-    setUserSpeakLately: (value: Date | boolean) => void
-    voiceText: string
-    vad: object
+    chatId?: string,
 }
 
 export function PromptForm({
-                               input,
-                               setInput,
-                               micOn,
-                               setMicOn,
-                               STTIng,
-                               voiceContinuationEnable,
-                               setVoiceContinuationEnable,
-                               userSpeakLately,
-                               setUserSpeakLately,
-                               voiceText,
-                               vad
+                               chatId
                            }: PromptFormProps) {
 
     const router = useRouter()
     const {formRef, onKeyDown} = useEnterSubmit()
     const inputRef = React.useRef<HTMLTextAreaElement>(null)
-    const {submitUserMessage, getHint, translate} = useActions()
+    const {submitUserMessage, abortStreaming, getHint, translate} = useActions()
     const [messages, setMessages] = useUIState<typeof AI>()
     const timerRef = React.useRef(null);
     const lastMsgRef = React.useRef(null);
@@ -79,7 +60,180 @@ export function PromptForm({
     const vadTimeoutMS = 120 * 1000;
     const path = usePathname();
 
+    const [input, setInput] = React.useState('');
 
+    /* PART VAD */
+    // mic 是否可用
+    // const [micAvailable, setMicAvailable] = React.useState(false)
+    // mic 是否打开
+    const [micOn, setMicOn] = React.useState(true)
+    // 是否正在处理STT
+    const [STTIng, setSTTIng] = React.useState(false)
+    // 持续讲话模式
+    const [voiceContinuationEnable, setVoiceContinuationEnable] = React.useState(false)
+    // stt文本
+    const [voiceText, setVoiceText] = React.useState('');
+    // wav float32数组缓存
+    const [audioBuffer, setAudioBuffer] = React.useState([]);
+    // 1min有没有讲话
+    const [userSpeakLately, setUserSpeakLately] = React.useState<Date>(new Date());
+    const [userAudioMedia, setUserAudioMedia] = React.useState(null);
+
+    useEffect(() => {
+        // 在状态变化后打印最新的值
+        // console.log('input updated:', voiceText);
+        if (voiceContinuationEnable) {
+            // console.log("voiceContinuationEnable:" + voiceContinuationEnable)
+            const asyncSubmit = async () => {
+                const value = (input + voiceText).trim()
+                setInput('')
+                if (!value) return
+
+                // Optimistically add user message UI
+                setMessages(currentMessages => [
+                    ...currentMessages,
+                    {
+                        id: nanoid(),
+                        display: <UserMessage>{value}</UserMessage>
+                    }
+                ])
+
+                // Submit and get response message
+                const responseMessage = await submitUserMessage(value)
+                setMessages(currentMessages => [...currentMessages, responseMessage])
+            }
+            asyncSubmit();
+        } else {
+            setInput(input + voiceText);
+        }
+        setSTTIng(false)
+    }, [voiceText]);
+
+    useEffect(() => {
+        const checkMicrophone = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+                stream.getTracks().forEach(track => track.stop());
+                // setMicAvailable(true);
+                setMicOn(true);
+                // vad.start();
+            } catch (err) {
+                // setMicAvailable(false);
+                setMicOn(false);
+                // vad.stop()
+            }
+        };
+
+        checkMicrophone();
+
+        if (sessionStorage.getItem("fromRoot")) {
+            sessionStorage.removeItem("fromRoot");
+            setVoiceContinuationEnable(true);
+        }
+
+    }, []);
+
+    useEffect(() => {
+        if (audioBuffer.length > 0) {
+            const formData = new FormData();
+            audioBuffer.map((wavBuf, i) => {
+                const wavBlob = new Blob([wavBuf], {type: 'audio/wav'});
+                formData.append('wavFiles', wavBlob, 'audio.wav');
+            });
+
+            const startTime = performance.now();
+            fetch(process.env.STT_URL, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    setAudioBuffer([])
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        toast.error('Failed to upload');
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        // console.log(data.result.text);
+                        setVoiceText(data.result.text);
+                        // if (voiceContinuationEnable) {
+                        //     console.log("voiceContinuationEnable:" + voiceContinuationEnable)
+                        //     formRef.current.dispatchEvent(new Event('submit', { bubbles: true }));
+                        // }
+                    } else {
+                        toast.error('failed');
+                    }
+
+                    console.log("stt elapsed " + (performance.now() - startTime) + 'ms')
+                })
+                .catch(error => {
+                    toast.error('Failed to upload');
+                    setAudioBuffer([])
+                    console.error('上传错误:', error);
+                });
+        } else {
+            // console.log('State changed in silenceDurationMS seconds!!!!!!!!!!!!!!!!!');
+        }
+
+    }, [audioBuffer]);
+
+    const vad = useMicVAD({
+        startOnLoad: path.includes('chat'),
+        positiveSpeechThreshold: 0.8,
+        negativeSpeechThreshold: 0.8 - 0.15,
+        minSpeechFrames: 3,
+        preSpeechPadFrames: 1,
+        redemptionFrames: parseInt(String(8)),
+        onVADMisfire: () => {
+            console.log('onVADMisfire')
+        },
+        // onFrameProcessed:(probabilities)=>{
+        //   alert("asd");
+        //   console.log(probabilities)
+        // },
+        onSpeechStart: () => {
+            try {
+                console.log("onSpeechStart");
+                setUserSpeakLately(new Date());
+                pauseAllAudio();
+
+                if (messages.length > 0) {
+                    setSTTIng(true);
+
+                    // setSpeakTimer(true);
+                    // clearTimeout(timerRef.current);
+                    if (typeof messages[messages.length - 1].display.content === 'object') {
+                        abortStreaming(messages[messages.length - 1].display.msgID, "no")
+                        // setMessages(currentMessages => {
+                        //     console.log(currentMessages.filter(item => item.id !== msgID));
+                        //     return [...currentMessages.map(item => {
+                        //         if (item.id === messages[messages.length - 1].display.msgID) {
+                        //             return { ...item, msg: text }; // 返回更新后的字典
+                        //         }
+                        //         return item; // 其他字典保持不变
+                        //     })]
+                        // })
+                    }
+                }
+
+            } catch (e) {
+                console.error("onSpeechStart error:" + e)
+            }
+        },
+        onSpeechEnd: (float32Audio) => {
+            try {
+                console.log("onSpeechEnd");
+                setAudioBuffer((prevItems) => [...prevItems, utils.encodeWAV(float32Audio)]);
+                // setSpeakTimer(false);
+            } catch (e) {
+                console.error("onSpeechEnd error:" + e)
+            }
+        },
+    });
+
+    // PART TTS
     const handleCanPlay = (e) => {
         console.log(e);
         if (e.target) {
@@ -88,7 +242,6 @@ export function PromptForm({
             element.removeEventListener('canplay', handleCanPlay);
         }
     }
-
 
     const handleTTS = () => {
         if (canPlay) {

@@ -2,10 +2,9 @@
 
 import * as React from 'react'
 import {type DialogProps} from '@radix-ui/react-dialog'
-import {IconTeacher, IconPlayMedia, IconStop} from '@/components/ui/icons'
+import {IconPlayMedia, IconStop} from '@/components/ui/icons'
 import * as Dialog from '@radix-ui/react-dialog';
 import {Cross2Icon} from '@radix-ui/react-icons';
-import Cookies from 'js-cookie';
 import {usePathname} from "next/navigation";
 import {updateUserCookies, loadUserCookies, stopAllAudio} from "@/lib/utils";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
@@ -104,29 +103,42 @@ export function TeacherVoiceDialog({userId,
 
     React.useEffect(() => {
         ;(async () => {
-            const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
-            const userData = loadUserCookies(userId, chatId);
+            // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
+            const userData = loadUserCookies(userId);
+            console.log("userDatauserDatauserDatauserDatauserData");
+            console.log(userData);
             if (userData) {
-                setTeacherName(userData["teacherName"]);
-                setTeacherGender(userData["teacherGender"]);
+                if (userData.hasOwnProperty("teacherName")) {
+                    setTeacherName(userData["teacherName"]);
+                }
+                if (userData.hasOwnProperty("teacherGender")) {
+                    setTeacherGender(userData["teacherGender"]);
+                }
             }
         })()
     }, [])
 
     return (
         <>
-            <Dialog.Root>
+            <Dialog.Root {...props}>
                 <Dialog.Trigger asChild>
-                    <button
-                        className="text-violet11 hover:bg-mauve3 inline-flex h-[35px] items-center justify-center rounded-[4px] bg-white px-[4px] font-medium leading-none shadow-[0_2px_10px] focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none">
-                        <img style={{height: '100%'}}
-                             src={`/learninglang/images/teacher/${teacherGender}/${teachers[teacherGender][teacherName].name}.webp`}/>
-                        {/*<IconTeacher/> */}
-                        {teachers[teacherGender][teacherName].name}
-                    </button>
+                    <div
+                        key={"choosingTeacher"}
+                        className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900`}
+                        // onClick={async () => {
+                        // }}
+                    >
+                        <div className="text-sm font-semibold mb-2">选择老师</div>
+                        <div className="text-sm text-zinc-600 items-center flex flex-col">
+                            <img className={"size-24"}
+                                 src={`/learninglang/images/teacher/${teacherGender}/${teachers[teacherGender][teacherName].name}.webp`}/>
+                            {/*<IconTeacher/> */}
+                            {teachers[teacherGender][teacherName].name}
+                        </div>
+                    </div>
                 </Dialog.Trigger>
                 <Dialog.Portal>
-                <Dialog.Overlay
+                    <Dialog.Overlay
                         className="z-20 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-right-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-right-1/2 data-[state=open]:slide-in-from-top-[48%] w-full h-full bg-blackA6 fixed inset-0"/>
                     <Dialog.Content
                         className="z-50 min-w-[60vw] max-w-[80vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
@@ -163,9 +175,9 @@ export function TeacherVoiceDialog({userId,
                                                         setTeacherName(key);
                                                         setTeacherGender(dialogTeacherGender);
 
-                                                        const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
-                                                        updateUserCookies(userId, chatId, "teacherName", key)
-                                                        updateUserCookies(userId, chatId, "teacherGender", dialogTeacherGender)
+                                                        // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
+                                                        updateUserCookies(userId, "teacherName", key)
+                                                        updateUserCookies(userId, "teacherGender", dialogTeacherGender)
                                                     }}>
                                                     {/*<Image src={`/images/teacher/${teacherGender}/${value.name}.webp`} width={64} height={64}/>*/}
                                                     <img style={{width: '100%'}}

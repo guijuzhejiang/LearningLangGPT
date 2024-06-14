@@ -60,9 +60,9 @@ export async function Header() {
                     <UserOrLogin/>
                 </React.Suspense>
             </div>
-            <div className="flex items-center justify-end space-x-2">
-                <TeacherVoiceDialog userId={session ? session.user.id: 'default'} />
-            </div>
+            {/*<div className="flex items-center justify-end space-x-2">*/}
+            {/*    <TeacherVoiceDialog userId={session ? session.user.id: 'default'} />*/}
+            {/*</div>*/}
         </header>
     )
 }

@@ -87,12 +87,16 @@ export const BotMessage = React.memo(forwardRef(({
     }
 
     const handleTTS = () => {
-        const userData = loadUserCookies(userId, chatId);
+        const userData = loadUserCookies(userId);
         let teacherName = "Mary"
         let teacherGender = "female"
         if (userData) {
-            teacherName = userData["teacherName"];
-            teacherGender = userData["teacherGender"];
+            if (userData.hasOwnProperty("teacherName")) {
+                teacherName = userData["teacherName"];
+            }
+            if (userData.hasOwnProperty("teacherGender")) {
+                teacherGender = userData["teacherGender"];
+            }
         }
 
         if (wavB64 && teacherName === wavVoice) {

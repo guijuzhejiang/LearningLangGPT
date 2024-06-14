@@ -159,64 +159,38 @@ export function arrayBufferToAudioBuffer(arrayBuffer, context) {
 }
 
 
-export function updateUserCookies(uid:string, cid:string, key:string, value:string) {
-    if (uid === 'default') {
-        const userSession = Cookies.get(uid)
-        let userData = {}
-
-        if (userSession) {
-            userData = JSON.parse(userSession)
-            userData[key] = value
+export function updateUserCookies(uid:string, key:string, value:string) {
+    const userSession = Cookies.get("chatsession")
+    let userData = {}
+    if (userSession) {
+        userData = JSON.parse(userSession)
+        if (userData.hasOwnProperty(uid)) {
+            userData[uid][key] = value;
         } else {
-            userData[key] = value;
+            userData[uid] = {};
+            userData[uid][key] = value;
         }
-        Cookies.set(uid, JSON.stringify(userData), { expires: 365 });
 
     } else {
-        const userKey = `user${uid}`;
-        const userSession = Cookies.get(userKey)
-        if (userSession) {
-            const userData = JSON.parse(userSession)
-            if (!userData.hasOwnProperty(cid)) {
-                userData[cid] = {}
-            }
-            userData[cid][key] = value;
-
-            Cookies.set(userKey, JSON.stringify(userData), { expires: 365 });
-        } else {
-            const userData = {}
-            userData[cid] = {}
-            userData[cid][key] = value;
-            Cookies.set(userKey, JSON.stringify(userData), { expires: 365 });
-        }
+        userData[uid] = {}
+        userData[uid][key] = value;
     }
+    Cookies.set("chatsession", JSON.stringify(userData), { expires: 365 });
 }
 
-export function loadUserCookies(uid:string, cid:string) {
+export function loadUserCookies(uid:string) {
     let userData = {
         "teacherName": "Mary",
         "teacherGender": "female",
     }
-    if (uid === 'default') {
-        const userSession = Cookies.get(uid);
-        if (userSession) {
-            userData = JSON.parse(userSession);
-            return userData;
-        } else {
-            return userData;
-        }
-    } else {
-        const userSession = Cookies.get(`user${uid}`);
-        if (userSession) {
-            userData = JSON.parse(userSession);
-            if (userData.hasOwnProperty(cid)) {
-                return userData[cid];
-            } else {
-                return userData;
-            }
-        } else {
-            return userData;
+    const userSession = Cookies.get('chatsession');
+    if (userSession) {
+        userData = JSON.parse(userSession);
+        if (userData.hasOwnProperty(uid)) {
+            userData = userData[uid];
         }
     }
+
+    return userData;
 }
 
