@@ -79,7 +79,7 @@ export function ChatPanel({
                         <LevelDialog ref={levelDialogRef} userId={session ? session.user.id : 'default'}/>
 
                         {/* 选择scene */}
-                        <SceneDialog ref={sceneDialogRef} userId={session ? session.user.id : 'default'}/>
+                        <SceneDialog ref={sceneDialogRef} lang={langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"} userId={session ? session.user.id : 'default'}/>
                     </div>
                 )}
 
@@ -95,11 +95,15 @@ export function ChatPanel({
                             onClick={async () => {
                                 // console.log("sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene]")
                                 // console.log(sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message)
+                                // console.log(sceneDialogRef?.current.ChineseLangs);
+                                // console.log(sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message.replaceAll('{lang}', sceneDialogRef?.current.ChineseLangs[langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"])
+                                // );
+                                // alert(langDialogRef?.current.lang);
                                 setMessages(currentMessages => [
                                     ...currentMessages,
                                     {
                                         id: nanoid(),
-                                        display: <UserMessage>{""+sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message}</UserMessage>
+                                        display: <UserMessage>{""+sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message.replaceAll('{lang}', sceneDialogRef?.current.ChineseLangs[langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"])}</UserMessage>
                                     }
                                 ])
 
@@ -111,7 +115,7 @@ export function ChatPanel({
                                     level: levelDialogRef?.current.level,
                                 }
                                 const responseMessage = await submitUserMessage(
-                                    sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message,
+                                    sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message.replaceAll('{lang}', sceneDialogRef?.current.ChineseLangs[langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"]),
                                     chatParams,
                                 )
 

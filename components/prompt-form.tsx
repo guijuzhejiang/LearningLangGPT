@@ -26,9 +26,11 @@ import {toast} from "sonner";
 import {useEffect, useState} from "react";
 import {readStreamableValue} from "ai/rsc";
 import {spinner} from "@/components/stocks";
-import {loadCacheUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
+import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
 import {getChat} from "@/app/actions";
+import {util} from "protobufjs";
+import camelCase = util.camelCase;
 
 
 export interface PromptFormProps {
@@ -248,6 +250,40 @@ export function PromptForm({
     }
 
     const handleTTS = () => {
+        let userData = {
+            teacherGender: 'female',
+            teacherName: 'Mary',
+            scene: 0,
+            level: 0,
+            lang: 'English',
+        }
+
+        // alert(userId);
+        // console.log(chatParams);
+
+        if (userId === 'default') {
+            userData = loadUserCookies(userId);
+            if (userData) {
+                if (userData.hasOwnProperty("teacherName")) {
+                    userData['teacherName'] = userData["teacherName"];
+                }
+                if (userData.hasOwnProperty("teacherGender")) {
+                    userData['teacherGender'] = userData["teacherGender"];
+                }
+                if (userData.hasOwnProperty("scene")) {
+                    userData['scene'] = userData["scene"];
+                }
+                if (userData.hasOwnProperty("level")) {
+                    userData['level'] = userData["level"];
+                }
+                if (userData.hasOwnProperty("lang")) {
+                    userData['lang'] = userData["lang"];
+                }
+            }
+        } else {
+            userData = loadCacheUserCookies(userId, chatId);
+        }
+
         if (canPlay) {
             // console.log(audioRef.current);
             if (!readingLoud) {
@@ -259,6 +295,9 @@ export function PromptForm({
         } else {
             const formData = new FormData();
             formData.append('text', hintContent);
+            formData.append('teacher_name', userData['teacherName']);
+            formData.append('teacher_gender', userData['teacherGender']);
+            formData.append('lang', userData['teacherGender']);
             const startTime = performance.now();
             fetch(process.env.TTS_URL, {
                 method: 'POST',
@@ -332,8 +371,9 @@ export function PromptForm({
         setGettingHint(true);
         // console.log("loadCacheUserCookies(userId, chatId)");
         // console.log(loadCacheUserCookies(userId, chatId));
-        // alert("asdpasdp")
-        const hintText = await getHint(msg, loadCacheUserCookies(userId, chatId));
+        const cacheCookie = loadCacheUserCookies(userId, chatId);
+
+        const hintText = await getHint(msg, cacheCookie ? cacheCookie : loadUserCookies(userId));
         //
         if (typeof hintText === 'object') {
             let value = ''

@@ -198,6 +198,9 @@ async function createPrompter(lang:string) {
         AI:
       `
     );
+    console.log("xxxxxxxxxxxxxxxxxxxxxxxxx");
+    console.log(lang);
+
     const partialPrompt = await prompt.partial({
         language: lang,
     });

@@ -136,7 +136,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                     >
                         <div className="text-sm font-semibold mb-2">选择老师</div>
                         <div className="text-sm text-zinc-600 items-center flex flex-col">
-                            <Image className={"size-24"}
+                            <img className={"size-24"}
                                    alt={teachers[teacherGender][teacherName].name}
                                  src={`/learninglang/images/teacher/${teacherGender}/${teachers[teacherGender][teacherName].name}.webp`}/>
                             {/*<IconTeacher/> */}
@@ -157,16 +157,16 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                                 {"点击"}<IconPlayMedia/>{"可试听老师声音,点击头像选择老师。"}
                             </span>
                             <div className={"grid grid-cols-2 gap-1 mt-1"}>
-                                <button
+                                <Button
                                     onClick={()=>setDialogTeacherGender('female')}
-                                    className={`${dialogTeacherGender==="female"&&'bg-mauve7'} box-border w-full text-violet11 shadow-blackA4 hover:bg-mauve5 inline-flex h-[35px] items-center justify-center rounded-[4px] bg-white px-[15px] font-medium leading-none shadow-[0_2px_10px] focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none mt-[10px]`}>
+                                    className={`${dialogTeacherGender==="female"?('bg-mauve7'):('bg-white')} w-full text-violet11 shadow-blackA4 hover:bg-mauve5 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none shadow-[0_2px_10px]`}>
                                     female
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={()=>setDialogTeacherGender('male')}
-                                    className={`${dialogTeacherGender==="male"&&'bg-mauve7'} box-border w-full text-violet11 shadow-blackA4 hover:bg-mauve5 inline-flex h-[35px] items-center justify-center rounded-[4px] bg-white px-[15px] font-medium leading-none shadow-[0_2px_10px] focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none mt-[10px]`}>
+                                    className={`${dialogTeacherGender==="male"?('bg-mauve7'):('bg-white')} w-full text-violet11 shadow-blackA4 hover:bg-mauve5 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none shadow-[0_2px_10px]`}>
                                     male
-                                </button>
+                                </Button>
                             </div>
                         </Dialog.Description>
 
@@ -187,7 +187,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                                                         updateUserCookies(userId, "teacherGender", dialogTeacherGender)
                                                     }}>
                                                     {/*<Image src={`/images/teacher/${teacherGender}/${value.name}.webp`} width={64} height={64}/>*/}
-                                                    <Image style={{width: '100%'}}
+                                                    <img style={{width: '100%'}}
                                                          src={`/learninglang/images/teacher/${dialogTeacherGender}/${value.name}.webp`} alt={value.name}/>
                                                 </button>
                                             </Dialog.Close>

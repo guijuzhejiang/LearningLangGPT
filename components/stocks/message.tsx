@@ -222,7 +222,7 @@ export const BotMessage = React.memo(forwardRef(({
             <div
                 className="flex size-[24px] shrink-0 select-none items-center justify-center rounded-md border bg-primary text-primary-foreground shadow-sm">
                 {/*<IconOpenAI/>*/}
-                <Image className={"size-5"}
+                <img className={"size-5"}
                        alt={chatParams?.teacherName}
                      src={`/learninglang/images/teacher/${chatParams?.teacherGender}/${chatParams?.teacherName}.webp`}/>
             </div>
