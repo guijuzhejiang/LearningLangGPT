@@ -91,7 +91,6 @@ export function ChatPanel({
                             onClick={async () => {
                                 // console.log("sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene]")
                                 // console.log(sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message)
-                                alert("asd")
                                 setMessages(currentMessages => [
                                     ...currentMessages,
                                     {
