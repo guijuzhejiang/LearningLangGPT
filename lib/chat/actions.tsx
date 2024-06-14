@@ -691,8 +691,8 @@ export const AI = createAI<AIState, UIState>({
     },
     onSetAIState: async ({state, done}) => {
         'use server'
-        console.log("onSetAIState");
-        console.log(state);
+        // console.log("onSetAIState");
+        // console.log(state);
         const session = await auth()
 
         if (session && session.user) {
@@ -721,8 +721,8 @@ export const AI = createAI<AIState, UIState>({
 })
 
 export const getUIStateFromAIState = (aiState: Chat) => {
-    console.log("xxxx!!!!!!getUIStateFromAIState!!!!xxxxxxxxxxx")
-    console.log(aiState)
+    // console.log("xxxx!!!!!!getUIStateFromAIState!!!!xxxxxxxxxxx")
+    // console.log(aiState)
     return aiState.messages
         .filter(message => message.role !== 'system')
         .map((message, index) => ({

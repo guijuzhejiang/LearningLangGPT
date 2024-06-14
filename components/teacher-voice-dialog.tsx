@@ -11,6 +11,7 @@ import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {spinner} from "@/components/stocks";
 import {toast} from "sonner";
+import Image from 'next/image'
 import {forwardRef, useImperativeHandle} from "react";
 interface ChatShareDialogProps extends DialogProps {
     userId: string
@@ -135,7 +136,8 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                     >
                         <div className="text-sm font-semibold mb-2">选择老师</div>
                         <div className="text-sm text-zinc-600 items-center flex flex-col">
-                            <img className={"size-24"}
+                            <Image className={"size-24"}
+                                   alt={teachers[teacherGender][teacherName].name}
                                  src={`/learninglang/images/teacher/${teacherGender}/${teachers[teacherGender][teacherName].name}.webp`}/>
                             {/*<IconTeacher/> */}
                             {teachers[teacherGender][teacherName].name}
@@ -185,8 +187,8 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                                                         updateUserCookies(userId, "teacherGender", dialogTeacherGender)
                                                     }}>
                                                     {/*<Image src={`/images/teacher/${teacherGender}/${value.name}.webp`} width={64} height={64}/>*/}
-                                                    <img style={{width: '100%'}}
-                                                         src={`/learninglang/images/teacher/${dialogTeacherGender}/${value.name}.webp`}/>
+                                                    <Image style={{width: '100%'}}
+                                                         src={`/learninglang/images/teacher/${dialogTeacherGender}/${value.name}.webp`} alt={value.name}/>
                                                 </button>
                                             </Dialog.Close>
                                             <div className={"flex items-center break-all w-full p-2"}>

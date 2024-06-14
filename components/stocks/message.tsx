@@ -18,9 +18,7 @@ import {useUIState, useActions} from 'ai/rsc';
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {usePathname} from "next/navigation";
-import {auth} from "@/auth";
-import {Session} from "@/lib/types";
-import {al} from "@upstash/redis/zmscore-b6b93f14";
+import Image from 'next/image'
 
 // Different types of message bubbles.
 
@@ -224,7 +222,8 @@ export const BotMessage = React.memo(forwardRef(({
             <div
                 className="flex size-[24px] shrink-0 select-none items-center justify-center rounded-md border bg-primary text-primary-foreground shadow-sm">
                 {/*<IconOpenAI/>*/}
-                <img className={"size-5"}
+                <Image className={"size-5"}
+                       alt={chatParams?.teacherName}
                      src={`/learninglang/images/teacher/${chatParams?.teacherGender}/${chatParams?.teacherName}.webp`}/>
             </div>
             <div className="ml-4 flex-1 space-y-2 overflow-hidden px-1">
