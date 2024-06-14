@@ -1,4 +1,5 @@
 import { Message } from 'ai'
+import {ChatParams} from "@/lib/chat/actions";
 
 export interface Chat extends Record<string, any> {
   id: string
@@ -8,6 +9,7 @@ export interface Chat extends Record<string, any> {
   path: string
   messages: Message[]
   sharePath?: string
+  chatParams?: ChatParams
 }
 
 export type ServerActionResult<Result> = Promise<

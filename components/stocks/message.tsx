@@ -1,7 +1,7 @@
 'use client'
 
 import {IconOpenAI, IconPlayMedia, IconStop, IconTranslate, IconUser} from '@/components/ui/icons'
-import {cn, loadUserCookies, stopAllAudio} from '@/lib/utils'
+import {cacheUserCookies, cn, loadCacheUserCookies, loadUserCookies, stopAllAudio} from '@/lib/utils'
 import {spinner} from './spinner'
 import {CodeBlock} from '../ui/codeblock'
 import {MemoizedReactMarkdown} from '../markdown'
@@ -13,13 +13,14 @@ import '@/components/auioPlayer/audioPlayer.scss';
 import * as React from "react";
 import {forwardRef, useEffect, useImperativeHandle} from "react";
 import {toast} from 'sonner'
-import {AI} from "@/lib/chat/actions";
-import {useAIState, useUIState, useActions} from 'ai/rsc';
+import {AI, ChatParams} from "@/lib/chat/actions";
+import {useUIState, useActions} from 'ai/rsc';
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {usePathname} from "next/navigation";
 import {auth} from "@/auth";
 import {Session} from "@/lib/types";
+import {al} from "@upstash/redis/zmscore-b6b93f14";
 
 // Different types of message bubbles.
 
@@ -50,13 +51,15 @@ export function UserMessage({children}: { children: React.ReactNode }) {
 
 export const BotMessage = React.memo(forwardRef(({
                                           content,
-                                          chatId,
+                                          chatParams,
                                           userId,
+                                          chatId,
                                           className,
                                       }: {
     content: string | StreamableValue<string>
     userId?: string
     chatId?: string
+    chatParams?: ChatParams | null | undefined
     className?: string
 }, ref) => {
     useImperativeHandle(ref, () => ({
@@ -87,19 +90,42 @@ export const BotMessage = React.memo(forwardRef(({
     }
 
     const handleTTS = () => {
-        const userData = loadUserCookies(userId);
-        let teacherName = "Mary"
-        let teacherGender = "female"
-        if (userData) {
-            if (userData.hasOwnProperty("teacherName")) {
-                teacherName = userData["teacherName"];
-            }
-            if (userData.hasOwnProperty("teacherGender")) {
-                teacherGender = userData["teacherGender"];
-            }
+        // if(session)
+        let userData = {
+            teacherGender: 'female',
+            teacherName: 'Mary',
+            scene: 0,
+            level: 0,
+            lang: 'English',
         }
 
-        if (wavB64 && teacherName === wavVoice) {
+        // alert(userId);
+        // console.log(chatParams);
+
+        if (userId === 'default') {
+            userData = loadUserCookies(userId);
+            if (userData) {
+                if (userData.hasOwnProperty("teacherName")) {
+                    userData['teacherName'] = userData["teacherName"];
+                }
+                if (userData.hasOwnProperty("teacherGender")) {
+                    userData['teacherGender'] = userData["teacherGender"];
+                }
+                if (userData.hasOwnProperty("scene")) {
+                    userData['scene'] = userData["scene"];
+                }
+                if (userData.hasOwnProperty("level")) {
+                    userData['level'] = userData["level"];
+                }
+                if (userData.hasOwnProperty("lang")) {
+                    userData['lang'] = userData["lang"];
+                }
+            }
+        } else {
+            userData = chatParams;
+
+        }
+        if (wavB64 && userData['teacherName'] === wavVoice) {
             // console.log(audioRef.current);
             if (!readingLoud) {
                 audioRef.current.play();
@@ -116,11 +142,12 @@ export const BotMessage = React.memo(forwardRef(({
             // const session = (await auth()) as Session
             setCanPlayThrough(false);
 
-            setWavVoice(teacherName);
+            setWavVoice(userData['teacherName']);
             // alert(teacherName)
             // alert(teacherGender)
-            formData.append('teacher_name', teacherName);
-            formData.append('teacher_gender', teacherGender);
+            formData.append('teacher_name', userData['teacherName']);
+            formData.append('teacher_gender', userData['teacherGender']);
+            formData.append('lang', userData['teacherGender']);
             fetch(`${process.env.TTS_URL}`, {
                 method: 'POST',
                 body: formData
@@ -163,15 +190,17 @@ export const BotMessage = React.memo(forwardRef(({
     }, [completed])
 
     useEffect(() => {
-        // console.log(typeof content);
-        // console.log(content);
-        // const intervalId = setInterval(() => {
-        // if (typeof content === 'string') {
-        //     // clearInterval(intervalId);
-        //     handleTTS();
-        // }
+        console.log("chatParamschatParamschatParamschatParams");
+        console.log(chatParams);
+
+        if (userId!=='default') {
+            if (!loadCacheUserCookies(userId, chatId) && chatParams) {
+                cacheUserCookies(userId, chatId, chatParams)
+            }
+        }
+
         if (sessionStorage.getItem('tts') === content) {
-            sessionStorage.removeItem('tts')
+            sessionStorage.removeItem('tts');
             stopAllAudio();
             setReadingLoud(!readingLoud);
             handleTTS();
@@ -194,7 +223,9 @@ export const BotMessage = React.memo(forwardRef(({
         <div className={cn('group relative flex items-start md:-ml-12', className)}>
             <div
                 className="flex size-[24px] shrink-0 select-none items-center justify-center rounded-md border bg-primary text-primary-foreground shadow-sm">
-                <IconOpenAI/>
+                {/*<IconOpenAI/>*/}
+                <img className={"size-5"}
+                     src={`/learninglang/images/teacher/${chatParams?.teacherGender}/${chatParams?.teacherName}.webp`}/>
             </div>
             <div className="ml-4 flex-1 space-y-2 overflow-hidden px-1">
                 {text.length > 0 ? (

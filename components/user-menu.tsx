@@ -41,6 +41,11 @@ export function UserMenu({ user }: UserMenuProps) {
             action={async () => {
               'use server'
               await signOut({ redirectTo: "/" })
+              // Object.keys(Cookies.get()).forEach(function(cookieName) {
+              //   if (cookieName.startsWith('chat_')) {
+              //     Cookies.remove(cookieName);
+              //   }
+              // });
             }}
           >
             <button className=" relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none transition-colors hover:bg-red-500 hover:text-white focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">

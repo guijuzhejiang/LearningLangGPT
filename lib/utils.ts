@@ -2,6 +2,7 @@ import {clsx, type ClassValue} from 'clsx'
 import {customAlphabet} from 'nanoid'
 import {twMerge} from 'tailwind-merge'
 import Cookies from "js-cookie";
+import {ChatParams} from "@/lib/chat/actions";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -158,6 +159,28 @@ export function arrayBufferToAudioBuffer(arrayBuffer, context) {
     })
 }
 
+export function cacheUserCookies(uid:string, cid:string, userData: ChatParams) {
+    const userSession = Cookies.get(`chat_${uid}_${cid}`)
+    Cookies.set(`chat_${uid}_${cid}`, JSON.stringify(userData), { expires: 365 });
+}
+
+export function loadCacheUserCookies(uid:string, cid:string) {
+    const userSession = Cookies.get(`chat_${uid}_${cid}`)
+    console.log("asdasdxcaedfgeqg");
+    if (userSession) {
+        console.log(JSON.parse(userSession));
+
+    }
+    return userSession ? JSON.parse(userSession) : null;
+}
+
+const defaultConfig = {
+    teacherName: 'Mary',
+    teacherGender: 'female',
+    scene: 0,
+    lang: 'English',
+    level: 0
+}
 
 export function updateUserCookies(uid:string, key:string, value:string) {
     const userSession = Cookies.get("chatsession")
@@ -167,12 +190,12 @@ export function updateUserCookies(uid:string, key:string, value:string) {
         if (userData.hasOwnProperty(uid)) {
             userData[uid][key] = value;
         } else {
-            userData[uid] = {};
+            userData[uid] = defaultConfig;
             userData[uid][key] = value;
         }
 
     } else {
-        userData[uid] = {}
+        userData[uid] = defaultConfig;
         userData[uid][key] = value;
     }
     Cookies.set("chatsession", JSON.stringify(userData), { expires: 365 });

@@ -15,6 +15,7 @@ import {UserMessage} from "@/components/stocks/message";
 import {SceneMenu} from "@/components/scene-menu";
 import {SceneDialog} from "@/components/scene-dialog";
 import {LevelDialog} from "@/components/level-dialog";
+import {LangDialog} from "@/components/lang-dialog";
 
 export interface ChatPanelProps {
     id?: string,
@@ -32,7 +33,9 @@ export function ChatPanel({
     const [messages, setMessages] = useUIState<typeof AI>();
     const {submitUserMessage} = useActions();
     const path = usePathname();
-    const teacherTriggerRef = React.useRef(null);
+    const teacherDialogRef = React.useRef(null);
+    const langDialogRef = React.useRef(null);
+    const levelDialogRef = React.useRef(null);
     const sceneDialogRef = React.useRef(null);
 
     return (
@@ -47,19 +50,20 @@ export function ChatPanel({
                 {messages.length === 0 && (
                     <div className="mb-4 grid grid-cols-2 gap-4 px-4 sm:px-0">
                         {/* 选择laoshi  */}
-                        <TeacherVoiceDialog userId={session ? session.user.id : 'default'}/>
+                        <TeacherVoiceDialog ref={teacherDialogRef} userId={session ? session.user.id : 'default'}/>
 
-                        <div
-                            key={"choosingTeacher"}
-                            className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900`}
-                            // onClick={async () => {
-                            // }}
-                        >
-                            <div className="text-sm font-semibold mb-2">选择语言</div>
-                            <div className="text-sm text-zinc-600 items-center flex flex-col">
-                                英语
-                            </div>
-                        </div>
+                        {/*<div*/}
+                        {/*    key={"choosingTeacher"}*/}
+                        {/*    className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900`}*/}
+                        {/*    // onClick={async () => {*/}
+                        {/*    // }}*/}
+                        {/*>*/}
+                        {/*    <div className="text-sm font-semibold mb-2">选择语言</div>*/}
+                        {/*    <div className="text-sm text-zinc-600 items-center flex flex-col">*/}
+                        {/*        英语*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
+                        <LangDialog ref={langDialogRef} userId={session ? session.user.id : 'default'}/>
 
                         {/*<div*/}
                         {/*    key={"choosingTeacher"}*/}
@@ -72,7 +76,7 @@ export function ChatPanel({
                         {/*        简单*/}
                         {/*    </div>*/}
                         {/*</div>*/}
-                        <LevelDialog userId={session ? session.user.id : 'default'}/>
+                        <LevelDialog ref={levelDialogRef} userId={session ? session.user.id : 'default'}/>
 
                         {/* 选择scene */}
                         <SceneDialog ref={sceneDialogRef} userId={session ? session.user.id : 'default'}/>
@@ -82,8 +86,8 @@ export function ChatPanel({
 
                 <div
                     className="mb-8 space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
-                    {path.includes('chat') ? (
-                        <PromptForm chatId={id}/>
+                    {messages.length > 0 ? (
+                        <PromptForm chatId={id} userId={session ? session.user.id : 'default'}/>
                     ) : (
                         <Button
                             variant="default"
@@ -99,8 +103,16 @@ export function ChatPanel({
                                     }
                                 ])
 
+                                const chatParams = {
+                                    teacherName: teacherDialogRef?.current.teacherName,
+                                    teacherGender: teacherDialogRef?.current.teacherGender,
+                                    scene: sceneDialogRef?.current.scene,
+                                    lang: langDialogRef?.current.lang,
+                                    level: levelDialogRef?.current.level,
+                                }
                                 const responseMessage = await submitUserMessage(
-                                    sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message
+                                    sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message,
+                                    chatParams,
                                 )
 
                                 setMessages(currentMessages => [

@@ -11,14 +11,19 @@ import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {spinner} from "@/components/stocks";
 import {toast} from "sonner";
+import {forwardRef, useImperativeHandle} from "react";
 interface ChatShareDialogProps extends DialogProps {
     userId: string
 }
 
-export function TeacherVoiceDialog({userId,
+export const TeacherVoiceDialog = forwardRef(({userId,
                                        ...props
-                                   }: ChatShareDialogProps) {
+                                   }: ChatShareDialogProps, ref) => {
 
+    useImperativeHandle(ref, () => ({
+        teacherName,
+        teacherGender,
+    }))
 
     const path = usePathname();
     const [teacherGender, setTeacherGender] = React.useState('female')
@@ -286,4 +291,7 @@ export function TeacherVoiceDialog({userId,
             </Dialog.Root>
         </>
     )
-}
+});
+
+TeacherVoiceDialog.displayName = "TeacherVoiceDialog";
+

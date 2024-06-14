@@ -26,16 +26,19 @@ import {toast} from "sonner";
 import {useEffect, useState} from "react";
 import {readStreamableValue} from "ai/rsc";
 import {spinner} from "@/components/stocks";
-import {pauseAllAudio, stopAllAudio} from "@/lib/utils";
+import {loadCacheUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
+import {getChat} from "@/app/actions";
 
 
 export interface PromptFormProps {
     chatId?: string,
+    userId?: string,
 }
 
 export function PromptForm({
-                               chatId
+                               chatId,
+                               userId
                            }: PromptFormProps) {
 
     const router = useRouter()
@@ -111,6 +114,7 @@ export function PromptForm({
 
     useEffect(() => {
         const checkMicrophone = async () => {
+            // (await getChat(chatId, userId))?.chatParams
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({audio: true});
                 stream.getTracks().forEach(track => track.stop());
@@ -326,7 +330,10 @@ export function PromptForm({
 
     const handleUpdateHint = async (msg:string) => {
         setGettingHint(true);
-        const hintText = await getHint(msg);
+        // console.log("loadCacheUserCookies(userId, chatId)");
+        // console.log(loadCacheUserCookies(userId, chatId));
+        // alert("asdpasdp")
+        const hintText = await getHint(msg, loadCacheUserCookies(userId, chatId));
         //
         if (typeof hintText === 'object') {
             let value = ''
@@ -415,7 +422,7 @@ export function PromptForm({
                 ])
 
                 // Submit and get response message
-                const responseMessage = await submitUserMessage(value)
+                const responseMessage = await submitUserMessage(value, loadCacheUserCookies(userId, chatId))
                 responseMessage.display.ref = lastMsgRef;
                 setMessages(currentMessages => [...currentMessages, responseMessage])
                 setLastMessage(responseMessage);

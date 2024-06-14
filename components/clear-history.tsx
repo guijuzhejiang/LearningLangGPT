@@ -63,7 +63,7 @@ export function ClearHistory({
 
                 setOpen(false);
                 Object.keys(Cookies.get()).forEach(function(cookieName) {
-                  if (cookieName.startsWith('user')) {
+                  if (cookieName.startsWith('chat_')) {
                     Cookies.remove(cookieName);
                   }
                 });

@@ -9,7 +9,7 @@ import {useEffect, useState} from 'react'
 import {useUIState, useAIState} from 'ai/rsc'
 import {Session} from '@/lib/types'
 import {usePathname, useRouter} from 'next/navigation'
-import {Message} from '@/lib/chat/actions'
+import {ChatParams, Message} from '@/lib/chat/actions'
 import {useScrollAnchor} from '@/lib/hooks/use-scroll-anchor'
 import * as React from "react";
 
@@ -17,10 +17,10 @@ export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
     id?: string
     session?: Session
-    missingKeys: string[]
+    chatParams: ChatParams
 }
 
-export function Chat({id, className, session, missingKeys}: ChatProps) {
+export function Chat({id, className, session, chatParams}: ChatProps) {
     const router = useRouter();
     const path = usePathname();
     const [messages, setMessages] = useUIState();
@@ -52,6 +52,8 @@ export function Chat({id, className, session, missingKeys}: ChatProps) {
 
     useEffect(() => {
         setNewChatId(id);
+        console.log("!!!!!!!!!chatParamschatParamschatParams!!!!!!!!!")
+        console.log(chatParams)
     })
 
     const {messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom} =
@@ -67,7 +69,7 @@ export function Chat({id, className, session, missingKeys}: ChatProps) {
                 ref={messagesRef}
             >
                 {messages.length ? (
-                    <ChatList messages={messages} isShared={false} session={session}/>
+                    <ChatList chatParams={chatParams} messages={messages} isShared={false} session={session}/>
                 ) : (
                     <EmptyScreen/>
                 )}
@@ -77,7 +79,6 @@ export function Chat({id, className, session, missingKeys}: ChatProps) {
             <ChatPanel
                 id={id}
                 session={session}
-                // input={input}
                 // setInput={setInput}
                 isAtBottom={isAtBottom}
                 scrollToBottom={scrollToBottom}

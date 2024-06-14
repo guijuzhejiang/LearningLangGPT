@@ -6,6 +6,7 @@ import { kv } from '@vercel/kv'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import {useActions} from "ai/rsc";
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -32,7 +33,8 @@ export async function getChats(userId?: string | null) {
 
 export async function getChat(id: string, userId: string) {
   const chat = await kv.hgetall<Chat>(`chat:${id}`)
-
+  console.log("$$$$$$$$$$$$$getChat")
+  console.log(chat)
   if (!chat || (userId && chat.userId !== userId)) {
     return null
   }
@@ -67,6 +69,7 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
 
 export async function clearChats() {
   const session = await auth()
+
 
   if (!session?.user?.id) {
     return {
@@ -130,7 +133,8 @@ export async function shareChat(id: string) {
 
 export async function saveChat(chat: Chat) {
   const session = await auth()
-
+  console.log("$$sssssssssssssssssssssssschat")
+  console.log(chat)
   if (session && session.user) {
     const pipeline = kv.pipeline()
     pipeline.hmset(`chat:${chat.id}`, chat)
