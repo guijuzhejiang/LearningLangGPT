@@ -161,7 +161,7 @@ export const SceneDialog = forwardRef(({userId,
                     >
                         <div className="text-sm font-semibold mb-2">选择场景</div>
                         <div className="text-sm text-zinc-600 items-center flex flex-col">
-                            {exampleMessages[scene].heading}
+                            {exampleMessages[scene].heading.replaceAll('{lang}', ChineseLangs[lang])}
                         </div>
                     </div>
                 </Dialog.Trigger>
