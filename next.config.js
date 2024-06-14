@@ -13,16 +13,16 @@ module.exports = {
     TTS_URL: process.env.TTS_URL,
   },
   basePath:process.env.NODE_ENV === "development"? '/learninglang':'/learninglang',
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
-        port: '',
-        pathname: '**'
-      }
-    ]
-  },
+  // images: {
+  //   remotePatterns: [
+  //     {
+  //       protocol: 'https',
+  //       hostname: 'avatars.githubusercontent.com',
+  //       port: '',
+  //       pathname: '**'
+  //     }
+  //   ]
+  // },
   eslint: {
     ignoreBuildErrors: true
   },
