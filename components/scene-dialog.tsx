@@ -49,12 +49,12 @@ export const SceneDialog = forwardRef(({userId,
             message: `请教我旅游相关的{lang},通过角色扮演旅行和住宿场景来帮助学生练习{lang}。你将扮演酒店前台，而学生将扮演客人。引导学生经历办理入住、询问酒店服务和处理常见旅行情况。`
         },
         {
-            heading: '{lang}学习方法',
+            heading: '学习方法',
             subheading: '学习',
             message: '请教我如何有效的学习{lang},通过讨论{lang}学习方法来帮助学生练习{lang}。与学生讨论他们使用的学习方法、遇到的困难和成功的经验。提供一些有效的学习建议和技巧。'
         },
         {
-            heading: '{lang}自我介绍',
+            heading: '自我介绍',
             subheading: '介绍',
             message: `请教我如何使用{lang}自我介绍,通过练习自我介绍来帮助学生练习{lang}。引导学生介绍自己的姓名、年龄、兴趣爱好、家庭和职业等信息。提供反馈和改进建议。`
         },
@@ -69,17 +69,17 @@ export const SceneDialog = forwardRef(({userId,
             message: `通过角色扮演安排会议的场景来帮助学生练习{lang}。引导学生讨论会议时间、地点和议程。`
         },
         {
-            heading: '参加{lang}会议',
+            heading: '参加会议',
             subheading: '会议',
             message: `请教我如何使用{lang}参加会议，通过角色扮演参加{lang}会议来帮助学生练习{lang}。你将扮演会议主持人或参与者，而学生将扮演另一个参与者。引导学生进行会议中的讨论、表达意见和提出问题。`
         },
         {
-            heading: '{lang}购物',
+            heading: '购物',
             subheading: '购物',
             message: `请教我在国外如何使用{lang}购物,通过角色扮演购物场景来帮助学生练习{lang}。你将扮演店员，而学生将扮演顾客。引导学生经历典型的购物体验，包括问候、寻找商品、做决定和付款。`
         },
         {
-            heading: '{lang}邀约',
+            heading: '邀约',
             subheading: '约会',
             message: `请教我如何使用{lang}约对方外出,通过角色扮演邀约对方外出场景来帮助学生练习{lang}。你将扮演被邀约的人，而学生将扮演邀约者。引导学生用礼貌和自信的方式进行邀请，并处理可能的回应。`
         },
