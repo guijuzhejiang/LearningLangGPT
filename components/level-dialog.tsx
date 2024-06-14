@@ -2,16 +2,10 @@
 
 import * as React from 'react'
 import {type DialogProps} from '@radix-ui/react-dialog'
-import {IconTeacher, IconPlayMedia, IconStop} from '@/components/ui/icons'
 import * as Dialog from '@radix-ui/react-dialog';
 import {Cross2Icon} from '@radix-ui/react-icons';
-import Cookies from 'js-cookie';
 import {usePathname} from "next/navigation";
 import {updateUserCookies, loadUserCookies, stopAllAudio} from "@/lib/utils";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
-import {Button} from "@/components/ui/button";
-import {spinner} from "@/components/stocks";
-import {toast} from "sonner";
 import {forwardRef, useImperativeHandle} from "react";
 import {LangDialog} from "@/components/lang-dialog";
 interface ChatShareDialogProps extends DialogProps {
@@ -82,9 +76,8 @@ export const LevelDialog = forwardRef(({userId,
                         <div className="grid grid-cols-3 gap-2">
                             {
                                 levelDisplay.map((ld, index) => (
-                                    <Dialog.Close asChild>
+                                    <Dialog.Close asChild key={"l"+index}>
                                         <div
-                                            key={"l"+index}
                                             className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
                                                 index > 1 && 'hidden md:block'
                                             }`}
@@ -126,5 +119,5 @@ export const LevelDialog = forwardRef(({userId,
     )
 });
 
-LangDialog.displayName = "LangDialog";
+LevelDialog.displayName = "LevelDialog";
 
