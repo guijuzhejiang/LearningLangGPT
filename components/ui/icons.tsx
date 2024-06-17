@@ -650,6 +650,40 @@ function IconVoiceContinuation({
     )
 }
 
+function IconScoreSheet({
+                                   className,
+                                   ...props
+                               }: React.ComponentProps<'svg'>) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            className={cn('size-4', className)}
+            viewBox="0 0 48 48"
+            {...props}
+        >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+            <g id="SVGRepo_iconCarrier">
+                {/*<defs>*/}
+                {/*    <style>.a{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}</style>*/}
+                {/*</defs>*/}
+                <path className="a"
+                      d="M39.5,30.8668V6.5a2,2,0,0,0-2-2h-27a2,2,0,0,0-2,2v35a2,2,0,0,0,2,2h27a2,2,0,0,0,2-2V40.0311"></path>
+                <path className="a" d="M37.1342,37.66,21.2877,21.7746V17.25H25.92L41.7049,33.0776"></path>
+                <path className="a"
+                      d="M44.3148,37.9846a1.6234,1.6234,0,0,0,0-2.2906l-2.61-2.6164L37.1342,37.66l2.61,2.6164a1.6136,1.6136,0,0,0,2.2849,0Z"></path>
+                <line className="a" x1="13" y1="10.5" x2="35" y2="10.5"></line>
+                <line className="a" x1="13" y1="17.25" x2="21.2877" y2="17.25"></line>
+                <line className="a" x1="32.6516" y1="24" x2="35" y2="24"></line>
+                <line className="a" x1="13" y1="24" x2="23.5077" y2="24"></line>
+                <line className="a" x1="13" y1="30.75" x2="29.989" y2="30.75"></line>
+                <line className="a" x1="13" y1="37.5" x2="35" y2="37.5"></line>
+            </g>
+        </svg>
+    )
+}
+
 export {
     IconEdit,
     IconNextChat,
@@ -683,5 +717,6 @@ export {
     IconVoiceContinuation,
     IconHint,
     IconTeacher,
+    IconScoreSheet,
     IconChevronUpDown
 }

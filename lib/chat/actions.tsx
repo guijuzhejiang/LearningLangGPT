@@ -595,8 +595,8 @@ const createChatChain = async (msgs, chatParams) => {
 
     const prompt = ChatPromptTemplate.fromTemplate(
         `
-        ${chatPrompts[chatParams.lang].prompt}
         ${chatPrompts[chatParams.lang].level[chatParams.level]}
+        ${chatPrompts[chatParams.lang].prompt}
         {history}
         Human:{input}
         AI:
