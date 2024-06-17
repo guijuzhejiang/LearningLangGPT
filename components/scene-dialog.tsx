@@ -40,7 +40,7 @@ export const SceneDialog = forwardRef(({userId,
     const exampleMessages = [
         {
             heading: '无',
-            subheading: '旅游',
+            subheading: '',
             message: ``
         },
         {

@@ -28,9 +28,6 @@ import {readStreamableValue} from "ai/rsc";
 import {spinner} from "@/components/stocks";
 import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
-import {getChat} from "@/app/actions";
-import {util} from "protobufjs";
-import camelCase = util.camelCase;
 
 
 export interface PromptFormProps {
@@ -435,7 +432,17 @@ export function PromptForm({
                 })()
             }
         }
-    }, [voiceText, lastMessage?.display.ref?.current?.completed])
+    }, [lastMessage?.display.ref?.current?.completed])
+
+    useEffect(() => {
+        if (showHint) {
+            if (voiceContinuationEnable) {
+                ;(async () => {
+                    await handleUpdateHint(voiceText);
+                })()
+            }
+        }
+    }, [voiceText])
 
     return (
         <form

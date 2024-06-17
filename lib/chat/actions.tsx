@@ -108,9 +108,9 @@ async function createTranslator() {
 async function getHint(msg:string, chatParams: ChatParams | undefined | null) {
     'use server'
     // const msgs = JSON.parse(jmsg);
-    console.log("msxxxxgs[msgs.length-1]")
-    console.log(msg)
-    console.log(chatParams)
+    // console.log("msxxxxgs[msgs.length-1]")
+    // console.log(msg)
+    // console.log(chatParams)
 
     if (!chatParams) {
         const session = await auth();
@@ -198,8 +198,8 @@ async function createPrompter(lang:string) {
         AI:
       `
     );
-    console.log("xxxxxxxxxxxxxxxxxxxxxxxxx");
-    console.log(lang);
+    // console.log("xxxxxxxxxxxxxxxxxxxxxxxxx");
+    // console.log(lang);
 
     const partialPrompt = await prompt.partial({
         language: lang,
@@ -517,7 +517,6 @@ const chatPrompts = {
         Veillez à ce que vos réponses soient claires et nettes et limitez-les à 20 mots ou moins.
         Vous êtes un professeur de {language} gentil, drôle et plein d'humour et vous me posez des questions dans vos réponses.
         Maintenant, nous commençons à pratiquer et vous pouvez me poser des questions en premier.
-        Traduit avec DeepL.com (version gratuite)
       `,
         'level': {
             0: `
@@ -588,9 +587,16 @@ const createChatChain = async (msgs, chatParams) => {
         }
     }
 
+    console.log(new Date() + "createChatChain")
+    console.log(chatParams)
+    console.log("prompt:" + chatPrompts[chatParams.lang].prompt)
+    console.log("level:" + chatPrompts[chatParams.lang].level[chatParams.level])
+
+
     const prompt = ChatPromptTemplate.fromTemplate(
         `
         ${chatPrompts[chatParams.lang].prompt}
+        ${chatPrompts[chatParams.lang].level[chatParams.level]}
         {history}
         Human:{input}
         AI:
