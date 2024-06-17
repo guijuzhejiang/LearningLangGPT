@@ -589,8 +589,15 @@ const createChatChain = async (msgs, chatParams) => {
 
     console.log(new Date() + "createChatChain")
     console.log(chatParams)
-    console.log("prompt:" + chatPrompts[chatParams.lang].prompt)
-    console.log("level:" + chatPrompts[chatParams.lang].level[chatParams.level])
+    // console.log("prompt:" + chatPrompts[chatParams.lang].prompt)
+    // console.log("level:" + chatPrompts[chatParams.lang].level[chatParams.level])
+    console.log(`
+        ${chatPrompts[chatParams.lang].level[chatParams.level]}
+        ${chatPrompts[chatParams.lang].prompt}
+        {history}
+        Human:{input}
+        AI:
+      `)
 
 
     const prompt = ChatPromptTemplate.fromTemplate(
