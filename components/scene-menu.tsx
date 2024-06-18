@@ -29,7 +29,7 @@ export function SceneMenu({  }: SceneMenuProps) {
               // onClick={async () => {
               // }}
           >
-            <div className="text-sm font-semibold mb-2">选择场景</div>
+            <div className="text-sm font-semibold mb-2">场景</div>
             <div className="text-sm text-zinc-600 items-center flex justify-center">
               结交新朋友（Making New Friends）
             </div>

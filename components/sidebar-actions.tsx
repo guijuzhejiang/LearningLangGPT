@@ -16,13 +16,14 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { IconSpinner, IconTrash } from '@/components/ui/icons'
+import {IconScoreSheet, IconSpinner, IconTrash} from '@/components/ui/icons'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import Cookies from "js-cookie";
+import {ScoreSheetDialog} from "@/components/score-sheet-dialog";
 
 interface SidebarActionsProps {
   chat: Chat
@@ -37,9 +38,13 @@ export function SidebarActions({
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [isRemovePending, startRemoveTransition] = React.useTransition()
 
+
   return (
     <>
       <div className="">
+        {/* score sheet */}
+        <ScoreSheetDialog chat={chat} isRemovePending={isRemovePending}/>
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -52,9 +57,12 @@ export function SidebarActions({
               <span className="sr-only">删除</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Delete chat</TooltipContent>
+          {/*<TooltipContent>Delete chat</TooltipContent>*/}
+          <TooltipContent>删除</TooltipContent>
         </Tooltip>
       </div>
+
+      {/* delete */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

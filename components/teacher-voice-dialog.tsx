@@ -134,7 +134,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                         // onClick={async () => {
                         // }}
                     >
-                        <div className="text-sm font-semibold mb-2">选择老师</div>
+                        <div className="text-sm font-semibold mb-2">老师</div>
                         <div className="text-sm text-zinc-600 items-center flex flex-col">
                             <img className={"size-24"}
                                    alt={teachers[teacherGender][teacherName].name}
@@ -150,7 +150,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                     <Dialog.Content
                         className="z-50 min-w-[60vw] max-w-[80vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
-                            选择老师
+                            老师
                         </Dialog.Title>
                         <Dialog.Description className="text-mauve11 mt-[10px] mb-1 text-[15px] leading-normal">
                             <span className={"flex items-center"}>

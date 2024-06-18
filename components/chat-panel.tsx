@@ -46,7 +46,7 @@ export function ChatPanel({
                 scrollToBottom={scrollToBottom}
             />
 
-            <div className="mx-auto sm:max-w-2xl sm:px-4">
+            <div className="chatContainer mx-auto sm:max-w-2xl sm:px-4">
                 {messages.length === 0 && (
                     <div className="mb-4 grid grid-cols-2 gap-4 px-4 sm:px-0">
                         {/* 选择laoshi  */}

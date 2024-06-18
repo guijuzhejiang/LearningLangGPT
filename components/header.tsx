@@ -1,23 +1,18 @@
 import * as React from 'react'
 import Link from 'next/link'
 
-import {cn} from '@/lib/utils'
 import {auth} from '@/auth'
 import {Button, buttonVariants} from '@/components/ui/button'
 import {
     IconNextChat,
     IconSeparator,
-    IconTeacher
 } from '@/components/ui/icons'
 import {UserMenu} from '@/components/user-menu'
 import {SidebarMobile} from './sidebar-mobile'
 import {SidebarToggle} from './sidebar-toggle'
 import {ChatHistory} from './chat-history'
 import {Session} from '@/lib/types'
-import * as Dialog from '@radix-ui/react-dialog';
-import { Cross2Icon } from '@radix-ui/react-icons';
-import {TeacherVoiceDialog} from "@/components/teacher-voice-dialog";
-import {shareChat} from "@/app/actions";
+import {UserGuideButton} from "@/components/user-guide-button";
 
 async function UserOrLogin() {
     const session = (await auth()) as Session
@@ -50,19 +45,34 @@ async function UserOrLogin() {
     )
 }
 
+async function UserGuide() {
+    const session = (await auth()) as Session
+    return (
+        <Button
+            // onClick={()=>{
+            //
+            // }}
+        >
+            How to use
+        </Button>
+    )
+}
+
 export async function Header() {
     const session = (await auth()) as Session
     return (
         <header
             className="sticky top-0 z-6 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
-            <div className="flex items-center">
+            <div className="UserOrLoginContainer flex items-center">
                 <React.Suspense fallback={<div className="flex-1 overflow-auto"/>}>
                     <UserOrLogin/>
                 </React.Suspense>
             </div>
-            {/*<div className="flex items-center justify-end space-x-2">*/}
-            {/*    <TeacherVoiceDialog userId={session ? session.user.id: 'default'} />*/}
-            {/*</div>*/}
+            <div className="flex items-center justify-end space-x-2">
+                <React.Suspense>
+                    <UserGuideButton/>
+                </React.Suspense>
+            </div>
         </header>
     )
 }
