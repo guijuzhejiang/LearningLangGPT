@@ -58,7 +58,7 @@ export function UserGuideButton({
             {element: 'div.chatContainer',
                 popover: {
                     title: '引导',
-                    description: '选择老师、语言、等级和对话场景，然后点击开始即可开始学习。',
+                    description: '选择老师、语言、等级和对话场景，点击开始即可开始学习。',
                     side: "top",
                     align: 'start'
                 }
@@ -66,7 +66,7 @@ export function UserGuideButton({
             {element: 'div.UserOrLoginContainer',
                 popover: {
                     title: '引导',
-                    description: '注册并登录后，你可以保存聊天记录，选中对应记录可继续对话学习，点击评分总结按钮查看对话总结。',
+                    description: '注册并登录后，可保存聊天记录，选中对应记录可继续对话学习，点击评分总结按钮查看对话总结。',
                     side: "bottom",
                     align: 'start'
                 }
@@ -120,15 +120,15 @@ export function UserGuideButton({
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconHint/>
-                                                    <span>&nbsp;:如果回答问题的时候对于回复什么感到困惑，点击可显示回复的提示</span>
+                                                    <span>&nbsp;:点击可显示回复的提示</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconMicroPhone/>
-                                                    <span>&nbsp;:开启语音转文本功能,您输入的语音将转化为文字输入到文本框</span>
+                                                    <span>&nbsp;:开启麦克风</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconVoiceContinuation/>
-                                                    <span>&nbsp;:开启自动语音模式,文本输入框将无法使用,完全通过语音输入进行对话</span>
+                                                    <span>&nbsp;:开启自动语音模式</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconArrowElbow/>
