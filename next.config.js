@@ -68,19 +68,36 @@ module.exports = {
 
             {
               from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
-              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}chat/[id]/[name][ext]`,
+              to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
               from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
-              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}chat/[id]/[name][ext]`,
+              to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
               from: "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
-              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}chat/[id]/[name][ext]`,
+              to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
               from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
-              to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}chat/[id]/[name][ext]`,
+              to: `static/chunks/chat/[id]/[name][ext]`,
+            },
+
+            {
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
+              to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
+            },
+            {
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
+              to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
+            },
+            {
+              from: "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
+              to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
+            },
+            {
+              from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
+              to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
           ],
         })

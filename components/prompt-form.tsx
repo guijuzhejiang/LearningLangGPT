@@ -183,7 +183,8 @@ export function PromptForm({
     }, [audioBuffer]);
 
     const vad = useMicVAD({
-        startOnLoad: path.includes('chat'),
+        // workletURL: '/learninglang/vad/vad.worklet.bundle.min.js',
+        startOnLoad: true,
         positiveSpeechThreshold: 0.8,
         negativeSpeechThreshold: 0.8 - 0.15,
         minSpeechFrames: 3,
