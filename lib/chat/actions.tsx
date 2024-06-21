@@ -193,7 +193,6 @@ async function createPrompter(lang:string) {
     const prompt = ChatPromptTemplate.fromTemplate(
         `
         ${hintPrompts[lang]}
-        {history}
         Human:{input}
         AI:
       `
