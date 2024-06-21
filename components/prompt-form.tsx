@@ -28,6 +28,7 @@ import {readStreamableValue} from "ai/rsc";
 import {spinner} from "@/components/stocks";
 import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
+import {getChat} from "@/app/actions";
 
 
 export interface PromptFormProps {
@@ -184,7 +185,7 @@ export function PromptForm({
 
     const vad = useMicVAD({
         workletURL: '/learninglang/vad/vad.worklet.bundle.min.js',
-        modelURL: '/learninglang/vad/vad.worklet.bundle.min.js',
+        modelURL: '/learninglang/vad/silero_vad.onnx',
         startOnLoad: true,
         positiveSpeechThreshold: 0.8,
         negativeSpeechThreshold: 0.8 - 0.15,
@@ -248,7 +249,7 @@ export function PromptForm({
         }
     }
 
-    const handleTTS = () => {
+    const handleTTS = async () => {
         let userData = {
             teacherGender: 'female',
             teacherName: 'Mary',
@@ -280,7 +281,7 @@ export function PromptForm({
                 }
             }
         } else {
-            userData = loadCacheUserCookies(userId, chatId);
+            userData = (await getChat(chatId, userId))?.chatParams;
         }
 
         if (canPlay) {
@@ -492,7 +493,7 @@ export function PromptForm({
                                     e.preventDefault();
                                     stopAllAudio();
                                     setReadingLoud(!readingLoud);
-                                    handleTTS();
+                                    await handleTTS();
                                 }}
                             >
                                 {readingLoud ? (

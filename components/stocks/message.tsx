@@ -79,7 +79,7 @@ export const BotMessage = React.memo(forwardRef(({
     const path = usePathname();
 
     const handleCanPlay = (e) => {
-        console.log(e);
+        // console.log(e);
         if (e.target) {
             const element = e.target as HTMLMediaElement;
             element.play();
@@ -191,11 +191,11 @@ export const BotMessage = React.memo(forwardRef(({
         console.log("chatParamschatParamschatParamschatParams");
         console.log(chatParams);
 
-        if (userId!=='default') {
-            if (!loadCacheUserCookies(userId, chatId) && chatParams) {
-                cacheUserCookies(userId, chatId, chatParams)
-            }
-        }
+        // if (userId!=='default') {
+        //     if (!loadCacheUserCookies(userId, chatId) && chatParams) {
+        //         cacheUserCookies(userId, chatId, chatParams)
+        //     }
+        // }
 
         if (sessionStorage.getItem('tts') === content) {
             sessionStorage.removeItem('tts');

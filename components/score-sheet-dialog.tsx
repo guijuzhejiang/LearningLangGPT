@@ -4,7 +4,6 @@ import * as React from 'react'
 import {type DialogProps} from '@radix-ui/react-dialog'
 import {IconScoreSheet} from '@/components/ui/icons'
 import * as Dialog from '@radix-ui/react-dialog';
-import {Cross2Icon} from '@radix-ui/react-icons';
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {forwardRef, useImperativeHandle} from "react";
@@ -18,6 +17,9 @@ interface ChatShareDialogProps extends DialogProps {
 }
 import {Scrollbars} from 'react-custom-scrollbars';
 import {Separator} from "@/components/ui/separator";
+import * as Collapsible from '@radix-ui/react-collapsible';
+import { RowSpacingIcon, Cross2Icon } from '@radix-ui/react-icons';
+import {ScoreSheet} from "@/components/score-sheet";
 
 export const ScoreSheetDialog = forwardRef(({
                                                 chat,
@@ -25,8 +27,7 @@ export const ScoreSheetDialog = forwardRef(({
                                        ...props
                                    }: ChatShareDialogProps, ref) => {
 
-    const [commentContent, setCommentContent] = React.useState('')
-    const [text, completed] = useStreamableText(commentContent)
+    const [summaryContent, setSummaryContent] = React.useState('')
     // useImperativeHandle(ref, () => ({
     //     childMethod() {
     //         console.log('Child method called');
@@ -47,7 +48,8 @@ export const ScoreSheetDialog = forwardRef(({
                 {...props}
                 onOpenChange={async (open)=>{
                     if (open) {
-                        setCommentContent(await getScore(chat));
+                        setSummaryContent('');
+                        setSummaryContent(await getScore(chat));
                     }
                 }}
             >
@@ -87,9 +89,11 @@ export const ScoreSheetDialog = forwardRef(({
                             autoHeightMax={'85vh'}
                         >
                             <Separator className={"pt-0.5 mb-2"} />
-                            <p className="w-full whitespace-pre-line">
-                                {text.length > 0 ? text : spinner}
-                            </p>
+
+                            <ScoreSheet summaryString={summaryContent} chat={chat}/>
+                            {/*<p className="w-full whitespace-pre-line">*/}
+                            {/*    {summaryContent ? JSON.stringify(summaryContent) : spinner}*/}
+                            {/*</p>*/}
                         </Scrollbars>
 
                         <Dialog.Close asChild>

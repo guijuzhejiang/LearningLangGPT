@@ -15,6 +15,8 @@ import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {AIMessage, HumanMessage} from "@langchain/core/messages";
 import {createStreamableValue} from "ai/rsc";
 import {nanoid, runAsyncFnWithoutBlocking} from "@/lib/utils";
+import {getMutableAIState} from "ai/rsc";
+import {AI} from "@/lib/chat/actions";
 
 
 export async function getChats(userId?: string | null) {
@@ -171,62 +173,80 @@ export async function getMissingKeys() {
 
 export async function getScore(chat: Chat) {
     const textStream = createStreamableValue('')
-
-    runAsyncFnWithoutBlocking(async () => {
-        const prompt = ChatPromptTemplate.fromTemplate(
-            `
-        你是一个经验丰富的老师，善于总结。使用中文回答问题。
+    chat = await getChat(chat.id, chat.userId)
+    const prompt = ChatPromptTemplate.fromTemplate(
+        `
+        你是一个经验丰富的老师，待人友好，善于总结，乐于激励学生。
+        当收到'概括'的时候，用简体中文针对本次对话练习提炼关键单词并解释、显示音标、显示词性、造句。回顾一下这次对话练习的过程，给我的这次学习一个概括总结，表扬我做的好的地方，提出不足的地方，并且打个分。根据我的回答内容表现，给予英文水平评价。
+        请综合上述信息，你给出的回复需要包含以下四个字段：
+        1.vocab: 针对本次对话练习提炼关键单词并解释、显示音标、显示词性、造句。
+        2.review: 回顾本次对话的聊天内容，做一个简洁的概括。
+        3.summary: 针对本次对话，概括总结，表扬我做的好的地方，提出不足的地方。
+        4.evaluation: 根据我的回答内容表现，给予英文水平评价。
+        5.score: 这次对练习的评分,按照ABCDF打分。
+        请按照以下JSON格式来回答：
+        {{
+        "vocab":[
+        {{"word":"单词1","explanation":“单词1的中文解释”, "phonogram":"单词1的音标", "category": "单词1的词性", "sentence":"单词1造句例子"}}}},
+        {{"word":"单词2","explanation":“单词2的中文解释”, "phonogram":"单词2的音标", "category": "单词2的词性", "sentence":"单词2造句例子"}}}}
+        ],
+        "review":"这次对话练习的回顾",
+        "summary":{{"content":"对于这次学习的概括总结","strengths":["做的好的地方1","做的好的地方2"],"weaknesses":["不足的地方1","不足的地方2"]}},
+        “evaluation”:"根据我回答内容表现，给予的英文水平评价",
+        "score":"这次对话练习的评分"
+        }}
+        最后强调一下：你的回复将直接用于javascript的JSON.parse解析，所以注意一定要以标准的JSON格式做回答，不要包含任何其他非JSON内容,不要包含换行符,必须一定用中文回复。
         {history}
         Human:{input}
       `
-        );
-        const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
-        const model = new ChatGroq({
-            modelName: "llama3-70b-8192",
-            apiKey: process.env.GROQ_API_KEY,
-            streaming: true,
-            temperature: 0.8,
-        });
-
-        model.client = groqClient;
-
-        console.log("test");
-        console.log(chat);
-
-        const memory = new BufferWindowMemory({
-            humanPrefix: "Human",
-            aiPrefix: "AI",
-            memoryKey: "history",
-            k: 10
-        });
-        const chatHistory = new ChatMessageHistory();
-        chat.messages.forEach(async function (value, index) {
-            if (value.role === 'assistant') {
-                await chatHistory.addMessage(new AIMessage(value.content));
-            }
-            if (value.role === 'user') {
-                await chatHistory.addMessage(new HumanMessage(value.content));
-            }
-        });
-        memory.chatHistory = chatHistory;
-
-        const scoreC = new ConversationChain({llm: model, memory: memory, prompt: prompt});
-
-        const res = await scoreC.call({
-            input: "请你用中文回答我的问题。我想结束这次对话练习，针对本次对话练习，提炼关键单词并解释和造句，提供中文翻译。给我的这次学习一个概括总结，表扬我做的好的地方，提出不足的低分，并且打个分。根据我的回答内容表现，给予英文水平评价。",
-            callbacks: [
-                {
-                    handleLLMNewToken(token: any) {
-                        textStream.update(token);
-                    },
-                    handleLLMEnd(token: any) {
-                        textStream.done();
-                    },
-                },
-            ],
-
-        });
+    );
+    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+    const model = new ChatGroq({
+        modelName: "llama3-70b-8192",
+        apiKey: process.env.GROQ_API_KEY,
+        streaming: true,
+        temperature: 0.8,
     });
 
-    return textStream.value;
+    model.client = groqClient;
+
+    // console.log("test");
+    // console.log(chat);
+
+    const memory = new BufferWindowMemory({
+        humanPrefix: "Human",
+        aiPrefix: "AI",
+        memoryKey: "history",
+        k: chat.messages.length+1
+    });
+    const chatHistory = new ChatMessageHistory();
+    console.log(chat.messages);
+    chat.messages.forEach(async function (value, index) {
+        if (value.role === 'assistant') {
+            await chatHistory.addMessage(new AIMessage(value.content));
+        }
+        if (value.role === 'user') {
+            await chatHistory.addMessage(new HumanMessage(value.content));
+        }
+    });
+    memory.chatHistory = chatHistory;
+
+    const scoreC = new ConversationChain({llm: model, memory: memory, prompt: prompt});
+
+    const res = await scoreC.call({
+        input: "概括",
+        callbacks: [
+            {
+                handleLLMNewToken(token: any) {
+                    textStream.update(token);
+                },
+                handleLLMEnd(token: any) {
+                    textStream.done();
+                },
+            },
+        ],
+
+    });
+
+    return JSON.parse(res.response);
 }
