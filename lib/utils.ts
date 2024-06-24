@@ -217,3 +217,8 @@ export function loadUserCookies(uid:string) {
     return userData;
 }
 
+export function toHalfWidth(str: string) {
+    return str.replace(/[\uFF01-\uFF5E]/g, function (ch) {
+        return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0);
+    }).replace(/\u3000/g, ' ');
+}

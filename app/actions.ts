@@ -15,7 +15,11 @@ import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {AIMessage, HumanMessage} from "@langchain/core/messages";
 import {createTranslator} from "@/lib/chat/actions"
 import {createStreamableValue} from "ai/rsc";
-import {runAsyncFnWithoutBlocking} from "@/lib/utils";
+import {runAsyncFnWithoutBlocking, toHalfWidth} from "@/lib/utils";
+import JSON5 from 'json5'
+import moji from 'moji'
+import * as console from "node:console";
+
 
 export async function getChats(userId?: string | null) {
     if (!userId) {
@@ -168,36 +172,49 @@ export async function getMissingKeys() {
         .filter(key => key !== '')
 }
 
+type Summary = {
+    vocab: {word:string, explanation:string, phonogram:string, category:string, sentence:string},
+    review: string,
+    summary: {content:string, strengths:string[], weaknesses:string[]},
+    evaluation: string,
+    score: string
+}
+
 export async function getScore(chat: Chat) {
-    // const textStream = createStreamableValue('')
+
+    // Set up a parser
+    // const parser = new JsonOutputParser<Summary>();
+
     chat = await getChat(chat.id, chat.userId)
     const prompt = ChatPromptTemplate.fromTemplate(
         `
-        你是一个经验丰富的老师，待人友好，善于总结，乐于激励学生。如果你给出很准确的总结，我将支付你100美元小费。
-        当收到'概括'的时候，用简体中文针对本次对话练习提炼关键单词并解释、显示音标、显示词性、造句。回顾一下这次对话练习的过程，给我的这次学习一个概括总结，表扬我做的好的地方，提出不足的地方，并且打个分。根据我的回答内容表现，给予英文水平评价。
-        请综合上述信息，你给出的回复需要包含以下四个字段：
-        1.vocab: 针对本次对话练习提炼关键单词并解释、显示音标、显示词性、造句。此处使用英文。
-        2.review: 回顾本次对话的聊天内容，做一个简洁的概括。此处使用中文。
-        3.summary: 针对本次对话，概括总结，表扬我做的好的地方，提出不足的地方。此处使用中文。
-        4.evaluation: 请根据以下标准评估我的英文水平，此处使用中文。
-            (1).**内容完整性**：评估我的回答是否全面且相关。
-            (2).**句子复杂度**：评估我使用的句子结构的复杂性，包括从句和多样化的句型。
-            (3).**词汇使用**：考虑我使用的词汇范围和复杂程度，包括习语表达和高级术语的使用。
-            (4).**语法和句法**：审查我使用的语法结构的正确性和复杂性。
-            (5).**连贯性和一致性**：评估我的回答的逻辑流畅性和连贯性，包括过渡短语和连贯装置的使用。
-        5.score: 这次对练习的评分,按照ABCDF打分。
-        请按照以下JSON格式来回答：
+        You are an experienced teacher, friendly, good at summarizing and happy to motivate students. I will pay you a $100 tip if you give a very accurate summary.
+        Respond only in valid JSON without any Chinese symbols, such as Chinese quotation marks.
+        Use Simplified Chinese to refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. Review the process of this conversation exercise and give me a general summary of my learning, praising what I did well, suggesting what I didn't do well, and giving me a score. Give me an English level rating based on the content of my answers.
+        Please synthesize the above information and the response you give needs to contain the following four fields:
+        1.vocab: Refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. English is used here。
+        2.review: Review the chat of this conversation and make a concise summary. Chinese is used here.
+        3.summary: In response to this conversation, summarize and conclude, praising what I did well and suggesting what I didn't do. Chinese is used here.
+        4.evaluation: Please evaluate my English level according to the following criteria, Chinese is used here.
+            (1).**Content integrity**：Evaluate whether my answer is comprehensive and relevant.
+            (2).**Sentence Complexity**: assess the complexity of the sentence structures I use, including subordinate clauses and diverse sentence types.
+            (3).**Vocabulary Use**: Consider the range and complexity of vocabulary I use, including idiomatic expressions and the use of advanced terminology.
+            (4).**Grammar and Syntax**: review the correctness and complexity of the grammatical structures I use.
+            (5).**Coherence and Coherence**: assess the logical flow and coherence of my responses, including the use of transitional phrases and cohesive devices.
+        5.score: This exercise will be graded according to the ABCDF.
+        Please answer in the following JSON format：
         {{
         "vocab":[
-        {{"word":"单词1","explanation":“单词1的中文解释”, "phonogram":"单词1的音标", "category": "单词1的词性", "sentence":"单词1造句例子"}}}},
-        {{"word":"单词2","explanation":“单词2的中文解释”, "phonogram":"单词2的音标", "category": "单词2的词性", "sentence":"单词2造句例子"}}}}
+        {{"word":"word1","explanation":“Explanation of Word 1 in Chinese”, "phonogram":"Phonetic symbols for word 1", "category": "Lexical properties of word 1", "sentence":"Word 1 Sentence Examples"}}}},
+        {{"word":"word2","explanation":“Explanation of Word 2 in Chinese”, "phonogram":"Phonetic symbols for word 2", "category": "Lexical properties of word 2", "sentence":"Word 2 Sentence Examples"}}}}
         ],
-        "review":"上述提到的review",
-        "summary":{{"content":"对于这次学习的概括总结","strengths":["做的好的地方1","做的好的地方2"],"weaknesses":["不足的地方1","不足的地方2"]}},
-        “evaluation”:"上述提到的evaluation",
-        "score":"这次对话练习的评分"
+        "review":"The review mentioned above",
+        "summary":{{"content":"General summary of the study","strengths":["What's working well1","What's working well2"],"weaknesses":["Deficiencies 1","Deficiencies 2"]}},
+        “evaluation”:"The evaluation referred to above",
+        "score":"Grading of this exercise"
         }}
-        最后强调一下：你的回复将直接用于javascript的JSON.parse解析，所以注意一定要以标准的JSON格式做回答，不要包含任何其他非JSON内容,不要包含换行符,必须一定用中文回复。
+        Finally, I would like to emphasize: your reply will be directly used in javascript's JSON.parse parsing, so be sure to answer in standard JSON format, don't include any other non-JSON content, and don't include line breaks.
+        Respond only in valid JSON without any Chinese symbols, such as Chinese quotation marks.
         {history}
         Human:{input}
       `
@@ -238,8 +255,28 @@ export async function getScore(chat: Chat) {
     const res = await scoreC.call({
         input: "概括",
     });
+    console.log(res.response);
 
-    return JSON.parse(res.response);
+    let fixedMsg = res.response;
+
+    const startIndex = res.response.indexOf('{');
+
+    if (startIndex !== -1) {
+        // 使用 slice 方法获取从 startIndex 开始到末尾的子字符串
+        fixedMsg = res.response.slice(startIndex);
+    }
+    try {
+        fixedMsg = moji(fixedMsg).convert('ZE', 'HE').toString();
+    } catch (e) {
+        console.error(e);
+    }
+
+    try {
+        return JSON5.parse(fixedMsg);
+    } catch (e) {
+        console.error(e);
+        return fixedMsg
+    }
 }
 
 

@@ -28,6 +28,7 @@ export const ScoreSheetDialog = forwardRef(({
                                    }: ChatShareDialogProps, ref) => {
 
     const [summaryContent, setSummaryContent] = React.useState('')
+    const [displayJSON, setDisplayJSON] = React.useState(false)
     // useImperativeHandle(ref, () => ({
     //     childMethod() {
     //         console.log('Child method called');
@@ -48,8 +49,11 @@ export const ScoreSheetDialog = forwardRef(({
                 {...props}
                 onOpenChange={async (open)=>{
                     if (open) {
+                        setDisplayJSON(false);
                         setSummaryContent('');
-                        setSummaryContent(await getScore(chat));
+                        const res = await getScore(chat);
+                        setDisplayJSON(typeof res === 'string')
+                        setSummaryContent(res);
                     }
                 }}
             >
@@ -90,10 +94,14 @@ export const ScoreSheetDialog = forwardRef(({
                         >
                             <Separator className={"pt-0.5 mb-2"} />
 
-                            <ScoreSheet summaryString={summaryContent} chat={chat}/>
-                            {/*<p className="w-full whitespace-pre-line">*/}
-                            {/*    {summaryContent ? JSON.stringify(summaryContent) : spinner}*/}
-                            {/*</p>*/}
+                            {displayJSON ? (
+                                <p className="w-full whitespace-pre-line">
+                                    {summaryContent ? JSON.stringify(summaryContent) : spinner}
+                                </p>
+                            ):(
+                                <ScoreSheet summaryString={summaryContent} chat={chat}/>
+                            )}
+
                         </Scrollbars>
 
                         <Dialog.Close asChild>
