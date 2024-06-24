@@ -13,11 +13,9 @@ import {ConversationChain} from "langchain/chains";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
 import {AIMessage, HumanMessage} from "@langchain/core/messages";
+import {createTranslator} from "@/lib/chat/actions"
 import {createStreamableValue} from "ai/rsc";
-import {nanoid, runAsyncFnWithoutBlocking} from "@/lib/utils";
-import {getMutableAIState} from "ai/rsc";
-import {AI} from "@/lib/chat/actions";
-
+import {runAsyncFnWithoutBlocking} from "@/lib/utils";
 
 export async function getChats(userId?: string | null) {
     if (!userId) {
@@ -170,9 +168,8 @@ export async function getMissingKeys() {
         .filter(key => key !== '')
 }
 
-
 export async function getScore(chat: Chat) {
-    const textStream = createStreamableValue('')
+    // const textStream = createStreamableValue('')
     chat = await getChat(chat.id, chat.userId)
     const prompt = ChatPromptTemplate.fromTemplate(
         `
@@ -195,9 +192,9 @@ export async function getScore(chat: Chat) {
         {{"word":"单词1","explanation":“单词1的中文解释”, "phonogram":"单词1的音标", "category": "单词1的词性", "sentence":"单词1造句例子"}}}},
         {{"word":"单词2","explanation":“单词2的中文解释”, "phonogram":"单词2的音标", "category": "单词2的词性", "sentence":"单词2造句例子"}}}}
         ],
-        "review":"这次对话练习的回顾",
+        "review":"上述提到的review",
         "summary":{{"content":"对于这次学习的概括总结","strengths":["做的好的地方1","做的好的地方2"],"weaknesses":["不足的地方1","不足的地方2"]}},
-        “evaluation”:"根据我回答内容表现，给予的英文水平评价",
+        “evaluation”:"上述提到的evaluation",
         "score":"这次对话练习的评分"
         }}
         最后强调一下：你的回复将直接用于javascript的JSON.parse解析，所以注意一定要以标准的JSON格式做回答，不要包含任何其他非JSON内容,不要包含换行符,必须一定用中文回复。
@@ -240,18 +237,50 @@ export async function getScore(chat: Chat) {
 
     const res = await scoreC.call({
         input: "概括",
-        callbacks: [
-            {
-                handleLLMNewToken(token: any) {
-                    textStream.update(token);
-                },
-                handleLLMEnd(token: any) {
-                    textStream.done();
-                },
-            },
-        ],
-
     });
 
     return JSON.parse(res.response);
+}
+
+
+const langchainTools = {"translator": null, "prompter": {}}
+
+export async function getTranslate(content:string) {
+    if (!langchainTools.translator) {
+        langchainTools.translator = await createTranslator();
+    }
+
+    const textStream = createStreamableValue("");
+
+    runAsyncFnWithoutBlocking(async () => {
+        let buf = "";
+        try {
+            let emojiFlag = false;
+            const res = await langchainTools.translator.call({
+                input: content,
+                callbacks: [
+                    {
+                        handleLLMNewToken(token: any) {
+                            // console.log(token);
+                            if (token) {
+                                buf += token;
+                                textStream.update(token);
+                            } else {
+                                // console.log('done11111 ' + token);
+                                // console.log(token);
+                            }
+                        },
+                        handleLLMEnd(token: any) {
+                            textStream.done();
+                        },
+                    },
+                ],
+            });
+        } catch (e) {
+            console.error(e);
+        } finally {
+        }
+    });
+
+    return textStream.value
 }

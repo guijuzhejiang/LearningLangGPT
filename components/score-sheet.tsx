@@ -3,15 +3,19 @@
 import * as React from 'react'
 import {type CollapsibleProps} from '@radix-ui/react-collapsible'
 import {forwardRef, useImperativeHandle} from "react";
-import {useStreamableText} from "@/lib/hooks/use-streamable-text";
 import * as Accordion from '@radix-ui/react-accordion';
 import {ChevronDownIcon} from '@radix-ui/react-icons';
 import {cn} from "@/lib/utils";
-import {readStreamableValue} from "ai/rsc";
+import {Scrollbars} from 'react-custom-scrollbars';
 import {spinner} from "@/components/stocks";
 import {Chat} from "@/lib/types";
 import {TTSButton} from "@/components/tts-button";
 import {Separator} from "@/components/ui/separator";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import {Button} from "@/components/ui/button";
+import {readStreamableValue, useActions} from "ai/rsc";
+import {IconTranslate} from "@/components/ui/icons";
+import {getTranslate} from "@/app/actions";
 
 interface ScoreSheetProps extends CollapsibleProps {
     summaryString: object | string
@@ -32,8 +36,11 @@ const AccordionItem = forwardRef(({children, className, ...props}, forwardedRef)
     </Accordion.Item>
 ));
 
-const AccordionTrigger = forwardRef(({children, className, ...props}, forwardedRef) => (
-    <Accordion.Header  className="flex">
+AccordionItem.displayName = "AccordionItem";
+
+const AccordionTrigger = forwardRef(({children, className,btn, ...props}, forwardedRef) => (
+    <Accordion.Header className="flex">
+
         <Accordion.Trigger
             className={cn(
                 'cursor-pointer text-violet11 shadow-mauve6 hover:bg-mauve2 group flex h-[45px] flex-1 items-center justify-between bg-white px-5 text-[15px] leading-none shadow-[0_1px_0] outline-none',
@@ -42,14 +49,22 @@ const AccordionTrigger = forwardRef(({children, className, ...props}, forwardedR
             {...props}
             ref={forwardedRef}
         >
-            {children}
+            <div className={"flex items-center"}>
+                {children}
+                {btn}
+            </div>
+
             <ChevronDownIcon
                 className="text-violet10 ease-[cubic-bezier(0.87,_0,_0.13,_1)] transition-transform duration-300 group-data-[state=open]:rotate-180"
                 aria-hidden
             />
+
         </Accordion.Trigger>
     </Accordion.Header>
 ));
+
+AccordionTrigger.displayName = "AccordionTrigger";
+
 
 const AccordionContent = forwardRef(({children, className, ...props}, forwardedRef) => (
     <Accordion.Content
@@ -60,9 +75,11 @@ const AccordionContent = forwardRef(({children, className, ...props}, forwardedR
         {...props}
         ref={forwardedRef}
     >
-        <div className="py-[15px] px-5">{children}</div>
+        <div className="py-2.5 px-5">{children}</div>
     </Accordion.Content>
 ));
+
+AccordionContent.displayName = "AccordionContent";
 
 export const ScoreSheet = forwardRef(({
                                           summaryString,
@@ -70,11 +87,6 @@ export const ScoreSheet = forwardRef(({
                                           ...props
                                       }: ScoreSheetProps, ref) => {
 
-    // React.useEffect(() => {
-    //     ;(async () => {
-    //     })()
-    //
-    // }, [summaryString])
 
     return (
         <Accordion.Root
@@ -86,77 +98,140 @@ export const ScoreSheet = forwardRef(({
             <AccordionItem value="item-vocab">
                 <AccordionTrigger>单词</AccordionTrigger>
                 <AccordionContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-1">
-                        {typeof summaryString === 'string' ? (spinner) : (
-                            <>
-                                {summaryString['vocab'].map((word, index) => {
-                                    return (
-                                        <div className={"flex"}>
-                                            <div key={index}>
-                                                <h1>
-                                                    {word.word}
-                                                </h1>
-                                                <div className={"flex items-center"}>
-                                                    {word.phonogram} <TTSButton text={word.word} chat={chat}/>
-                                                </div>
+                    <div className={"flex overflow-x-auto pb-2.5"}>
+                        <div className="flex flex-nowrap space-x-4">
+                            {typeof summaryString === 'string' ? (spinner) : (
+                                <>
+                                    {summaryString['vocab'].map((word, index) => {
+                                        const [transTexts, setTransTexts] = React.useState<string | undefined>('')
+                                        const [showTranslate, setShowTranslate] = React.useState<boolean>(false)
 
-                                                <div className={"flex items-center"}>
-                                                    <span className={"border-1 bg-amber-50 mr-2.5"}>{word.category}</span>
-                                                    <span>{word.explanation}</span>
-                                                </div>
+                                        return (
+                                            <div key={`sv${index}`} className={"flex flex-shrink-0 max-w-64"}>
+                                                <div>
+                                                    <h3 className={"mt-0.5 mb-0.5 font-bold text-xl"}>
+                                                        {word.word}
+                                                    </h3>
+                                                    <div className={"flex items-center"}>
+                                                        {word.phonogram} <TTSButton text={word.word} chat={chat}/>
+                                                    </div>
 
-                                                <div className={"mt-1.5"}>
-                                                    <div>例句:</div>
-                                                    <div>{word.sentence}</div>
-                                                </div>
+                                                    <div className={"flex items-center"}>
+                                                        <span
+                                                            className={"p-0.5 border-0 border-solid border-black rounded bg-amber-50 mr-2.5"}>{word.category}</span>
+                                                        <span>{word.explanation}</span>
+                                                    </div>
 
+                                                    <div className={"mt-1.5"}>
+                                                        <div>例句:</div>
+                                                        <div>{word.sentence}</div>
+                                                        <div
+                                                            className={`${showTranslate ? '' : 'hidden'}`}>{transTexts?.length === 0 ? (
+                                                            <>{spinner}</>
+                                                        ) : (
+                                                            <span className={`bg-green5 bg-opacity-40`}>
+                                                                {transTexts}
+                                                            </span>
+                                                        )}</div>
+                                                        <div className={"items-center flex"}>
+                                                            <TTSButton text={word.sentence} chat={chat}/>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        className={`bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
+                                                                        onClick={async () => {
+                                                                            setShowTranslate(true);
+                                                                            const translatedText = await getTranslate(word.sentence);
+                                                                            if (typeof translatedText === 'object') {
+                                                                                let value = ''
+                                                                                for await (const delta of readStreamableValue(translatedText)) {
+                                                                                    if (typeof delta === 'string') {
+                                                                                        setTransTexts((value = value + delta))
+                                                                                    }
+                                                                                }
+                                                                            } else {
+                                                                                setTransTexts(translatedText)
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        <IconTranslate className="size-6"/>
+                                                                        <span className="sr-only">翻译</span>
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>翻译</TooltipContent>
+                                                            </Tooltip>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                                <Separator className={"mr-4 ml-4 pr-0.5"} orientation={'vertical'}/>
                                             </div>
-                                            <Separator className={"ml-1.5 pr-0.5"} orientation={'vertical'}/>
-                                        </div>
-                                    )
-                                })}
-                            </>
-                        )}
+                                        )
+                                    })}
+                                </>
+                            )}
+                        </div>
+
                     </div>
+
                 </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-review">
-                <AccordionTrigger>回顾</AccordionTrigger>
+                <AccordionTrigger
+                    // btn={
+                    //     <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['review']}`:''} chat={chat}/>
+                    // }
+                >
+                        回顾
+                </AccordionTrigger>
                 <AccordionContent>
                     {typeof summaryString === 'string' ? (spinner) : (
-                        <>{summaryString['review']}</>
+                        <div className={"flex items-center"}>
+                            <span>{summaryString['review']}</span>
+                        </div>
                     )}
                 </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-summary">
-                <AccordionTrigger>总结</AccordionTrigger>
+                <AccordionTrigger
+                    // btn={
+                    //     <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['summary']['content']}优势:${summaryString['summary']['strengths']}劣势:${summaryString['summary']['weaknesses']}`:''} chat={chat}/>
+                    // }
+                >
+                    总结
+                </AccordionTrigger>
                 <AccordionContent>
                     {typeof summaryString === 'string' ? (spinner) : (
                         <>
-                            <div>
+                            <div className={"py-1.5"}>
                                 {summaryString['summary']['content']}
                             </div>
                             <Separator/>
-                            <div className="mt-1 grid grid-cols-2 gap-1">
-                                <div className={"flex flex-col"}>
-                                    <div>优势:</div>
-                                    {summaryString['summary']['strengths'].map((s, index) => {
-                                        return (
-                                            <div key={`s${index}`}>{s}</div>
-                                        )
-                                    })}
+                            <div className="mt-2 grid grid-cols-2 gap-1">
+                                <div>
+                                    <div className={"pb-1"}>优势:</div>
+                                    <ul className={"list-disc space-y-1"}>
+                                        {summaryString['summary']['strengths'].map((s, index) => {
+                                            return (
+                                                <li key={`s${index}`}>{s}</li>
+                                            )
+                                        })}
+                                    </ul>
                                 </div>
 
                                 <div className={"flex flex-col"}>
-                                    <div>劣势:</div>
-                                    {summaryString['summary']['weaknesses'].map((w, index) => {
-                                        return (
-                                            <div key={`w${index}`}>{w}</div>
-                                        )
-                                    })}
-
+                                    <div className={"pb-1"}>劣势:</div>
+                                    <ul className={"list-disc space-y-1"}>
+                                        {summaryString['summary']['weaknesses'].map((w, index) => {
+                                            return (
+                                                <li key={`w${index}`}>{w}</li>
+                                            )
+                                        })}
+                                    </ul>
                                 </div>
                             </div>
                         </>
@@ -165,12 +240,21 @@ export const ScoreSheet = forwardRef(({
             </AccordionItem>
 
             <AccordionItem value="item-evaluation">
-                <AccordionTrigger>评价</AccordionTrigger>
+                <AccordionTrigger
+                    // btn={
+                    //     <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['evaluation']}分数:${summaryString['score']}`:''} chat={chat}/>
+                    // }
+                >
+                    评价
+                </AccordionTrigger>
                 <AccordionContent>
                     {typeof summaryString === 'string' ? (spinner) : (
-                        <div>
-                            <span>{summaryString['evaluation']}</span>
-                            <span className={"float-right"}>分数: {summaryString['score']}</span>
+                        <div className={"flex items-center justify-between"}>
+                            <span className={"flex flex-grow pr-4"}>{summaryString['evaluation']}</span>
+                            <span className={"flex items-center w-fit flex-shrink-0"}>
+                                <span className={"flex font-bold text-md"}>分数:</span>
+                                <span className={"font-bold text-2xl text-red-500"}>{summaryString['score']}</span>
+                            </span>
                         </div>
                     )}
                 </AccordionContent>

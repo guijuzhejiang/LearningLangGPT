@@ -11,11 +11,13 @@ import {Chat} from "@/lib/types";
 
 interface TTSButtonProps extends ButtonProps {
   text?: string
+  lang?: string
     chat?: Chat
 }
 
 export function TTSButton({
   text = '',
+                              lang='',
                               chat,
   ...props
 }: TTSButtonProps) {
@@ -42,11 +44,13 @@ export function TTSButton({
                 audioRef.current.currentTime = 0;
             }
         } else {
+            alert(lang);
+            alert(lang.length>0 ? lang:chat?.chatParams['teacherGender']);
             const formData = new FormData();
             formData.append('text', text);
             formData.append('teacher_name', chat?.chatParams['teacherName']);
             formData.append('teacher_gender', chat?.chatParams['teacherGender']);
-            formData.append('lang', chat?.chatParams['teacherGender']);
+            formData.append('lang', lang.length>0 ? lang:chat?.chatParams['teacherGender']);
             const startTime = performance.now();
             fetch(process.env.TTS_URL, {
                 method: 'POST',

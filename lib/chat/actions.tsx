@@ -82,7 +82,7 @@ async function translate(content: string) {
     return textStream.value
 }
 
-async function createTranslator() {
+export async function createTranslator() {
     // 你是一个翻译英文的翻译器，你的目标是把任何语言翻译成中文，请翻译时不要带翻译腔，而是要翻译得自然、流畅和地道，使用优美和高雅的表达方式,必须使用中文输出。
 
     const prompt = ChatPromptTemplate.fromTemplate(

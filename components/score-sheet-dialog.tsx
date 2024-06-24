@@ -83,7 +83,7 @@ export const ScoreSheetDialog = forwardRef(({
                         </Dialog.Description>
 
                         <Scrollbars
-                            className={"pr-3"}
+                            // className={"pr-3"}
                             autoHeight
                             // autoHeightMin={'80vh'}
                             autoHeightMax={'85vh'}
