@@ -10,7 +10,7 @@ import {
     IconPlayMedia,
     IconTranslate,
     IconArrowElbow,
-    IconVoiceContinuation
+    IconVoiceContinuation, IconScoreSheet
 } from '@/components/ui/icons'
 import {driver} from "driver.js";
 import "driver.js/dist/driver.css";
@@ -88,7 +88,25 @@ export function UserGuideButton({
     return (
         <>
             {path.includes('chat') ? (
-                <></>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            onClick={() => {
+                                const buttonElements = document.querySelectorAll('.curScoreSheetBtn');
+                                if (buttonElements) {
+                                    buttonElements[0].click()
+                                }
+                            }}
+                            className={cn(className)}
+                            {...props}
+                        >
+                            <><IconScoreSheet className={"size-6"}/></>
+                        </Button>
+                    </TooltipTrigger>
+                    {/*<TooltipContent>Delete chat</TooltipContent>*/}
+                    <TooltipContent sideOffset={4} collisionPadding={32}>结束学习,查看评分</TooltipContent>
+                </Tooltip>
             ):(
                 <Tooltip>
                     <TooltipTrigger asChild>

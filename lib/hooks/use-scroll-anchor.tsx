@@ -20,9 +20,10 @@ export const useScrollAnchor = () => {
   useEffect(() => {
     if (messagesRef.current) {
       if (isAtBottom && !isVisible) {
-        messagesRef.current.scrollIntoView({
-          block: 'end'
-        })
+        // messagesRef.current.scrollIntoView({
+        //   block: 'end'
+        // })
+        scrollToBottom();
       }
     }
   }, [isAtBottom, isVisible])
@@ -63,7 +64,7 @@ export const useScrollAnchor = () => {
           })
         },
         {
-          rootMargin: '0px 0px -150px 0px'
+          rootMargin: '0px 0px -100px 0px'
         }
       )
 

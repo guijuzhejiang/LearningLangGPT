@@ -39,7 +39,9 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
             window.history.replaceState({}, '', `/learninglang`)
 
         }
-    }, [id, path, session?.user, messages])
+
+
+    }, [id, path, session?.user, messages]);
 
     useEffect(() => {
         const messagesLength = aiState.messages?.length
@@ -65,7 +67,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
             ref={scrollRef}
         >
             <div
-                className={cn('pb-[200px] pt-4 md:pt-10', className)}
+                className={cn('pb-[13rem] pt-4 md:pt-10', className)}
                 ref={messagesRef}
             >
                 {messages.length ? (

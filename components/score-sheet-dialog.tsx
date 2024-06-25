@@ -9,7 +9,6 @@ import {Button} from "@/components/ui/button";
 import {forwardRef, useImperativeHandle} from "react";
 import type {Chat} from "@/lib/types";
 import {getScore} from "@/app/actions";
-import {useStreamableText} from "@/lib/hooks/use-streamable-text";
 import {spinner} from "@/components/stocks";
 interface ChatShareDialogProps extends DialogProps {
     chat: Chat
@@ -17,9 +16,9 @@ interface ChatShareDialogProps extends DialogProps {
 }
 import {Scrollbars} from 'react-custom-scrollbars';
 import {Separator} from "@/components/ui/separator";
-import * as Collapsible from '@radix-ui/react-collapsible';
-import { RowSpacingIcon, Cross2Icon } from '@radix-ui/react-icons';
+import { Cross2Icon } from '@radix-ui/react-icons';
 import {ScoreSheet} from "@/components/score-sheet";
+import {usePathname} from "next/navigation";
 
 export const ScoreSheetDialog = forwardRef(({
                                                 chat,
@@ -29,6 +28,8 @@ export const ScoreSheetDialog = forwardRef(({
 
     const [summaryContent, setSummaryContent] = React.useState('')
     const [displayJSON, setDisplayJSON] = React.useState(false)
+    const path = usePathname();
+
     // useImperativeHandle(ref, () => ({
     //     childMethod() {
     //         console.log('Child method called');
@@ -63,7 +64,7 @@ export const ScoreSheetDialog = forwardRef(({
                             <TooltipTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="size-7 p-0 hover:bg-background"
+                                    className={`${chat.id === path.split('/').pop() ? 'curScoreSheetBtn':''} size-7 p-0 hover:bg-background`}
                                     disabled={isRemovePending}
                                     // onClick={() => {}}
                                 >

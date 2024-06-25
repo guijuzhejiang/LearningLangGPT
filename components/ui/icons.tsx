@@ -665,9 +665,9 @@ function IconScoreSheet({
             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
             <g id="SVGRepo_iconCarrier">
-                {/*<defs>*/}
-                {/*    <style>.a{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}</style>*/}
-                {/*</defs>*/}
+                <defs>
+                    <style>{".a{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}"}</style>
+                </defs>
                 <path className="a"
                       d="M39.5,30.8668V6.5a2,2,0,0,0-2-2h-27a2,2,0,0,0-2,2v35a2,2,0,0,0,2,2h27a2,2,0,0,0,2-2V40.0311"></path>
                 <path className="a" d="M37.1342,37.66,21.2877,21.7746V17.25H25.92L41.7049,33.0776"></path>

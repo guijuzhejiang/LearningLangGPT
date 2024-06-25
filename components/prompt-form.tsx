@@ -480,7 +480,7 @@ export function PromptForm({
         >
             {/*// className="peer absolute inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]"*/}
             <div className={`${(showHint && messages.length > 1) ? '':'hidden'} relative duration-300 ease-in-out mb-4 grid gap-2 px-4 sm:px-0`}>
-                <div className={"absolute right-1 -top-3 sm:right-2"}>
+                <div className={"z-40 absolute right-1 -top-3 sm:right-2"}>
                     {/* 播放 tts */}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -684,7 +684,7 @@ export function PromptForm({
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className={`${messages.length<2 && 'hidden'} ${showHint && 'hidden'} bg-yellow-100 hover:bg-yellow-200 z-50 absolute -right-1 -top-14 size-6 rounded-full p-0 sm:-right-0`}
+                                className={`${messages.length<2 && 'hidden'} ${showHint && 'hidden'} bg-yellow-100 hover:bg-yellow-200 z-50 absolute -right-1 -top-12 size-6 rounded-full p-0 sm:-right-0`}
                                 onClick={async (e) => {
                                     e.preventDefault();
                                     setShowHint(true);

@@ -5,7 +5,7 @@ import {redirect} from 'next/navigation'
 import {kv} from '@vercel/kv'
 
 import {auth} from '@/auth'
-import {type Chat} from '@/lib/types'
+import {type Chat, User} from '@/lib/types'
 import {ChatPromptTemplate} from "@langchain/core/prompts";
 import Groq from "groq-sdk";
 import {ChatGroq} from "@langchain/groq";
@@ -74,6 +74,7 @@ export async function removeChat({id, path}: { id: string; path: string }) {
     }
 
     await kv.del(`chat:${id}`)
+    await kv.del(`summary:${id}`)
     await kv.zrem(`user:chat:${session.user.id}`, `chat:${id}`)
 
     revalidatePath('/')
@@ -91,6 +92,7 @@ export async function clearChats() {
     }
 
     const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
+    console.log(chats);
     if (!chats.length) {
         return redirect('/')
     }
@@ -98,6 +100,7 @@ export async function clearChats() {
 
     for (const chat of chats) {
         pipeline.del(chat)
+        pipeline.del(chat.replace('chat', 'summary'))
         pipeline.zrem(`user:chat:${session.user.id}`, chat)
     }
 
@@ -177,17 +180,29 @@ type Summary = {
     review: string,
     summary: {content:string, strengths:string[], weaknesses:string[]},
     evaluation: string,
-    score: string
+    score: string,
+    chatLength: number
+}
+
+export async function saveScore(summary: Summary, chat:Chat) {
+    const session = await auth()
+    if (session && session.user) {
+        summary['chatLength'] = chat.messages.length;
+        const pipeline = kv.pipeline();
+        pipeline.hmset(`summary:${chat.id}`, summary)
+        await pipeline.exec()
+    }
 }
 
 export async function getScore(chat: Chat) {
+    const summary = await kv.hgetall<Summary>(`summary:${chat.id}`)
+    console.log("get sum");
+    console.log(summary);
 
-    // Set up a parser
-    // const parser = new JsonOutputParser<Summary>();
-
-    chat = await getChat(chat.id, chat.userId)
-    const prompt = ChatPromptTemplate.fromTemplate(
-        `
+    if (!summary || summary.chatLength !== chat.messages.length) {
+        chat = await getChat(chat.id, chat.userId);
+        const prompt = ChatPromptTemplate.fromTemplate(
+            `
         You are an experienced teacher, friendly, good at summarizing and happy to motivate students. I will pay you a $100 tip if you give a very accurate summary.
         Respond only in valid JSON without any Chinese symbols, such as Chinese quotation marks.
         Use Simplified Chinese to refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. Review the process of this conversation exercise and give me a general summary of my learning, praising what I did well, suggesting what I didn't do well, and giving me a score. Give me an English level rating based on the content of my answers.
@@ -218,65 +233,72 @@ export async function getScore(chat: Chat) {
         {history}
         Human:{input}
       `
-    );
-    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
-    const model = new ChatGroq({
-        modelName: "llama3-70b-8192",
-        apiKey: process.env.GROQ_API_KEY,
-        streaming: true,
-        temperature: 0.8,
-    });
+        );
+        const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+        const model = new ChatGroq({
+            modelName: "llama3-70b-8192",
+            apiKey: process.env.GROQ_API_KEY,
+            streaming: true,
+            temperature: 0.8,
+        });
 
-    model.client = groqClient;
+        model.client = groqClient;
 
-    // console.log("test");
-    // console.log(chat);
+        // console.log("test");
+        // console.log(chat);
 
-    const memory = new BufferWindowMemory({
-        humanPrefix: "Human",
-        aiPrefix: "AI",
-        memoryKey: "history",
-        k: chat.messages.length+1
-    });
-    const chatHistory = new ChatMessageHistory();
-    console.log(chat.messages);
-    chat.messages.forEach(async function (value, index) {
-        if (value.role === 'assistant') {
-            await chatHistory.addMessage(new AIMessage(value.content));
+        const memory = new BufferWindowMemory({
+            humanPrefix: "Human",
+            aiPrefix: "AI",
+            memoryKey: "history",
+            k: chat.messages.length+1
+        });
+        const chatHistory = new ChatMessageHistory();
+        console.log(chat.messages);
+        chat.messages.forEach(async function (value, index) {
+            if (value.role === 'assistant') {
+                await chatHistory.addMessage(new AIMessage(value.content));
+            }
+            if (value.role === 'user') {
+                await chatHistory.addMessage(new HumanMessage(value.content));
+            }
+        });
+        memory.chatHistory = chatHistory;
+
+        const scoreC = new ConversationChain({llm: model, memory: memory, prompt: prompt});
+
+        const res = await scoreC.call({
+            input: "概括",
+        });
+        console.log(res.response);
+
+        let fixedMsg = res.response;
+
+        const startIndex = res.response.indexOf('{');
+
+        if (startIndex !== -1) {
+            // 使用 slice 方法获取从 startIndex 开始到末尾的子字符串
+            fixedMsg = res.response.slice(startIndex);
         }
-        if (value.role === 'user') {
-            await chatHistory.addMessage(new HumanMessage(value.content));
+        try {
+            fixedMsg = moji(fixedMsg).convert('ZE', 'HE').toString();
+        } catch (e) {
+            console.error(e);
         }
-    });
-    memory.chatHistory = chatHistory;
 
-    const scoreC = new ConversationChain({llm: model, memory: memory, prompt: prompt});
-
-    const res = await scoreC.call({
-        input: "概括",
-    });
-    console.log(res.response);
-
-    let fixedMsg = res.response;
-
-    const startIndex = res.response.indexOf('{');
-
-    if (startIndex !== -1) {
-        // 使用 slice 方法获取从 startIndex 开始到末尾的子字符串
-        fixedMsg = res.response.slice(startIndex);
-    }
-    try {
-        fixedMsg = moji(fixedMsg).convert('ZE', 'HE').toString();
-    } catch (e) {
-        console.error(e);
+        try {
+            const jsonRes = JSON5.parse(fixedMsg);
+            await saveScore(jsonRes, chat);
+            return jsonRes;
+        } catch (e) {
+            console.error(e);
+            return fixedMsg
+        }
+    } else {
+        return summary;
     }
 
-    try {
-        return JSON5.parse(fixedMsg);
-    } catch (e) {
-        console.error(e);
-        return fixedMsg
-    }
+
 }
 
 

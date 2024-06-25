@@ -1,9 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import {useRouter} from 'next/navigation'
 import * as React from 'react'
 import { toast } from 'sonner'
-
 import { ServerActionResult, type Chat } from '@/lib/types'
 import {
   AlertDialog,
@@ -16,7 +15,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import {IconScoreSheet, IconSpinner, IconTrash} from '@/components/ui/icons'
+import {IconSpinner, IconTrash} from '@/components/ui/icons'
 import {
   Tooltip,
   TooltipContent,
@@ -38,7 +37,6 @@ export function SidebarActions({
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [isRemovePending, startRemoveTransition] = React.useTransition()
 
-
   return (
     <>
       <div className="">
@@ -49,9 +47,12 @@ export function SidebarActions({
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              className="size-7 p-0 hover:bg-background"
+              className={`size-7 p-0 hover:bg-background`}
               disabled={isRemovePending}
-              onClick={() => setDeleteDialogOpen(true)}
+              onClick={() => {
+                setDeleteDialogOpen(true);
+                // console.log(chat);
+              }}
             >
               <IconTrash />
               <span className="sr-only">删除</span>
