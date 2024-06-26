@@ -216,9 +216,8 @@ export async function getScore(chat: Chat) {
     if (!summary || summary.chatLength+'' !== chat.messages.length+'') {
         const prompt = ChatPromptTemplate.fromTemplate(
             `
-        Write a concise summary of the following:
-        "{text}"
-        I will pay you a $100 tip if you give a very accurate summary.
+        You are an experienced teacher, friendly, good at summarizing and happy to motivate students. I will pay you a $100 tip if you give a very accurate summary.
+        Respond only in valid JSON without any Chinese symbols, such as Chinese quotation marks.
         Use Simplified Chinese to refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. Review the process of this conversation exercise and give me a general summary of my learning, praising what I did well, suggesting what I didn't do well, and giving me a score. Give me an English level rating based on the content of my answers.
         Please synthesize the above information and the response you give needs to contain the following four fields:
         1.vocab: Refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. English is used here。
@@ -231,6 +230,21 @@ export async function getScore(chat: Chat) {
             (4).**Grammar and Syntax**: review the correctness and complexity of the grammatical structures I use.
             (5).**Coherence and Coherence**: assess the logical flow and coherence of my responses, including the use of transitional phrases and cohesive devices.
         5.score: This exercise will be graded according to the ABCDF.
+        Please answer in the following JSON format：
+        {{
+        "vocab":[
+        {{"word":"word1","explanation":“Explanation of Word 1 in Chinese”, "phonogram":"Phonetic symbols for word 1", "category": "Lexical properties of word 1", "sentence":"Word 1 Sentence Examples"}}}},
+        {{"word":"word2","explanation":“Explanation of Word 2 in Chinese”, "phonogram":"Phonetic symbols for word 2", "category": "Lexical properties of word 2", "sentence":"Word 2 Sentence Examples"}}}}
+        ],
+        "review":"The review mentioned above",
+        "summary":{{"content":"General summary of the study","strengths":["What's working well1","What's working well2"],"weaknesses":["Deficiencies 1","Deficiencies 2"]}},
+        “evaluation”:"The evaluation referred to above",
+        "score":"Grading of this exercise"
+        }}
+        Finally, I would like to emphasize: your reply will be directly used in javascript's JSON.parse parsing, so be sure to answer in standard JSON format, don't include any other non-JSON content, and don't include line breaks.
+        Respond only in valid JSON without any Chinese symbols, such as Chinese quotation marks.
+        {history}
+        Human:{input}
       `
         );
         const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
@@ -244,7 +258,6 @@ export async function getScore(chat: Chat) {
 
         // console.log("test");
         // console.log(chat);
-        const modelWithStructuredOutput = model.withStructuredOutput(summarySchema);
 
         const memory = new BufferWindowMemory({
             humanPrefix: "Human",
@@ -264,10 +277,10 @@ export async function getScore(chat: Chat) {
         });
         memory.chatHistory = chatHistory;
 
-        const scoreC = (new ConversationChain({llm: modelWithStructuredOutput, memory: memory, prompt: prompt}));
+        const scoreC = new ConversationChain({llm: model, memory: memory, prompt: prompt});
 
         const res = await scoreC.invoke({
-            input:'概括'
+            input: "概括",
         });
         console.log(res.response);
 
