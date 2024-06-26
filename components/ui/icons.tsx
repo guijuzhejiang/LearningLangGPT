@@ -267,7 +267,7 @@ function IconHint({className, ...props}: React.ComponentProps<'svg'>) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 571.2 571.2"
+            viewBox="-16 32 576 576"
             fill="currentColor"
             className={cn('size-4', className)}
             {...props}
@@ -660,9 +660,10 @@ function IconScoreSheet({
             fill="currentColor"
             className={cn('size-4', className)}
             viewBox="0 0 48 48"
+            stroke-width="2.8"
             {...props}
         >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g id="SVGRepo_bgCarrier" stroke-width="2"></g>
             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
             <g id="SVGRepo_iconCarrier">
                 <defs>
@@ -707,6 +708,50 @@ function IconGuideBook({
     )
 }
 
+function IconExit({
+                                   className,
+                                   ...props
+                               }: React.ComponentProps<'svg'>) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            strokeWidth="5"
+            stroke="#000000"
+            fill="none"
+            className={cn('size-4', className)}
+            viewBox="-4 0 60 60"
+            {...props}
+        >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+            <g id="SVGRepo_iconCarrier">
+                <polyline points="46.02 21.95 55.93 31.86 46.02 41.77"></polyline>
+                <line x1="55.93" y1="31.86" x2="19.59" y2="31.86"></line>
+                <path
+                    d="M40,38.18V52a2.8,2.8,0,0,1-2.81,2.8H12A2.8,2.8,0,0,1,9.16,52V11.77A2.8,2.8,0,0,1,12,9H37.19A2.8,2.8,0,0,1,40,11.77V25"></path>
+            </g>
+        </svg>
+    )
+}
+
+function IconContinue({
+                                   className,
+                                   ...props
+                               }: React.ComponentProps<'svg'>) {
+    return (
+        <svg {...props} fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+             className={cn('size-4', className)}
+             stroke="#000000" strokeWidth="0.744">
+            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinecap="round"></g>
+            <g id="SVGRepo_iconCarrier">
+                <path
+                    d="M19.2928932,7 L17.1464466,4.85355339 C16.9511845,4.65829124 16.9511845,4.34170876 17.1464466,4.14644661 C17.3417088,3.95118446 17.6582912,3.95118446 17.8535534,4.14644661 L20.8535534,7.14644661 C21.0488155,7.34170876 21.0488155,7.65829124 20.8535534,7.85355339 L17.8535534,10.8535534 C17.6582912,11.0488155 17.3417088,11.0488155 17.1464466,10.8535534 C16.9511845,10.6582912 16.9511845,10.3417088 17.1464466,10.1464466 L19.2928932,8 L5.5,8 C4.67157288,8 4,8.67157288 4,9.5 L4,15.5 C4,16.3284271 4.67157288,17 5.5,17 L10.5,17 C10.7761424,17 11,17.2238576 11,17.5 C11,17.7761424 10.7761424,18 10.5,18 L5.5,18 C4.11928813,18 3,16.8807119 3,15.5 L3,9.5 C3,8.11928813 4.11928813,7 5.5,7 L19.2928932,7 Z"></path>
+            </g>
+        </svg>
+    )
+}
+
 export {
     IconEdit,
     IconNextChat,
@@ -742,5 +787,7 @@ export {
     IconTeacher,
     IconGuideBook,
     IconScoreSheet,
+    IconExit,
+    IconContinue,
     IconChevronUpDown
 }

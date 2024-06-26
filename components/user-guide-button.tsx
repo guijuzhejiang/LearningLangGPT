@@ -87,27 +87,7 @@ export function UserGuideButton({
 
     return (
         <>
-            {path.includes('chat') ? (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            onClick={() => {
-                                const buttonElements = document.querySelectorAll('.curScoreSheetBtn');
-                                if (buttonElements) {
-                                    buttonElements[0].click()
-                                }
-                            }}
-                            className={cn(className)}
-                            {...props}
-                        >
-                            <><IconScoreSheet className={"size-6"}/></>
-                        </Button>
-                    </TooltipTrigger>
-                    {/*<TooltipContent>Delete chat</TooltipContent>*/}
-                    <TooltipContent sideOffset={4} collisionPadding={32}>结束学习,查看评分</TooltipContent>
-                </Tooltip>
-            ):(
+            {path === '/' ? (
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -163,6 +143,8 @@ export function UserGuideButton({
                     {/*<TooltipContent>Delete chat</TooltipContent>*/}
                     <TooltipContent sideOffset={4} collisionPadding={16}>如何使用</TooltipContent>
                 </Tooltip>
+            ):(
+                <></>
             )}
         </>
     )

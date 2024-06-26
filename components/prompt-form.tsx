@@ -12,7 +12,7 @@ import {
     IconPlus,
     IconMicroPhone,
     IconVoiceContinuation,
-    IconSpinner, IconClose, IconRefresh, IconHint, IconPlayMedia, IconTranslate, IconStop
+    IconSpinner, IconClose, IconRefresh, IconHint, IconPlayMedia, IconTranslate, IconStop, IconScoreSheet, IconExit
 } from '@/components/ui/icons'
 import {
     Tooltip,
@@ -480,7 +480,7 @@ export function PromptForm({
         >
             {/*// className="peer absolute inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]"*/}
             <div className={`${(showHint && messages.length > 1) ? '':'hidden'} relative duration-300 ease-in-out mb-4 grid gap-2 px-4 sm:px-0`}>
-                <div className={"z-40 absolute right-1 -top-3 sm:right-2"}>
+                <div className={"z-40 absolute right-2 -top-3 sm:right-3"}>
                     {/* 播放 tts */}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -684,7 +684,7 @@ export function PromptForm({
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className={`${messages.length<2 && 'hidden'} ${showHint && 'hidden'} bg-yellow-100 hover:bg-yellow-200 z-50 absolute -right-1 -top-12 size-6 rounded-full p-0 sm:-right-0`}
+                                className={`${messages.length < 2 && 'hidden'} ${showHint && 'hidden'} bg-yellow-50 hover:bg-yellow-200 z-50 absolute right-6 -top-12 size-6 rounded-full p-0 sm:right-7`}
                                 onClick={async (e) => {
                                     e.preventDefault();
                                     setShowHint(true);
@@ -706,9 +706,32 @@ export function PromptForm({
                         <TooltipContent>不知道回复什么?点击打开提示</TooltipContent>
                     </Tooltip>
 
+                    {/*总结*/}
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className={`${messages.length < 2 && 'hidden'} bg-gray-200 hover:bg-gray-50 z-50 absolute -right-1 -top-12 size-6 rounded-full p-0 sm:-right-0`}
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    stopAllAudio();
+                                    vad.stop();
+                                    setMicOn(false);
+                                    setVoiceContinuationEnable(false);
+                                    router.push(`/summary/${chatId}`)
+                                }}
+                            >
+                                <IconExit/>
+                                <span className="sr-only">结束学习,查看评分</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>结束学习,查看评分</TooltipContent>
+                    </Tooltip>
+
                     {/*提交按钮*/}
                     <Tooltip>
-                        <TooltipTrigger asChild className={`${voiceContinuationEnable && ('hidden')}`}>
+                    <TooltipTrigger asChild className={`${voiceContinuationEnable && ('hidden')}`}>
                             <Button type="submit" size="icon" disabled={input === ''}>
                                 <IconArrowElbow/>
                                 <span className="sr-only">发送</span>
