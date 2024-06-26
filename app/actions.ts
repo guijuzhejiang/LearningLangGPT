@@ -181,7 +181,7 @@ type Summary = {
     summary: {content:string, strengths:string[], weaknesses:string[]},
     evaluation: string,
     score: string,
-    chatLength: number
+    chatLength: number | string
 }
 
 export async function saveScore(summary: Summary, chat:Chat) {
@@ -196,11 +196,11 @@ export async function saveScore(summary: Summary, chat:Chat) {
 
 export async function getScore(chat: Chat) {
     const summary = await kv.hgetall<Summary>(`summary:${chat.id}`)
-    console.log("get sum");
-    console.log(summary);
-
-    if (!summary || summary.chatLength !== chat.messages.length) {
-        chat = await getChat(chat.id, chat.userId);
+    chat = await getChat(chat.id, chat.userId);
+    // console.log("get sum");
+    // console.log(chat);
+    // console.log(summary);
+    if (!summary || summary.chatLength+'' !== chat.messages.length+'') {
         const prompt = ChatPromptTemplate.fromTemplate(
             `
         You are an experienced teacher, friendly, good at summarizing and happy to motivate students. I will pay you a $100 tip if you give a very accurate summary.
