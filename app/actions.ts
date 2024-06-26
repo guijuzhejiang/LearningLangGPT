@@ -216,7 +216,9 @@ export async function getScore(chat: Chat) {
     if (!summary || summary.chatLength+'' !== chat.messages.length+'') {
         const prompt = ChatPromptTemplate.fromTemplate(
             `
-        You are an experienced teacher, friendly, good at summarizing and happy to motivate students. I will pay you a $100 tip if you give a very accurate summary.
+        Write a concise summary of the following:
+        "{input}"
+        I will pay you a $100 tip if you give a very accurate summary.
         Use Simplified Chinese to refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. Review the process of this conversation exercise and give me a general summary of my learning, praising what I did well, suggesting what I didn't do well, and giving me a score. Give me an English level rating based on the content of my answers.
         Please synthesize the above information and the response you give needs to contain the following four fields:
         1.vocab: Refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. English is used here。
@@ -229,9 +231,6 @@ export async function getScore(chat: Chat) {
             (4).**Grammar and Syntax**: review the correctness and complexity of the grammatical structures I use.
             (5).**Coherence and Coherence**: assess the logical flow and coherence of my responses, including the use of transitional phrases and cohesive devices.
         5.score: This exercise will be graded according to the ABCDF.
-        {history}
-        Human:{input}
-      `
         );
         const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
         const model = new ChatGroq({
