@@ -82,6 +82,43 @@ export function PromptForm({
     const [userSpeakLately, setUserSpeakLately] = React.useState<Date>(new Date());
     const [userAudioMedia, setUserAudioMedia] = React.useState(null);
 
+    const handleKeyDown = async (
+        event: React.KeyboardEvent<HTMLTextAreaElement>
+    ): void => {
+        if (
+            event.key === 'Enter' &&
+            !event.shiftKey &&
+            !event.nativeEvent.isComposing
+        ) {
+            event.preventDefault()
+            await handleUseHint(event)
+        }
+    }
+
+    const handleUseHint = async (e) => {
+        e.preventDefault();
+        if (voiceContinuationEnable) {
+            setHintContent('');
+            setMessages(currentMessages => [
+                ...currentMessages,
+                {
+                    id: nanoid(),
+                    display: <UserMessage>{hintContent}</UserMessage>
+                }
+            ])
+
+            const responseMessage = await submitUserMessage(
+                hintContent
+            )
+            responseMessage.display.ref = lastMsgRef;
+            setMessages(currentMessages => [...currentMessages, responseMessage])
+            setLastMessage(responseMessage);
+        } else {
+            setInput(hintContent);
+            inputRef?.current?.focus();
+        }
+    }
+
     useEffect(() => {
         // 在状态变化后打印最新的值
         // console.log('input updated:', voiceText);
@@ -420,18 +457,12 @@ export function PromptForm({
 
     //
     useEffect(() => {
-        console.log("!xxxxxxxxxxx!!!!!!!!!!!!")
-        console.log(messages[messages.length-1])
+        // console.log("!xxxxxxxxxxx!!!!!!!!!!!!")
+        // console.log(messages[messages.length-1])
         if (showHint) {
             if (lastMessage?.display?.ref?.current?.completed) {
                 ;(async () => {
                     await handleUpdateHint(lastMessage.display.ref?.current?.text);
-                })()
-            }
-
-            if (voiceContinuationEnable) {
-                ;(async () => {
-                    await handleUpdateHint(voiceText);
                 })()
             }
         }
@@ -479,7 +510,7 @@ export function PromptForm({
             }}
         >
             {/*// className="peer absolute inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]"*/}
-            <div className={`${(showHint && messages.length > 1) ? '':'hidden'} relative duration-300 ease-in-out mb-4 grid gap-2 px-4 sm:px-0`}>
+            <div onKeyDown={handleKeyDown} className={`${(showHint && messages.length > 1) ? '':'hidden'} relative duration-300 ease-in-out mb-4 grid gap-2 px-4 sm:px-0`}>
                 <div className={"z-40 absolute right-2 -top-3 sm:right-3"}>
                     {/* 播放 tts */}
                     <Tooltip>
@@ -595,29 +626,7 @@ export function PromptForm({
                 <div
                     key={"example.heading"}
                     className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 'hidden md:block'`}
-                    onClick={async (e) => {
-                        e.preventDefault();
-                        if (voiceContinuationEnable) {
-                            setHintContent('');
-                            setMessages(currentMessages => [
-                                ...currentMessages,
-                                {
-                                    id: nanoid(),
-                                    display: <UserMessage>{hintContent}</UserMessage>
-                                }
-                            ])
-
-                            const responseMessage = await submitUserMessage(
-                                hintContent
-                            )
-                            responseMessage.display.ref = lastMsgRef;
-                            setMessages(currentMessages => [...currentMessages, responseMessage])
-                            setLastMessage(responseMessage);
-                        } else {
-                            setInput(hintContent);
-                            inputRef?.current?.focus();
-                        }
-                    }}
+                    onClick={handleUseHint}
                 >
                     <div className="text-sm text-zinc-600">
                         {hintContent.length > 0 ? (

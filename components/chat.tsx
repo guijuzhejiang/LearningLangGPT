@@ -1,12 +1,12 @@
 'use client'
 
-import {cn} from '@/lib/utils'
+import {cn, loadUserCookies} from '@/lib/utils'
 import {ChatList} from '@/components/chat-list'
 import {ChatPanel} from '@/components/chat-panel'
 import {EmptyScreen} from '@/components/empty-screen'
 import {useLocalStorage} from '@/lib/hooks/use-local-storage'
 import {useEffect, useState} from 'react'
-import {useUIState, useAIState} from 'ai/rsc'
+import {useUIState, useAIState, useActions} from 'ai/rsc'
 import {Session} from '@/lib/types'
 import {usePathname, useRouter} from 'next/navigation'
 import {ChatParams, Message} from '@/lib/chat/actions'
@@ -26,7 +26,8 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     const [messages, setMessages] = useUIState();
     const [aiState] = useAIState();
     const [_, setNewChatId] = useLocalStorage('newChatId', id)
-
+    const [bgUrl, setBgUrl] = React.useState('')
+    const {getBgUrl} = useActions();
 
     useEffect(() => {
         if (session?.user) {
@@ -44,6 +45,18 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     }, [id, path, session?.user, messages]);
 
     useEffect(() => {
+        console.log("messages count " + messages.length);
+        console.log(messages)
+
+        ;(async () => {
+            if ((messages.length >= 2 && messages.length % 4 === 0) || messages.length === 2) {
+                setBgUrl(await getBgUrl())
+            }
+        })();
+
+    }, [messages]);
+
+    useEffect(() => {
         const messagesLength = aiState.messages?.length
         if (messagesLength === 2 && session?.user) {
             // alert('refresh');
@@ -54,8 +67,8 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
     useEffect(() => {
         setNewChatId(id);
-        console.log("!!!!!!!!!chatParamschatParamschatParams!!!!!!!!!")
-        console.log(chatParams)
+        // console.log("!!!!!!!!!chatParamschatParamschatParams!!!!!!!!!")
+        // console.log(chatParams)
     })
 
     const {messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom} =
@@ -63,11 +76,12 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
     return (
         <div
-            className="relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
+            style={{backgroundImage:`url(${bgUrl})`}}
+            className={`bg-fixed bg-center bg-cover overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]`}
             ref={scrollRef}
         >
             <div
-                className={cn('pb-[13rem] pt-4 md:pt-10', className)}
+                className={cn("pb-[210px]", className)}
                 ref={messagesRef}
             >
                 {messages.length ? (
@@ -75,6 +89,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                 ) : (
                     <EmptyScreen/>
                 )}
+
                 <div className="h-px w-full" ref={visibilityRef}/>
             </div>
 

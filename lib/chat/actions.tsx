@@ -26,19 +26,104 @@ import {getChat, saveChat} from '@/app/actions'
 import {UserMessage} from '@/components/stocks/message'
 import {Chat} from '@/lib/types'
 import {auth} from '@/auth'
-import {ChatPromptTemplate} from "@langchain/core/prompts";
+import {ChatPromptTemplate, PromptTemplate} from "@langchain/core/prompts";
 import Groq from "groq-sdk";
 import {ChatGroq} from "@langchain/groq";
 import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
-import {ConversationChain} from "langchain/chains";
+import {ConversationChain, loadSummarizationChain} from "langchain/chains";
 import {HumanMessage, AIMessage} from "@langchain/core/messages";
 import {createStreamableValue} from "ai/rsc";
+import console from "node:console";
+import {Document} from "@langchain/core/documents";
 
 const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
 const chatChainDB = {} as { [key: string]: any };
 const abortSignal = {} as { [key: string]: any };
-const langchainTools = {"translator": null, "prompter": {}};
+const langchainTools = {"translator": null, "prompter": {}, "chatSummarizer":null};
+
+
+export async function createSummarizer() {
+    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+    const model = new ChatGroq({
+        modelName: "llama3-70b-8192",
+        apiKey: process.env.GROQ_API_KEY,
+        streaming: true,
+        temperature: 0.8,
+    });
+    model.client = groqClient;
+
+    const prompt = new PromptTemplate({
+        inputVariables: ['text'],
+        template: `
+        Write a stable diffusion prompt in English that generates the corresponding scenario for the following conversation:
+        "{text}"
+        Respond only the prompt.
+        PROMPT:
+        `
+    });
+    const chain = loadSummarizationChain(model, {
+        type: 'map_reduce',
+        combineMapPrompt: prompt,
+        combinePrompt: prompt,
+    })
+
+    return chain;
+}
+
+
+async function getBgUrl() {
+    'use server'
+    try {
+        if (!langchainTools.chatSummarizer) {
+            langchainTools.chatSummarizer = await createSummarizer();
+        }
+
+        // get info
+        const aiState = getMutableAIState<typeof AI>()
+        const session = await auth();
+        //  判断有没有登录
+        const userId = (session && session.user) ? session.user.id : "default";
+        const msgs = aiState.get().messages;
+        const chatId = aiState.get().chatId;
+
+        console.log("msgs!!!!!!!!!!!");
+        console.log(msgs);
+        const docs = [];
+        msgs.forEach(async function (value, index) {
+            if (value.role === 'assistant') {
+                docs.push(new Document({pageContent: `Teacher:${value.content}`}))
+            }
+            if (value.role === 'user') {
+                docs.push(new Document({pageContent: `Student:${value.content}`}))
+            }
+        });
+
+        const res = (await langchainTools.chatSummarizer.invoke({
+            input_documents: docs
+        })).text;
+        console.log(res);
+
+
+        // const response = await fetch(url, {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify(data),
+        // });
+        //
+        // if (!response.ok) {
+        //     throw new Error(`HTTP error! status: ${response.status}`);
+        // }
+        //
+        // const result = await response.json();
+        // return result;
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
+    }
+}
 
 async function translate(content: string) {
     'use server'
@@ -682,6 +767,7 @@ export const AI = createAI<AIState, UIState>({
         translate,
         getHint,
         delChat,
+        getBgUrl,
         confirmPurchase
     },
     initialUIState: [],
