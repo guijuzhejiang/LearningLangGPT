@@ -11,6 +11,7 @@ module.exports = {
   env: {
     STT_URL: process.env.STT_URL,
     TTS_URL: process.env.TTS_URL,
+    SD_URL: process.env.SD_URL,
   },
   basePath:process.env.NODE_ENV === "development"? '/learninglang':'/learninglang',
   // images: {
