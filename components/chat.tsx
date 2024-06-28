@@ -49,8 +49,14 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
         console.log(messages)
 
         ;(async () => {
-            if ((messages.length >= 2 && messages.length % 4 === 0) || messages.length === 2) {
-                setBgUrl(await getBgUrl())
+            if ((messages.length >= 2 && messages.length % 8 === 0) || messages.length === 2) {
+                const bgRes = await getBgUrl();
+                console.log(bgRes);
+                if (bgRes.success) {
+                    const url = process.env.SD_URL + bgRes.result[0].replace('/service', '');
+                    console.log(url);
+                    setBgUrl(url);
+                }
             }
         })();
 
@@ -77,7 +83,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     return (
         <div
             style={{backgroundImage:`url(${bgUrl})`}}
-            className={`bg-fixed bg-center bg-cover overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]`}
+            className={`bg-fixed bg-center bg-contain bg-no-repeat overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]`}
             ref={scrollRef}
         >
             <div
