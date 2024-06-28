@@ -29,6 +29,29 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     const [bgUrl, setBgUrl] = React.useState('')
     const {getBgUrl} = useActions();
 
+    const handleCheckBg = async () => {
+        try {
+            const response = await fetch(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&check=true&mlen=${messages.length}`,
+                {
+                    method: 'GET',
+                });
+
+            // 如果响应状态是404，返回true
+            if (response.status === 404) {
+                return false;
+            } else {
+                try {
+                    return await response.text()
+                } catch (e) {
+
+                }
+            }
+        } catch (e) {
+            return false
+        }
+
+    }
+
     useEffect(() => {
         if (session?.user) {
             if (!path.includes('chat') && messages.length === 2) {
@@ -49,13 +72,20 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
         console.log(messages)
 
         ;(async () => {
-            if ((messages.length >= 2 && messages.length % 8 === 0) || messages.length === 2) {
-                const bgRes = await getBgUrl();
-                console.log(bgRes);
-                if (bgRes.success) {
-                    const url = process.env.SD_URL + bgRes.result[0].replace('/service', '');
-                    console.log(url);
-                    setBgUrl(url);
+            if (session?.user) {
+                if ((messages.length >= 2 && messages.length % 8 === 0) || messages.length === 2) {
+                    const checkRes = await handleCheckBg()
+                    if (checkRes) {
+                        setBgUrl(checkRes);
+                    } else {
+                        const bgRes = await getBgUrl();
+                        console.log(bgRes);
+                        if (bgRes.success) {
+                            const url = process.env.SD_URL + bgRes.result[0].replace('/service', '');
+                            console.log(url);
+                            setBgUrl(url);
+                        }
+                    }
                 }
             }
         })();
@@ -82,7 +112,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
     return (
         <div
-            style={{backgroundImage:`url(${bgUrl})`}}
+            style={{backgroundImage: `url(${bgUrl})`}}
             className={`bg-fixed bg-center bg-contain bg-no-repeat overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]`}
             ref={scrollRef}
         >
