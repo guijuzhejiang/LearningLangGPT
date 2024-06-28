@@ -75,8 +75,11 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
             if (session?.user) {
                 if ((messages.length >= 2 && messages.length % 8 === 0) || messages.length === 2) {
                     const checkRes = await handleCheckBg()
+                    // console.log(checkRes);
+                    // alert(checkRes);
+
                     if (checkRes) {
-                        setBgUrl(checkRes);
+                        setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
                     } else {
                         const bgRes = await getBgUrl();
                         console.log(bgRes);
@@ -112,8 +115,13 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
     return (
         <div
-            style={{backgroundImage: `url(${bgUrl})`}}
-            className={`bg-fixed bg-center bg-contain bg-no-repeat overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]`}
+            style={
+                {
+                    backgroundImage: `url(${bgUrl})`,
+                    // backgroundPosition: 'calc(50% + 10rem) center'
+                }
+            }
+            className={`bg-fixed bg-center bg-contain bg-no-repeat overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:lg:bg-[center_0_250px ] peer-[[data-state=open]]:xl:pl-[300px] peer-[[data-state=open]]:xl:bg-center-300px`}
             ref={scrollRef}
         >
             <div
