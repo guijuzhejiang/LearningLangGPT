@@ -107,6 +107,8 @@ async function getBgUrl() {
         const formData = new FormData();
         formData.append('prompt', res);
         formData.append('user_id', userId);
+        formData.append('mlen', msgs.length);
+        formData.append('chat_id', chatId);
         const response = await fetch(process.env.SD_URL+'/zs/bg/generate', {
             method: 'POST',
             body: formData,
