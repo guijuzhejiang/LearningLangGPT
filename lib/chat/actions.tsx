@@ -572,7 +572,7 @@ const chatPrompts = {
         Your students do not know any English at all.
         Please start teaching them very basic English words and phrases.
         Please use simple words and short sentences, and make the lessons fun with interactive games and activities. 
-        Focus on themes like colors, animals, numbers, and shapes to keep the learning engaging and enjoyable.
+        Focus on topics such as colours, animals, numbers, shapes, and various scenarios presented by your students to keep learning engaging and fun.
         Be sure to encourage and praise the students for their efforts.
       `,
             1: `
@@ -609,7 +609,7 @@ const chatPrompts = {
         Vos élèves ne connaissent pas du tout le français.
         Commencez à leur enseigner les mots et les phrases les plus élémentaires.
         Utilisez des mots et des phrases simples et rendez les leçons amusantes grâce à des jeux et des activités interactives.
-        Mettez l'accent sur des sujets tels que les couleurs, les animaux, les nombres et les formes pour que l'apprentissage reste attrayant et amusant.
+        Veuillez vous concentrer sur des sujets tels que les couleurs, les animaux, les nombres, les formes, etc., ainsi que sur divers scénarios suggérés par les élèves afin de rendre l'apprentissage attrayant et amusant.
         Veillez à encourager et à féliciter les élèves pour leurs efforts.
       `,
             1: `
@@ -646,7 +646,7 @@ const chatPrompts = {
         Ihre Schüler können überhaupt kein Deutsch.
         Bitte fangen Sie an, ihnen die grundlegendsten englischen Wörter und Redewendungen beizubringen.
         Bitte verwenden Sie einfache Wörter und Sätze und gestalten Sie den Unterricht mit interaktiven Spielen und Aktivitäten unterhaltsam.
-        Konzentrieren Sie sich bitte auf Themen wie Farben, Tiere, Zahlen und Formen, damit das Lernen spannend bleibt und Spaß macht.
+        Bitte konzentrieren Sie sich auf Themen wie Farben, Tiere, Zahlen, Formen usw. sowie auf verschiedene von den Schülern vorgeschlagene Szenarien, damit das Lernen spannend bleibt und Spaß macht.
         Ermutigen und loben Sie Ihre Schülerinnen und Schüler für ihre Bemühungen.
       `,
             1: `
