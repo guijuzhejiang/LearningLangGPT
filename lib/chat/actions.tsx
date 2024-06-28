@@ -56,8 +56,12 @@ export async function createSummarizer() {
     const prompt = new PromptTemplate({
         inputVariables: ['text'],
         template: `
-        Write a stable diffusion prompt in English that generates the corresponding scenario for the following conversation:
+        Use the following step-by-step instructions to respond to user inputs.
+        Step 1 - You will generate concise, entity-dense summaries for the following dialogues,paying particular attention to extracting keywords, names, verbs, and adjectives from them:
         "{text}"
+        Step 2 - Your job is to generate English prompts for stable diffusion based on the highly dense summaries provided above.
+        Prompt is used to describe an image, and consists of ordinary common words or phrases
+        Example:girl,teacher,books,desk,store
         Respond only the prompt.
         PROMPT:
         `
