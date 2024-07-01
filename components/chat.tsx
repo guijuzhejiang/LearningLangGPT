@@ -31,7 +31,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
     const handleCheckBg = async () => {
         try {
-            const response = await fetch(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&check=true&mlen=${messages.length}`,
+            const response = await fetch(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&check=true&mlen=${messages.length-2}`,
                 {
                     method: 'GET',
                 });
@@ -73,7 +73,13 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
         ;(async () => {
             if (session?.user) {
-                if ((messages.length >= 2 && messages.length % 8 === 0) || messages.length === 2) {
+                if (messages.length === 2 && session?.user) {
+                    // alert('refresh');
+                    window.sessionStorage.setItem('tts', messages[1].content);
+                    router.refresh()
+                }
+                if ((messages.length > 4 && messages.length % 8 === 0) || messages.length === 4) {
+
                     const checkRes = await handleCheckBg()
                     // console.log(checkRes);
                     // alert(checkRes);
@@ -89,6 +95,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                             setBgUrl(url);
                         }
                     }
+
                 }
             }
         })();
@@ -106,9 +113,14 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
     useEffect(() => {
         setNewChatId(id);
-        // console.log("!!!!!!!!!chatParamschatParamschatParams!!!!!!!!!")
-        // console.log(chatParams)
     })
+
+    useEffect(() => {
+        ;(async () => {
+            setBgUrl(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&mlen=${messages.length<8?2:messages.length%8===0?messages.length-2:(messages.length-(messages.length%8)-2)}`);
+        })();
+
+    }, [])
 
     const {messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom} =
         useScrollAnchor()
@@ -121,7 +133,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                     // backgroundPosition: 'calc(50% + 10rem) center'
                 }
             }
-            className={`bg-fixed bg-center bg-contain bg-no-repeat overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:lg:bg-[center_0_250px ] peer-[[data-state=open]]:xl:pl-[300px] peer-[[data-state=open]]:xl:bg-center-300px`}
+            className={`bg-fixed bg-center bg-contain bg-no-repeat overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:lg:bg-[center_0_250px ] peer-[[data-state=open]]:xl:pl-[left_300px] peer-[[data-state=open]]:xl:[left_300px]`}
             ref={scrollRef}
         >
             <div

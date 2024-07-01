@@ -450,7 +450,7 @@ export function PromptForm({
 
         if (messages.length > 1 && showHint) {
             ;(async () => {
-                await handleUpdateHint(messages[messages.length - 1].display.props.content);
+                handleUpdateHint(messages[messages.length - 1].display.props.content);
             })()
         }
     }, []);
@@ -462,7 +462,7 @@ export function PromptForm({
         if (showHint) {
             if (lastMessage?.display?.ref?.current?.completed) {
                 ;(async () => {
-                    await handleUpdateHint(lastMessage.display.ref?.current?.text);
+                    handleUpdateHint(lastMessage.display.ref?.current?.text);
                 })()
             }
         }
@@ -472,7 +472,7 @@ export function PromptForm({
         if (showHint) {
             if (voiceContinuationEnable) {
                 ;(async () => {
-                    await handleUpdateHint(voiceText);
+                    handleUpdateHint(voiceText);
                 })()
             }
         }
@@ -589,7 +589,7 @@ export function PromptForm({
                                     setCanPlay(false);
                                     setCanPlayThrough(false);
                                     setHintContent('');
-                                    await handleUpdateHint(messages[messages.length - 1].display.ref?.current?.text);
+                                    handleUpdateHint(messages[messages.length - 1].display.ref?.current?.text);
                                 }}
                             >
                                 <IconRefresh/>
@@ -700,9 +700,9 @@ export function PromptForm({
                                     if (hintContent.length === 0) {
                                         const lastMsg = messages[messages.length - 1].display.ref?.current?.text;
                                         if (lastMsg) {
-                                            await handleUpdateHint(lastMsg);
+                                            handleUpdateHint(lastMsg);
                                         } else {
-                                            await handleUpdateHint(messages[messages.length - 1].display.props?.content);
+                                            handleUpdateHint(messages[messages.length - 1].display.props?.content);
                                         }
                                         // alert();
                                     }

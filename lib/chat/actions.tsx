@@ -90,7 +90,8 @@ async function getBgUrl() {
         console.log("msgs!!!!!!!!!!!");
         console.log(msgs);
         const docs = [];
-        msgs.forEach(async function (value, index) {
+        const slicedMsgs = msgs.slice(-4);
+        slicedMsgs.forEach(async function (value, index) {
             if (value.role === 'assistant') {
                 docs.push(new Document({pageContent: `Teacher:${value.content}`}))
             }

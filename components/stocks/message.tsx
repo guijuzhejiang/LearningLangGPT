@@ -180,7 +180,7 @@ export const BotMessage = React.memo(forwardRef(({
     }
 
     useEffect(() => {
-        if (completed && messages.length>2) {
+        if (completed && messages.length>=2) {
             stopAllAudio();
             setReadingLoud(!readingLoud);
             handleTTS();
@@ -191,19 +191,6 @@ export const BotMessage = React.memo(forwardRef(({
         console.log("chatParamschatParamschatParamschatParams");
         console.log(chatParams);
 
-        // if (userId!=='default') {
-        //     if (!loadCacheUserCookies(userId, chatId) && chatParams) {
-        //         cacheUserCookies(userId, chatId, chatParams)
-        //     }
-        // }
-
-        if (sessionStorage.getItem('tts') === content) {
-            sessionStorage.removeItem('tts');
-            stopAllAudio();
-            setReadingLoud(!readingLoud);
-            handleTTS();
-
-        }
 
         return () => {
             if (audioRef.current) {
@@ -217,6 +204,7 @@ export const BotMessage = React.memo(forwardRef(({
             }
         };
     }, [])
+
     return (
         <div className={cn('group relative flex items-start md:-pl-12', className)}>
             <div
