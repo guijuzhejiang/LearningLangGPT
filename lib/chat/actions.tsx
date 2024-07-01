@@ -91,37 +91,50 @@ async function getBgUrl() {
         const msgs = aiState.get().messages;
         const chatId = aiState.get().chatId;
 
-        console.log("msgs!!!!!!!!!!!");
-        console.log(msgs);
-        const docs = [];
-        const slicedMsgs = msgs.slice(-4);
-        slicedMsgs.forEach(async function (value, index) {
-            if (value.role === 'assistant') {
-                docs.push(new Document({pageContent: `Teacher:${value.content}`}))
-            }
-            if (value.role === 'user') {
-                docs.push(new Document({pageContent: `Student:${value.content}`}))
+        const textStream = createStreamableValue('')
+
+        runAsyncFnWithoutBlocking(async () => {
+            try {
+                console.log("msgs!!!!!!!!!!!");
+                console.log(msgs);
+                const docs = [];
+                const slicedMsgs = msgs.slice(-4);
+                slicedMsgs.forEach(async function (value, index) {
+                    if (value.role === 'assistant') {
+                        docs.push(new Document({pageContent: `Teacher:${value.content}`}))
+                    }
+                    if (value.role === 'user') {
+                        docs.push(new Document({pageContent: `Student:${value.content}`}))
+                    }
+                });
+
+                const res = (await langchainTools.chatSummarizer.invoke({
+                    input_documents: docs
+                })).text;
+                console.log(res);
+
+                const formData = new FormData();
+                formData.append('prompt', res);
+                formData.append('user_id', userId);
+                formData.append('mlen', msgs.length);
+                formData.append('chat_id', chatId);
+                const response = await fetch(process.env.SD_URL+'/zs/bg/generate', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const jsonRes = await response.json()
+                console.log(jsonRes);
+
+                textStream.update(JSON.stringify(jsonRes))
+                textStream.done()
+            } catch (e) {
+                console.error(e);
+            } finally {
             }
         });
 
-        const res = (await langchainTools.chatSummarizer.invoke({
-            input_documents: docs
-        })).text;
-        console.log(res);
-
-        const formData = new FormData();
-        formData.append('prompt', res);
-        formData.append('user_id', userId);
-        formData.append('mlen', msgs.length);
-        formData.append('chat_id', chatId);
-        const response = await fetch(process.env.SD_URL+'/zs/bg/generate', {
-            method: 'POST',
-            body: formData,
-        });
-
-        const jsonRes = await response.json()
-        console.log(jsonRes);
-        return jsonRes;
+        return textStream.value;
     } catch (error) {
         console.error('Error:', error);
         throw error;

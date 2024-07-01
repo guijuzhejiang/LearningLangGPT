@@ -12,6 +12,7 @@ import {usePathname, useRouter} from 'next/navigation'
 import {ChatParams, Message} from '@/lib/chat/actions'
 import {useScrollAnchor} from '@/lib/hooks/use-scroll-anchor'
 import * as React from "react";
+import {readStreamableValue} from "ai/rsc";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
@@ -27,6 +28,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     const [aiState] = useAIState();
     const [_, setNewChatId] = useLocalStorage('newChatId', id)
     const [bgUrl, setBgUrl] = React.useState('')
+    const [refreshBg, setRefreshBg] = React.useState(0)
     const {getBgUrl} = useActions();
 
     const handleCheckBg = async () => {
@@ -87,12 +89,20 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                     if (checkRes) {
                         setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
                     } else {
-                        const bgRes = await getBgUrl();
+                        let bgRes = null;
+                        const bgStream = await getBgUrl();
+                        // console.log("bgStream");
+                        for await (const delta of readStreamableValue(bgStream)) {
+                            if (typeof delta === 'string' && delta.length >0) {
+                                bgRes = JSON.parse(delta)
+                            }
+                        }
                         // console.log(bgRes);
                         if (bgRes.success) {
                             const url = process.env.SD_URL + bgRes.result[0].replace('/service', '');
+                            // console.log("url");
                             // console.log(url);
-                            setBgUrl(url);
+                            setBgUrl(url+'&msmy=%23sfn%');
                         }
                     }
 
@@ -127,6 +137,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
     return (
         <div
+            // key={`chatbg_${refreshBg}}`}
             style={
                 {
                     backgroundImage: `url(${bgUrl})`,
