@@ -88,10 +88,10 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                         setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
                     } else {
                         const bgRes = await getBgUrl();
-                        console.log(bgRes);
+                        // console.log(bgRes);
                         if (bgRes.success) {
                             const url = process.env.SD_URL + bgRes.result[0].replace('/service', '');
-                            console.log(url);
+                            // console.log(url);
                             setBgUrl(url);
                         }
                     }
@@ -133,7 +133,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                     // backgroundPosition: 'calc(50% + 10rem) center'
                 }
             }
-            className={`bg-fixed bg-center bg-contain bg-no-repeat overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:lg:bg-[center_0_250px ] peer-[[data-state=open]]:xl:pl-[left_300px] peer-[[data-state=open]]:xl:[left_300px]`}
+            className={`bg-fixed bg-center bg-contain bg-no-repeat overflow-y-scroll relative group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:lg:bg-[center_left_32.8vw] peer-[[data-state=open]]:xl:pl-[300px] peer-[[data-state=open]]:xl:[center_34.8vw]`}
             ref={scrollRef}
         >
             <div
