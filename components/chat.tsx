@@ -13,6 +13,7 @@ import {ChatParams, Message} from '@/lib/chat/actions'
 import {useScrollAnchor} from '@/lib/hooks/use-scroll-anchor'
 import * as React from "react";
 import {readStreamableValue} from "ai/rsc";
+import {al} from "@upstash/redis/zmscore-b6b93f14";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
@@ -28,9 +29,10 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     const [aiState] = useAIState();
     const [_, setNewChatId] = useLocalStorage('newChatId', id)
     const [bgUrl, setBgUrl] = React.useState('')
-    const [refreshBg, setRefreshBg] = React.useState(0)
     const {getBgUrl} = useActions();
     const backgroundStyleRef = React.useRef(null);
+    const childDivRef = React.useRef(null);
+    const [chatOpacity, setChatOpacity] = React.useState(100)
 
     const handleCheckBg = async () => {
         try {
@@ -126,11 +128,16 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
         setNewChatId(id);
     })
 
+    function handleClickOutside(event) {
+        if (childDivRef.current && !childDivRef.current.contains(event.target)) {
+            setChatOpacity(chatOpacity===10?100:10)
+        }
+    }
+
     useEffect(() => {
         ;(async () => {
             setBgUrl(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&mlen=${messages.length<8?2:messages.length%8===0?messages.length-2:(messages.length-(messages.length%8)-2)}`);
         })();
-
     }, [])
 
     const {messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom} =
@@ -149,11 +156,12 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
             ref={scrollRef}
         >
             <div
-                className={cn("pb-[210px]", className)}
+                className={cn(`pb-[210px] opacity-${chatOpacity}`, className)}
+                onClick={handleClickOutside}
                 ref={messagesRef}
             >
                 {messages.length ? (
-                    <ChatList chatParams={chatParams} messages={messages} isShared={false} session={session}/>
+                    <ChatList clickDiv={()=>{setChatOpacity(chatOpacity===10?100:10)}} childDivRef={childDivRef} chatParams={chatParams} messages={messages} isShared={false} session={session}/>
                 ) : (
                     <EmptyScreen/>
                 )}
