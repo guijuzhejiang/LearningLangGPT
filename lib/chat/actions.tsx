@@ -62,7 +62,7 @@ export async function createSummarizer() {
         Step 2 - Your job is to generate English prompts for stable diffusion based on the highly dense summaries provided above.
         Prompt is used to describe an image, and consists of ordinary common words or phrases
         Example:girl,teacher,books,desk,store
-        Respond only the prompt.
+        Respond only the prompt.Don't add extra words other than prompts.
         PROMPT:
         `
     });
