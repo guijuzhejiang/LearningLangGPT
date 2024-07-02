@@ -32,7 +32,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     const {getBgUrl} = useActions();
     const backgroundStyleRef = React.useRef(null);
     const childDivRef = React.useRef(null);
-    const [chatOpacity, setChatOpacity] = React.useState(100)
+    const [chatOpacity, setChatOpacity] = React.useState(1)
 
     const handleCheckBg = async () => {
         try {
@@ -158,7 +158,8 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
             ref={scrollRef}
         >
             <div
-                className={`min-h-100vh pb-[210px] opacity-${chatOpacity}`}
+                style={{opacity:chatOpacity}}
+                className={`min-h-100vh pb-[210px]`}
                 // onClick={handleClickOutside}
                 ref={messagesRef}
             >

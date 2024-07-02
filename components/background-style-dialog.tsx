@@ -135,7 +135,7 @@ export const BackgroundDialogDialog = forwardRef(({userId,
                                     className={`${hide && 'hidden'} bg-yellow-50 hover:bg-yellow-200 size-6 rounded-full p-0`}
                                     onClick={async (e) => {
                                         e.preventDefault();
-                                        setChatOpacity(chatOpacity===10?100:10)
+                                        setChatOpacity(chatOpacity===0.1?1:0.1)
                                     }}
                                 >
                                     <IconBackground/>

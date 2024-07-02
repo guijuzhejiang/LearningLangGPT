@@ -101,16 +101,18 @@ async function getBgUrl(style:number|undefined) {
                 const slicedMsgs = msgs.slice(-4);
                 slicedMsgs.forEach(async function (value, index) {
                     if (value.role === 'assistant') {
-                        docs.push(new Document({pageContent: `Teacher:${value.content}`}))
+                        docs.push(new Document({pageContent: `${value.content}`}))
                     }
                     if (value.role === 'user') {
-                        docs.push(new Document({pageContent: `Student:${value.content}`}))
+                        docs.push(new Document({pageContent: `${value.content}`}))
                     }
                 });
+                console.log(slicedMsgs);
 
                 const res = (await langchainTools.chatSummarizer.invoke({
                     input_documents: docs
                 })).text;
+                console.log("bg_summary prompt:");
                 console.log(res);
 
                 const formData = new FormData();

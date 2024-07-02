@@ -149,8 +149,8 @@ export async function shareChat(id: string) {
 
 export async function saveChat(chat: Chat) {
     const session = await auth()
-    console.log("$$sssssssssssssssssssssssschat")
-    console.log(chat)
+    // console.log("$$sssssssssssssssssssssssschat")
+    // console.log(chat)
     if (session && session.user) {
         const pipeline = kv.pipeline()
         pipeline.hmset(`chat:${chat.id}`, chat)

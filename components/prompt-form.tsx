@@ -116,6 +116,7 @@ export function PromptForm({
         e.preventDefault();
         if (voiceContinuationEnable) {
             setHintContent('');
+            setShowTranslate(false);
             setMessages(currentMessages => [
                 ...currentMessages,
                 {
@@ -422,9 +423,11 @@ export function PromptForm({
     }
 
     const handleUpdateHint = async (msg:string) => {
-        setGettingHint(true);
-        // console.log("loadCacheUserCookies(userId, chatId)");
-        // console.log(loadCacheUserCookies(userId, chatId));
+        setTransTexts('');
+        setShowTranslate(false);
+        setCanPlay(false);
+        setCanPlayThrough(false);
+        setHintContent('');
         const cacheCookie = loadCacheUserCookies(userId, chatId);
 
         const hintText = await getHint(msg, cacheCookie ? cacheCookie : loadUserCookies(userId));
@@ -501,6 +504,7 @@ export function PromptForm({
             onSubmit={async (e: any) => {
                 e.preventDefault()
                 setHintContent('');
+                setShowTranslate(false);
                 // Blur focus on mobile
                 if (window.innerWidth < 600) {
                     e.target['message']?.blur()
@@ -601,11 +605,11 @@ export function PromptForm({
                                         audioRef.current.currentTime = 0;
                                     }
 
-                                    setTransTexts('');
-                                    setShowTranslate(false);
-                                    setCanPlay(false);
-                                    setCanPlayThrough(false);
-                                    setHintContent('');
+                                    // setTransTexts('');
+                                    // setShowTranslate(false);
+                                    // setCanPlay(false);
+                                    // setCanPlayThrough(false);
+                                    // setHintContent('');
                                     handleUpdateHint(messages[messages.length - 1].display.ref?.current?.text);
                                 }}
                             >
