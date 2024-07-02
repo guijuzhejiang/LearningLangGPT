@@ -22,6 +22,7 @@ export interface ChatPanelProps {
     session?: Session
     isAtBottom: boolean,
     scrollToBottom: () => void,
+    backgroundStyleRef: React.Ref<any>,
 }
 
 export function ChatPanel({
@@ -29,6 +30,7 @@ export function ChatPanel({
                               session,
                               isAtBottom,
                               scrollToBottom,
+                              backgroundStyleRef,
                           }: ChatPanelProps) {
     const [messages, setMessages] = useUIState<typeof AI>();
     const {submitUserMessage} = useActions();
@@ -87,7 +89,7 @@ export function ChatPanel({
                 <div
                     className="mb-4 space-y-4 border-t bg-background px-4 py-1 shadow-lg sm:rounded-t-xl sm:border md:py-2">
                     {messages.length > 0 ? (
-                        <PromptForm chatId={id} userId={session ? session.user.id : 'default'}/>
+                        <PromptForm backgroundStyleRef={backgroundStyleRef} chatId={id} userId={session ? session.user.id : 'default'}/>
                     ) : (
                         <Button
                             variant="default"

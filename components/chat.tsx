@@ -30,6 +30,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     const [bgUrl, setBgUrl] = React.useState('')
     const [refreshBg, setRefreshBg] = React.useState(0)
     const {getBgUrl} = useActions();
+    const backgroundStyleRef = React.useRef(null);
 
     const handleCheckBg = async () => {
         try {
@@ -90,7 +91,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                         setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
                     } else {
                         let bgRes = null;
-                        const bgStream = await getBgUrl();
+                        const bgStream = await getBgUrl(backgroundStyleRef?.current?.backgroundStyle);
                         // console.log("bgStream");
                         for await (const delta of readStreamableValue(bgStream)) {
                             if (typeof delta === 'string' && delta.length >0) {
@@ -159,11 +160,12 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
 
                 <div className="h-px w-full" ref={visibilityRef}/>
             </div>
-
+{/*<button onClick={()=>{*/}
+{/*    alert(backgroundStyleRef?.current?.backgroundStyle);}}>{backgroundStyleRef?.current?.backgroundStyle}</button>*/}
             <ChatPanel
                 id={id}
                 session={session}
-                // setInput={setInput}
+                backgroundStyleRef={backgroundStyleRef}
                 isAtBottom={isAtBottom}
                 scrollToBottom={scrollToBottom}
                 // micOn={micOn}

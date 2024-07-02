@@ -83,3 +83,38 @@
   -ms-overflow-style: none;  /* IE 和 Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+
+/* styles.css */
+.HoverCardContent {
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.HoverCardContent[data-side='top'] {
+  animation-name: slideUp;
+}
+.HoverCardContent[data-side='bottom'] {
+  animation-name: slideDown;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

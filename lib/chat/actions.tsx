@@ -76,7 +76,7 @@ export async function createSummarizer() {
 }
 
 
-async function getBgUrl() {
+async function getBgUrl(style:number|undefined) {
     'use server'
     try {
         if (!langchainTools.chatSummarizer) {
@@ -118,6 +118,7 @@ async function getBgUrl() {
                 formData.append('user_id', userId);
                 formData.append('mlen', msgs.length);
                 formData.append('chat_id', chatId);
+                formData.append('style',  style ? style:4);
                 const response = await fetch(process.env.SD_URL+'/zs/bg/generate', {
                     method: 'POST',
                     body: formData,

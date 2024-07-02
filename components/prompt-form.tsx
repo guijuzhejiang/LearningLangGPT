@@ -12,13 +12,23 @@ import {
     IconPlus,
     IconMicroPhone,
     IconVoiceContinuation,
-    IconSpinner, IconClose, IconRefresh, IconHint, IconPlayMedia, IconTranslate, IconStop, IconScoreSheet, IconExit
+    IconSpinner,
+    IconClose,
+    IconRefresh,
+    IconHint,
+    IconPlayMedia,
+    IconTranslate,
+    IconStop,
+    IconScoreSheet,
+    IconExit,
+    IconBackground
 } from '@/components/ui/icons'
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger
 } from '@/components/ui/tooltip'
+import * as HoverCard from '@radix-ui/react-hover-card';
 import {useEnterSubmit} from '@/lib/hooks/use-enter-submit'
 import {nanoid} from 'nanoid'
 import {usePathname, useRouter} from 'next/navigation'
@@ -29,16 +39,19 @@ import {spinner} from "@/components/stocks";
 import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
 import {getChat} from "@/app/actions";
+import {BackgroundDialogDialog} from "@/components/background-style-dialog";
 
 
 export interface PromptFormProps {
     chatId?: string,
     userId?: string,
+    backgroundStyleRef?: React.Ref<any>
 }
 
 export function PromptForm({
                                chatId,
-                               userId
+                               userId,
+                               backgroundStyleRef
                            }: PromptFormProps) {
 
     const router = useRouter()
@@ -687,56 +700,61 @@ export function PromptForm({
 
                 {/* 右边div */}
                 <div className="absolute right-0 top-[13px] sm:right-4 z-50">
-                    {/*提示*/}
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`${messages.length < 2 && 'hidden'} ${showHint && 'hidden'} bg-yellow-50 hover:bg-yellow-200 z-50 absolute right-6 -top-12 size-6 rounded-full p-0 sm:right-7`}
-                                onClick={async (e) => {
-                                    e.preventDefault();
-                                    setShowHint(true);
-                                    if (hintContent.length === 0) {
-                                        const lastMsg = messages[messages.length - 1].display.ref?.current?.text;
-                                        if (lastMsg) {
-                                            handleUpdateHint(lastMsg);
-                                        } else {
-                                            handleUpdateHint(messages[messages.length - 1].display.props?.content);
+                    <div className={"z-50 absolute -right-1 -top-12 sm:-right-0 flex gap-1"}>
+                        {/*提示*/}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`${messages.length < 2 && 'hidden'} ${showHint && 'hidden'} bg-yellow-50 hover:bg-yellow-200 size-6 rounded-full p-0`}
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        setShowHint(true);
+                                        if (hintContent.length === 0) {
+                                            const lastMsg = messages[messages.length - 1].display.ref?.current?.text;
+                                            if (lastMsg) {
+                                                handleUpdateHint(lastMsg);
+                                            } else {
+                                                handleUpdateHint(messages[messages.length - 1].display.props?.content);
+                                            }
+                                            // alert();
                                         }
-                                        // alert();
-                                    }
-                                }}
-                            >
-                                <IconHint/>
-                                <span className="sr-only">不知道回复什么?点击打开提示</span>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>不知道回复什么?点击打开提示</TooltipContent>
-                    </Tooltip>
+                                    }}
+                                >
+                                    <IconHint/>
+                                    <span className="sr-only">不知道回复什么?点击打开提示</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>不知道回复什么?点击打开提示</TooltipContent>
+                        </Tooltip>
 
-                    {/*总结*/}
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className={`${messages.length < 2 && 'hidden'} bg-gray-200 hover:bg-gray-50 z-50 absolute -right-1 -top-12 size-6 rounded-full p-0 sm:-right-0`}
-                                onClick={async (e) => {
-                                    e.preventDefault();
-                                    stopAllAudio();
-                                    vad.stop();
-                                    setMicOn(false);
-                                    setVoiceContinuationEnable(false);
-                                    router.push(`/summary/${chatId}`)
-                                }}
-                            >
-                                <IconExit/>
-                                <span className="sr-only">结束学习,查看评分</span>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>结束学习,查看评分</TooltipContent>
-                    </Tooltip>
+                        {/*改变背景风格*/}
+                        <BackgroundDialogDialog userId={userId} hide={messages.length < 2} ref={backgroundStyleRef}/>
+
+                        {/*总结*/}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className={`${messages.length < 2 && 'hidden'} bg-gray-200 hover:bg-gray-50 size-6 rounded-full p-0`}
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        stopAllAudio();
+                                        vad.stop();
+                                        setMicOn(false);
+                                        setVoiceContinuationEnable(false);
+                                        router.push(`/summary/${chatId}`)
+                                    }}
+                                >
+                                    <IconExit/>
+                                    <span className="sr-only">结束学习,查看评分</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>结束学习,查看评分</TooltipContent>
+                        </Tooltip>
+                    </div>
 
                     {/*提交按钮*/}
                     <Tooltip>
