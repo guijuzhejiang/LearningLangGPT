@@ -15,10 +15,14 @@ import {Button} from "@/components/ui/button";
 interface ChatShareDialogProps extends DialogProps {
     userId: string
     hide: boolean
+    chatOpacity?: number
+    setChatOpacity?: (value: number) => void
 }
 
 export const BackgroundDialogDialog = forwardRef(({userId,
                                                       hide,
+                                                      chatOpacity,
+                                                      setChatOpacity,
                                        ...props
                                    }: ChatShareDialogProps, ref) => {
 
@@ -131,7 +135,7 @@ export const BackgroundDialogDialog = forwardRef(({userId,
                                     className={`${hide && 'hidden'} bg-yellow-50 hover:bg-yellow-200 size-6 rounded-full p-0`}
                                     onClick={async (e) => {
                                         e.preventDefault();
-                                        setDialogOpen(!dialogOpen);
+                                        setChatOpacity(chatOpacity===10?100:10)
                                     }}
                                 >
                                     <IconBackground/>

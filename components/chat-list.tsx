@@ -9,11 +9,11 @@ export interface ChatList {
   messages: UIState
   session?: Session
   isShared: boolean
-  clickDiv: ()=>void
-  childDivRef: React.Ref<any>
+  // clickDiv: ()=>void
+  // childDivRef: React.Ref<any>
 }
 
-export function ChatList({ messages, session, isShared,clickDiv,childDivRef }: ChatList) {
+export function ChatList({ messages, session, isShared }: ChatList) {
 
   if (!messages.length) {
     return null
@@ -22,8 +22,8 @@ export function ChatList({ messages, session, isShared,clickDiv,childDivRef }: C
   return (
 
     <div
-        onClick={clickDiv}
-        ref={childDivRef}
+        // onClick={clickDiv}
+        // ref={childDivRef}
         // onMouseMove={()=>{setChatOpacity(100)}}
         // onMouseOut={()=>{setChatOpacity(10)}}
         className={`pb-4 pt-2 md:pt-6 bg-gradient-to-b from-muted/60 from-0% to-muted/80 to-50% relative mx-auto max-w-2xl px-4`}>

@@ -128,11 +128,13 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
         setNewChatId(id);
     })
 
-    function handleClickOutside(event) {
-        if (childDivRef.current && !childDivRef.current.contains(event.target)) {
-            setChatOpacity(chatOpacity===10?100:10)
-        }
-    }
+    // function handleClickOutside(event) {
+    //     // alert("asd" +
+    //     //     "")
+    //     if (childDivRef.current && !childDivRef.current.contains(event.target)) {
+    //     setChatOpacity(chatOpacity===10?100:10)
+    //     }
+    // }
 
     useEffect(() => {
         ;(async () => {
@@ -156,12 +158,12 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
             ref={scrollRef}
         >
             <div
-                className={cn(`pb-[210px] opacity-${chatOpacity}`, className)}
-                onClick={handleClickOutside}
+                className={`min-h-100vh pb-[210px] opacity-${chatOpacity}`}
+                // onClick={handleClickOutside}
                 ref={messagesRef}
             >
                 {messages.length ? (
-                    <ChatList clickDiv={()=>{setChatOpacity(chatOpacity===10?100:10)}} childDivRef={childDivRef} chatParams={chatParams} messages={messages} isShared={false} session={session}/>
+                    <ChatList messages={messages} isShared={false} session={session}/>
                 ) : (
                     <EmptyScreen/>
                 )}
@@ -176,8 +178,8 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                 backgroundStyleRef={backgroundStyleRef}
                 isAtBottom={isAtBottom}
                 scrollToBottom={scrollToBottom}
-                // micOn={micOn}
-                // setMicOn={setMicOn}
+                chatOpacity={chatOpacity}
+                setChatOpacity={setChatOpacity}
                 // STTIng={STTIng}
                 // voiceContinuationEnable={voiceContinuationEnable}
                 // setVoiceContinuationEnable={setVoiceContinuationEnable}

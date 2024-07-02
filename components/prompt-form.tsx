@@ -45,13 +45,17 @@ import {BackgroundDialogDialog} from "@/components/background-style-dialog";
 export interface PromptFormProps {
     chatId?: string,
     userId?: string,
-    backgroundStyleRef?: React.Ref<any>
+    backgroundStyleRef?: React.Ref<any>,
+    chatOpacity?: number,
+    setChatOpacity?: (value: number) => void,
 }
 
 export function PromptForm({
                                chatId,
                                userId,
-                               backgroundStyleRef
+                               backgroundStyleRef,
+                               chatOpacity,
+                               setChatOpacity
                            }: PromptFormProps) {
 
     const router = useRouter()
@@ -730,7 +734,12 @@ export function PromptForm({
                         </Tooltip>
 
                         {/*改变背景风格*/}
-                        <BackgroundDialogDialog userId={userId} hide={messages.length < 2} ref={backgroundStyleRef}/>
+                        <BackgroundDialogDialog
+                            userId={userId}
+                            chatOpacity={chatOpacity}
+                            setChatOpacity={setChatOpacity}
+                            hide={messages.length < 2}
+                            ref={backgroundStyleRef}/>
 
                         {/*总结*/}
                         <Tooltip>
