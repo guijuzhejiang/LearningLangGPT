@@ -16,7 +16,12 @@ export default async function IndexPage() {
 
   return (
     <AI initialAIState={{ chatId: id, messages: [] }}>
-      <Chat id={id} session={session} missingKeys={missingKeys} />
+      <Chat
+          id={id}
+          session={session}
+          missingKeys={missingKeys}
+          remainingSecs={60*6}
+      />
     </AI>
   )
 }

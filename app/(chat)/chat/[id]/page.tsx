@@ -2,7 +2,7 @@ import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { auth } from '@/auth'
-import { getChat, getMissingKeys } from '@/app/actions'
+import {getChat, getCountDown, getMissingKeys} from '@/app/actions'
 import { Chat } from '@/components/chat'
 import { AI } from '@/lib/chat/actions'
 import { Session } from '@/lib/types'
@@ -38,6 +38,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
 
   const userId = session.user.id as string
   const chat = await getChat(params.id, userId)
+  const remainingSecs = await getCountDown(params.id)
 
   if (!chat) {
     redirect('/')
@@ -54,6 +55,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
         id={chat.id}
         session={session}
         initialMessages={chat.messages}
+        remainingSecs={typeof remainingSecs === 'number'?remainingSecs:60*6}
         missingKeys={missingKeys}
       />
     </AI>

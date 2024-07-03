@@ -75,6 +75,7 @@ export async function removeChat({id, path}: { id: string; path: string }) {
 
     await kv.del(`chat:${id}`)
     await kv.del(`summary:${id}`)
+    await kv.del(`count:${id}`)
     await kv.zrem(`user:chat:${session.user.id}`, `chat:${id}`)
 
     revalidatePath('/')
@@ -101,6 +102,7 @@ export async function clearChats() {
     for (const chat of chats) {
         pipeline.del(chat)
         pipeline.del(chat.replace('chat', 'summary'))
+        pipeline.del(chat.replace('chat', 'count'))
         pipeline.zrem(`user:chat:${session.user.id}`, chat)
     }
 
@@ -191,6 +193,28 @@ export async function saveScore(summary: Summary, chat: Chat) {
         const pipeline = kv.pipeline();
         pipeline.hmset(`summary:${chat.id}`, summary)
         await pipeline.exec()
+    }
+}
+
+export async function saveCountDown(chatId: string, count: number) {
+    console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+    console.log(count)
+    const session = await auth()
+    if (session && session.user) {
+        const pipeline = kv.pipeline();
+        pipeline.set(`count:${chatId}`, count)
+        await pipeline.exec()
+    }
+}
+
+export async function getCountDown(chatId: string|undefined|null) {
+    if (chatId) {
+        const a = await kv.get<number>(`count:${chatId}`);
+        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        console.log(a)
+        return await kv.get<number>(`count:${chatId}`);
+    } else {
+        return null;
     }
 }
 

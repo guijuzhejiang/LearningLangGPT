@@ -1,6 +1,5 @@
 'use client'
 
-import {cn, loadUserCookies} from '@/lib/utils'
 import {ChatList} from '@/components/chat-list'
 import {ChatPanel} from '@/components/chat-panel'
 import {EmptyScreen} from '@/components/empty-screen'
@@ -13,16 +12,17 @@ import {ChatParams, Message} from '@/lib/chat/actions'
 import {useScrollAnchor} from '@/lib/hooks/use-scroll-anchor'
 import * as React from "react";
 import {readStreamableValue} from "ai/rsc";
-import {al} from "@upstash/redis/zmscore-b6b93f14";
+import {CountdownCircleTimer} from "react-countdown-circle-timer";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
     id?: string
     session?: Session
     chatParams: ChatParams
+    remainingSecs: number
 }
 
-export function Chat({id, className, session, chatParams}: ChatProps) {
+export function Chat({id, className, session, chatParams, remainingSecs}: ChatProps) {
     const router = useRouter();
     const path = usePathname();
     const [messages, setMessages] = useUIState();
@@ -33,6 +33,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
     const backgroundStyleRef = React.useRef(null);
     const childDivRef = React.useRef(null);
     const [chatOpacity, setChatOpacity] = React.useState(1)
+    const [remainingTime, setRemainingTime] = React.useState(remainingSecs)
 
     const handleCheckBg = async () => {
         try {
@@ -128,19 +129,24 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
         setNewChatId(id);
     })
 
-    // function handleClickOutside(event) {
-    //     // alert("asd" +
-    //     //     "")
-    //     if (childDivRef.current && !childDivRef.current.contains(event.target)) {
-    //     setChatOpacity(chatOpacity===10?100:10)
-    //     }
-    // }
-
     useEffect(() => {
         ;(async () => {
-            setBgUrl(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&mlen=${messages.length<8?2:messages.length%8===0?messages.length-2:(messages.length-(messages.length%8)-2)}`);
+            if (session?.user) {
+                setBgUrl(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&mlen=${messages.length<8?2:messages.length%8===0?messages.length-2:(messages.length-(messages.length%8)-2)}`);
+            }
         })();
     }, [])
+
+    const renderTime = ({ remainingTime }) => {
+        setRemainingTime(remainingTime);
+        return (
+            <div className="timer flex">
+                {/*<div className="text">剩下</div>*/}
+                <div style={{fontFamily:"Montserrat"}} className="value text-xl font-bold">{remainingTime}</div>
+                {/*<div className="text">秒</div>*/}
+            </div>
+        );
+    };
 
     const {messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom} =
         useScrollAnchor()
@@ -181,7 +187,7 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                 scrollToBottom={scrollToBottom}
                 chatOpacity={chatOpacity}
                 setChatOpacity={setChatOpacity}
-                // STTIng={STTIng}
+                remainingSecs={remainingTime}
                 // voiceContinuationEnable={voiceContinuationEnable}
                 // setVoiceContinuationEnable={setVoiceContinuationEnable}
                 // userSpeakLately={userSpeakLately}
@@ -189,6 +195,23 @@ export function Chat({id, className, session, chatParams}: ChatProps) {
                 // voiceText={voiceText}
                 // vad={vad}
             />
+
+            {/*  count down clock  */}
+            {messages.length && (
+                <div className={"fixed right-4 top-16"}>
+                    <CountdownCircleTimer
+                        isPlaying
+                        size={72}
+                        strokeWidth={6}
+                        duration={remainingSecs}
+                        colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
+                        colorsTime={[10, 6, 3, 0]}
+                        onComplete={() => ({shouldRepeat: false, delay: 1})}
+                    >
+                        {renderTime}
+                    </CountdownCircleTimer>
+                </div>
+            )}
         </div>
     )
 }

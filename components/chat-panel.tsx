@@ -25,6 +25,7 @@ export interface ChatPanelProps {
     backgroundStyleRef: React.Ref<any>,
     chatOpacity: number,
     setChatOpacity: (value: number) => void
+    remainingSecs: number,
 }
 
 export function ChatPanel({
@@ -35,6 +36,7 @@ export function ChatPanel({
                               backgroundStyleRef,
                               chatOpacity,
                               setChatOpacity,
+                              remainingSecs
                           }: ChatPanelProps) {
     const [messages, setMessages] = useUIState<typeof AI>();
     const {submitUserMessage} = useActions();
@@ -98,7 +100,9 @@ export function ChatPanel({
                             setChatOpacity={setChatOpacity}
                             backgroundStyleRef={backgroundStyleRef}
                             chatId={id}
-                            userId={session ? session.user.id : 'default'}/>
+                            userId={session ? session.user.id : 'default'}
+                            remainingSecs={remainingSecs}
+                        />
                     ) : (
                         <Button
                             variant="default"
@@ -128,6 +132,7 @@ export function ChatPanel({
                                 const responseMessage = await submitUserMessage(
                                     sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message.replaceAll('{lang}', sceneDialogRef?.current.ChineseLangs[langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"]),
                                     chatParams,
+                                    remainingSecs
                                 )
 
                                 setMessages(currentMessages => [

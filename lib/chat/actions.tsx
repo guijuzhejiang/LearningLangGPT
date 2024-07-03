@@ -22,7 +22,7 @@ import {
     sleep,
     nanoid
 } from '@/lib/utils'
-import {getChat, saveChat} from '@/app/actions'
+import {getChat, saveChat, saveCountDown} from '@/app/actions'
 import {UserMessage} from '@/components/stocks/message'
 import {Chat} from '@/lib/types'
 import {auth} from '@/auth'
@@ -409,7 +409,7 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
     }
 }
 
-async function submitUserMessage(content: string, chatParams: ChatParams | undefined | null) {
+async function submitUserMessage(content: string, chatParams: ChatParams | undefined | null, remainingSecs:number) {
     'use server'
     console.error(content);
     // console.error(chatParams);
@@ -440,7 +440,7 @@ async function submitUserMessage(content: string, chatParams: ChatParams | undef
 
     runAsyncFnWithoutBlocking(async () => {
         let buf = "";
-
+        await saveCountDown(chatId, remainingSecs);
         if (!chatChainDB.hasOwnProperty(chatId)) {
             chatChainDB[chatId] = {
                 createTime: new Date().getTime(),

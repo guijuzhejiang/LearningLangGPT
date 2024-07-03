@@ -66,6 +66,7 @@ export const ScoreSheetDialog = forwardRef(({
                                     variant="ghost"
                                     className={`${chat.id === path.split('/').pop() ? 'curScoreSheetBtn':''} size-7 p-0 hover:bg-background`}
                                     disabled={isRemovePending}
+                                    id={`score-btn-${chat.id}`}
                                     // onClick={() => {}}
                                 >
                                     <IconScoreSheet/>

@@ -28,7 +28,7 @@ import {
     TooltipContent,
     TooltipTrigger
 } from '@/components/ui/tooltip'
-import * as HoverCard from '@radix-ui/react-hover-card';
+import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import {useEnterSubmit} from '@/lib/hooks/use-enter-submit'
 import {nanoid} from 'nanoid'
 import {usePathname, useRouter} from 'next/navigation'
@@ -38,7 +38,7 @@ import {readStreamableValue} from "ai/rsc";
 import {spinner} from "@/components/stocks";
 import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
-import {getChat} from "@/app/actions";
+import {getChat, saveCountDown} from "@/app/actions";
 import {BackgroundDialogDialog} from "@/components/background-style-dialog";
 
 
@@ -48,6 +48,7 @@ export interface PromptFormProps {
     backgroundStyleRef?: React.Ref<any>,
     chatOpacity?: number,
     setChatOpacity?: (value: number) => void,
+    remainingSecs?: number,
 }
 
 export function PromptForm({
@@ -55,7 +56,8 @@ export function PromptForm({
                                userId,
                                backgroundStyleRef,
                                chatOpacity,
-                               setChatOpacity
+                               setChatOpacity,
+                               remainingSecs,
                            }: PromptFormProps) {
 
     const router = useRouter()
@@ -75,6 +77,7 @@ export function PromptForm({
     const [canPlay, setCanPlay] = React.useState(false)
     const [transTexts, setTransTexts] = React.useState('')
     const [showTranslate, setShowTranslate] = React.useState(false);
+    const [finished, setFinished] = React.useState(false);
 
     const audioRef = React.useRef(null);
     const vadTimeoutMS = 120 * 1000;
@@ -126,7 +129,9 @@ export function PromptForm({
             ])
 
             const responseMessage = await submitUserMessage(
-                hintContent
+                hintContent,
+                null,
+                remainingSecs
             )
             responseMessage.display.ref = lastMsgRef;
             setMessages(currentMessages => [...currentMessages, responseMessage])
@@ -157,7 +162,7 @@ export function PromptForm({
                 ])
 
                 // Submit and get response message
-                const responseMessage = await submitUserMessage(value)
+                const responseMessage = await submitUserMessage(value, null, remainingSecs)
                 setMessages(currentMessages => [...currentMessages, responseMessage])
             }
             asyncSubmit();
@@ -166,6 +171,20 @@ export function PromptForm({
         }
         setSTTIng(false)
     }, [voiceText]);
+
+    useEffect(() => {
+        if (remainingSecs === 0) {
+            setMicOn(false);
+            setShowHint(false);
+            setVoiceContinuationEnable(false);
+            setHintContent('');
+            setInput('');
+            setFinished(true);
+            toast.info("本次学习已结束")
+            saveCountDown(chatId, 0);
+            document.getElementById(`score-btn-${chatId}`)?.click();
+        }
+    }, [remainingSecs]);
 
     useEffect(() => {
         const checkMicrophone = async () => {
@@ -524,7 +543,7 @@ export function PromptForm({
                 ])
 
                 // Submit and get response message
-                const responseMessage = await submitUserMessage(value, loadCacheUserCookies(userId, chatId))
+                const responseMessage = await submitUserMessage(value, loadCacheUserCookies(userId, chatId), remainingSecs)
                 responseMessage.display.ref = lastMsgRef;
                 setMessages(currentMessages => [...currentMessages, responseMessage])
                 setLastMessage(responseMessage);
@@ -713,6 +732,7 @@ export function PromptForm({
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
+                                    disabled={finished}
                                     variant="outline"
                                     size="icon"
                                     className={`${messages.length < 2 && 'hidden'} ${showHint && 'hidden'} bg-yellow-50 hover:bg-yellow-200 size-6 rounded-full p-0`}
@@ -758,6 +778,7 @@ export function PromptForm({
                                         vad.stop();
                                         setMicOn(false);
                                         setVoiceContinuationEnable(false);
+                                        saveCountDown(chatId, 0);
                                         router.push(`/summary/${chatId}`)
                                     }}
                                 >
@@ -771,7 +792,7 @@ export function PromptForm({
 
                     {/*提交按钮*/}
                     <Tooltip>
-                    <TooltipTrigger asChild className={`${voiceContinuationEnable && ('hidden')}`}>
+                        <TooltipTrigger asChild className={`${voiceContinuationEnable && ('hidden')}`}>
                             <Button type="submit" size="icon" disabled={input === ''}>
                                 <IconArrowElbow/>
                                 <span className="sr-only">发送</span>
@@ -826,6 +847,10 @@ export function PromptForm({
 
                 <div
                     className={`absolute left-0 top-0 w-full h-full bg-yellow-600 bg-opacity-10 ${voiceContinuationEnable ? ('block') : ((!STTIng || !micOn) && ('hidden'))}`}>
+                </div>
+
+                <div
+                    className={`absolute z-50 left-0 top-0 w-full h-full bg-gray-300 bg-opacity-40 ${finished ? ('block') : ('hidden')}`}>
                 </div>
             </div>
         </form>
