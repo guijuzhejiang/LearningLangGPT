@@ -140,7 +140,7 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
     const renderTime = ({ remainingTime }) => {
         setRemainingTime(remainingTime);
         return (
-            <div className="timer flex">
+            <div className={`${messages.length===0 && 'hidden'} timer flex`}>
                 {/*<div className="text">剩下</div>*/}
                 <div style={{fontFamily:"Montserrat"}} className="value text-xl font-bold">{remainingTime}</div>
                 {/*<div className="text">秒</div>*/}
@@ -197,21 +197,19 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
             />
 
             {/*  count down clock  */}
-            {messages.length && (
-                <div className={"fixed right-4 top-16"}>
-                    <CountdownCircleTimer
-                        isPlaying
-                        size={72}
-                        strokeWidth={6}
-                        duration={remainingSecs}
-                        colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
-                        colorsTime={[10, 6, 3, 0]}
-                        onComplete={() => ({shouldRepeat: false, delay: 1})}
-                    >
-                        {renderTime}
-                    </CountdownCircleTimer>
-                </div>
-            )}
+            <div className={`${messages.length===0 && 'hidden'} fixed right-4 top-16`}>
+                <CountdownCircleTimer
+                    isPlaying
+                    size={72}
+                    strokeWidth={6}
+                    duration={remainingSecs}
+                    colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
+                    colorsTime={[10, 6, 3, 0]}
+                    onComplete={() => ({shouldRepeat: false, delay: 1})}
+                >
+                    {renderTime}
+                </CountdownCircleTimer>
+            </div>
         </div>
     )
 }

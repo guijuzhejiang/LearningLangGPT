@@ -146,8 +146,6 @@ export function ChatPanel({
                     )}
                     {/*<FooterText className="hidden sm:block" />*/}
                 </div>
-
-
             </div>
         </div>
     )

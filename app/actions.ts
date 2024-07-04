@@ -6,13 +6,12 @@ import {kv} from '@vercel/kv'
 import {z} from "zod";
 import {auth} from '@/auth'
 import {type Chat, User} from '@/lib/types'
-import {ChatPromptTemplate, PromptTemplate} from "@langchain/core/prompts";
+import {PromptTemplate} from "@langchain/core/prompts";
 import Groq from "groq-sdk";
 import {ChatGroq} from "@langchain/groq";
-import {ConversationChain, loadSummarizationChain} from "langchain/chains";
+import {loadSummarizationChain} from "langchain/chains";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {Document} from "@langchain/core/documents";
-import {AIMessage, HumanMessage} from "@langchain/core/messages";
 import {createTranslator} from "@/lib/chat/actions"
 import {createStreamableValue} from "ai/rsc";
 import {runAsyncFnWithoutBlocking, toHalfWidth} from "@/lib/utils";
@@ -20,6 +19,30 @@ import JSON5 from 'json5'
 import moji from 'moji'
 import * as console from "node:console";
 
+const groqKeys = process.env.GROQ_API_KEY ? process.env.GROQ_API_KEY.split(',') : [];
+const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+const model = new ChatGroq({
+    modelName: "llama3-70b-8192",
+    apiKey: groqKeys[0],
+    streaming: true,
+    temperature: 0.8,
+    maxRetries: 0
+});
+model.client = groqClient;
+const fallbackModels = []
+for (let i = 1; i < groqKeys.length; i++) {
+    let tmpModel = new ChatGroq({
+        modelName: "llama3-70b-8192",
+        apiKey: groqKeys[i],
+        streaming: true,
+        temperature: 0.8,
+    });
+    tmpModel.client = groqClient;
+    fallbackModels.push(tmpModel);
+}
+model.withFallbacks({
+    fallbacks: fallbackModels
+})
 
 export async function getChats(userId?: string | null) {
     if (!userId) {
@@ -245,14 +268,14 @@ export async function getScore(chat: Chat) {
     // // console.log(chat);
     // // console.log(summary);
     if (!summary || summary.chatLength + '' !== chat.messages.length + '') {
-        const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
-        const model = new ChatGroq({
-            modelName: "llama3-70b-8192",
-            apiKey: process.env.GROQ_API_KEY,
-            streaming: true,
-            temperature: 0.8,
-        });
-        model.client = groqClient;
+        // const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+        // const model = new ChatGroq({
+        //     modelName: "llama3-70b-8192",
+        //     apiKey: process.env.GROQ_API_KEY,
+        //     streaming: true,
+        //     temperature: 0.8,
+        // });
+        // model.client = groqClient;
 
         // load chat history
         const docs = [];

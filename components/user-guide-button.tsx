@@ -10,7 +10,7 @@ import {
     IconPlayMedia,
     IconTranslate,
     IconArrowElbow,
-    IconVoiceContinuation, IconScoreSheet
+    IconVoiceContinuation, IconScoreSheet, IconBackground, IconEdit, IconExit
 } from '@/components/ui/icons'
 import {driver} from "driver.js";
 import "driver.js/dist/driver.css";
@@ -119,6 +119,14 @@ export function UserGuideButton({
                                                 <p className={"flex items-center"}>
                                                     <IconHint/>
                                                     <span>&nbsp;:点击可显示回复的提示</span>
+                                                </p>
+                                                <p className={"flex items-center"}>
+                                                    <IconBackground/>
+                                                    <span>&nbsp;:点击显示背景或显示聊天内容,点击上方悬浮按钮设置背景风格</span>
+                                                </p>
+                                                <p className={"flex items-center"}>
+                                                    <IconExit/>
+                                                    <span>&nbsp;:结束学习,查看评分</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconMicroPhone/>

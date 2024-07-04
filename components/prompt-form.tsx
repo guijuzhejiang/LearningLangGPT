@@ -183,6 +183,7 @@ export function PromptForm({
             toast.info("本次学习已结束")
             saveCountDown(chatId, 0);
             document.getElementById(`score-btn-${chatId}`)?.click();
+            vad.stop();
         }
     }, [remainingSecs]);
 
