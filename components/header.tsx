@@ -58,21 +58,36 @@ async function UserGuide() {
     )
 }
 
+// export async function getServerSideProps(context) {
+//     const { req } = context;
+//     const host = req.headers.host; // 获取 host
+//     const protocol = req.headers['x-forwarded-proto'] || 'http';
+//     console.log("reqrxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxeq");
+//     // 注意：在 Vercel 或其他云服务上部署时，使用 'x-forwarded-proto' 头来确定协议可能更为准确。
+//     const fullUrl = `${protocol}://${host}${req.url}`; // 获取完整 URL
+//
+//     return {
+//         props: {}, // 将所需数据作为 props 传递给页面
+//     };
+// }
+
 export async function Header() {
     const session = (await auth()) as Session
     return (
-        <header
-            className="sticky top-0 z-6 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
-            <div className="UserOrLoginContainer flex items-center">
-                <React.Suspense fallback={<div className="flex-1 overflow-auto"/>}>
-                    <UserOrLogin/>
-                </React.Suspense>
-            </div>
-            <div className="flex items-center justify-end space-x-2">
-                <React.Suspense>
-                    <UserGuideButton/>
-                </React.Suspense>
-            </div>
-        </header>
+        <>
+            <header
+                className="sticky top-0 z-6 flex items-center justify-between w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
+                <div className="UserOrLoginContainer flex items-center">
+                    <React.Suspense fallback={<div className="flex-1 overflow-auto"/>}>
+                        <UserOrLogin/>
+                    </React.Suspense>
+                </div>
+                <div className="flex items-center justify-end space-x-2">
+                    <React.Suspense>
+                        <UserGuideButton/>
+                    </React.Suspense>
+                </div>
+            </header>
+        </>
     )
 }

@@ -82,7 +82,7 @@ const AccordionContent = forwardRef(({children, className, ...props}, forwardedR
 AccordionContent.displayName = "AccordionContent";
 
 
-const WordItem = ({words,chat, ...props}:{words:{word:string, explanation:string, phonogram:string, category:string, sentence:string}[],chat:Chat}) => {
+const WordItem = ({word,chat, ...props}:{word:{word:string, explanation:string, phonogram:string, category:string, sentence:string},chat:Chat}) => {
     const [transTexts, setTransTexts] = React.useState<string | undefined>('')
     const [showTranslate, setShowTranslate] = React.useState<boolean>(false)
     // const [refreshKey, setRefreshKey] = React.useState<number>(0)
@@ -95,70 +95,67 @@ const WordItem = ({words,chat, ...props}:{words:{word:string, explanation:string
 
     return (
         <>
-            {words.map((word, index) => (
-                    <div key={`iword${index}`} className={"flex flex-shrink-0 max-w-64"}>
-                        <div>
-                            <h3 className={"mt-0.5 mb-0.5 font-bold text-xl"}>
-                                {word.word}
-                            </h3>
-                            <div className={"flex items-center"}>
-                                {word.phonogram} <TTSButton text={word.word} chat={chat}/>
-                            </div>
-
-                            <div className={"flex items-center"}>
-                                                    <span
-                                                        className={"p-0.5 border-0 border-solid border-black rounded bg-amber-50 mr-2.5"}>{word.category}</span>
-                                <span>{word.explanation}</span>
-                            </div>
-
-                            <div className={"mt-1.5"}>
-                                <div>例句:</div>
-                                <div>{word.sentence}</div>
-                                <div
-                                    className={`${showTranslate ? '' : 'hidden'}`}>{transTexts?.length === 0 ? (
-                                    <>{spinner}</>
-                                ) : (
-                                    <span className={`bg-green5 bg-opacity-40`}>
-                                                            {transTexts}
-                                                        </span>
-                                )}</div>
-                                <div className={"items-center flex"}>
-                                    <TTSButton text={word.sentence} chat={chat}/>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                className={`bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
-                                                onClick={async () => {
-                                                    setShowTranslate(true);
-                                                    const translatedText = await getTranslate(word.sentence);
-                                                    if (typeof translatedText === 'object') {
-                                                        let value = ''
-                                                        for await (const delta of readStreamableValue(translatedText)) {
-                                                            if (typeof delta === 'string') {
-                                                                setTransTexts((value = value + delta))
-                                                            }
-                                                        }
-                                                    } else {
-                                                        setTransTexts(translatedText)
-                                                    }
-                                                }}
-                                            >
-                                                <IconTranslate className="size-6"/>
-                                                <span className="sr-only">翻译</span>
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>翻译</TooltipContent>
-                                    </Tooltip>
-                                </div>
-                            </div>
-
-                        </div>
-                        <Separator className={"mr-4 ml-4 pr-0.5"} orientation={'vertical'}/>
+            <div className={"flex flex-shrink-0 max-w-64"}>
+                <div>
+                    <h3 className={"mt-0.5 mb-0.5 font-bold text-xl"}>
+                        {word.word}
+                    </h3>
+                    <div className={"flex items-center"}>
+                        {word.phonogram} <TTSButton text={word.word} chat={chat}/>
                     </div>
-                )
-            )}
+
+                    <div className={"flex items-center"}>
+                                            <span
+                                                className={"p-0.5 border-0 border-solid border-black rounded bg-amber-50 mr-2.5"}>{word.category}</span>
+                        <span>{word.explanation}</span>
+                    </div>
+
+                    <div className={"mt-1.5"}>
+                        <div>例句:</div>
+                        <div>{word.sentence}</div>
+                        <div
+                            className={`${showTranslate ? '' : 'hidden'}`}>{transTexts?.length === 0 ? (
+                            <>{spinner}</>
+                        ) : (
+                            <span className={`bg-green5 bg-opacity-40`}>
+                                                    {transTexts}
+                                                </span>
+                        )}</div>
+                        <div className={"items-center flex"}>
+                            <TTSButton text={word.sentence} chat={chat}/>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className={`bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
+                                        onClick={async () => {
+                                            setShowTranslate(true);
+                                            const translatedText = await getTranslate(word.sentence);
+                                            if (typeof translatedText === 'object') {
+                                                let value = ''
+                                                for await (const delta of readStreamableValue(translatedText)) {
+                                                    if (typeof delta === 'string') {
+                                                        setTransTexts((value = value + delta))
+                                                    }
+                                                }
+                                            } else {
+                                                setTransTexts(translatedText)
+                                            }
+                                        }}
+                                    >
+                                        <IconTranslate className="size-6"/>
+                                        <span className="sr-only">翻译</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>翻译</TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </div>
+
+                </div>
+                <Separator className={"mr-4 ml-4 pr-0.5"} orientation={'vertical'}/>
+            </div>
         </>
     )
 }
@@ -188,8 +185,16 @@ export const ScoreSheet = forwardRef(({
                                     <div className={"flex pb-3.5"}>
                                         <div className="flex flex-nowrap">
                                             {typeof summaryString === 'string' ? (spinner) : (
-                                                <WordItem words={summaryString.vocab} chat={chat}/>
+                                                summaryString.vocab.map((word, index) => (
+                                                        <div
+                                                            key={"wi"+index}
+                                                            className="flex shrink-0 flex-col gap-1 rounded-lg p-4"
+                                                        >
+                                                            <WordItem word={word} chat={chat}/>
+                                                        </div>
+                                                ))
                                             )}
+
                                         </div>
                                     </div>
                                 </ScrollArea.Viewport>

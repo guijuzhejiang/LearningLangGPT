@@ -44,8 +44,8 @@ export function TTSButton({
                 audioRef.current.currentTime = 0;
             }
         } else {
-            alert(lang);
-            alert(lang.length>0 ? lang:chat?.chatParams['teacherGender']);
+            // alert(lang);
+            // alert(lang.length>0 ? lang:chat?.chatParams['teacherGender']);
             const formData = new FormData();
             formData.append('text', text);
             formData.append('teacher_name', chat?.chatParams['teacherName']);

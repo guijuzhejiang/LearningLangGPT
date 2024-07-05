@@ -74,7 +74,10 @@ export async function authenticate(
 
 
 export async function wechatLogin(code:string, state:string) {
-  const response = await fetch(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${process.env.WECHAT_LOGIN_APPID}&secret=${process.env.WECHAT_LOGIN_SECRET}&code=123&grant_type=authorization_code`);
+  'use server'
+  const response = await fetch(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${process.env.WECHAT_LOGIN_APPID}&secret=${process.env.WECHAT_LOGIN_SECRET}&code=${code}&grant_type=authorization_code`);
+  console.log(process.env.WECHAT_LOGIN_APPID)
+  console.log(process.env.WECHAT_LOGIN_SECRET)
   if (response.status === 200) {
     const wechat_data = await response.json()
     console.log("wechat_data!!!!!!!!!!!!!!!!");
@@ -104,12 +107,16 @@ export async function wechatLogin(code:string, state:string) {
     try {
       const result = await createUser(email, hashedPassword, salt)
 
-      if (result.resultCode === ResultCode.UserCreated || result.resultCode === ResultCode.UserAlreadyExists) {
+      if (result.resultCode === ResultCode.UserCreated) {
         await signIn('credentials', {
           email,
           password,
           redirect: false
         })
+      }
+      if (result.resultCode === ResultCode.UserAlreadyExists) {
+        result.resultCode = ResultCode.UserLoggedIn;
+        result.type = "success";
       }
 
       return result;

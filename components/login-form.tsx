@@ -16,6 +16,8 @@ export default function LoginForm() {
     const router = useRouter()
     const [result, dispatch] = useFormState(authenticate, undefined)
     const [curLoginMethod, setCurLoginMethod] = useState('wechat')
+    const [code, setCode] = useState('')
+    const [state, setState] = useState('')
     const iframeRef = useRef(null)
     const wechatReqUrl = `https://www.guijutech.com/service/wechat/login`;
     const wechatLoginContainerID = "wechatLoginContainer";
@@ -44,26 +46,42 @@ export default function LoginForm() {
     }, [result, router])
 
     useEffect(() => {
+        if (code) {
+            ;(async ()=>{
+                const res = await wechatLogin(code, state);
+                console.log(code);
+                console.log(res);
+                if (res.type==='error') {
+                    toast.error("登录失败")
+                } else {
+                    toast.success("登录成功")
+                    router.refresh()
+                }
+            })()
+        }
+    }, [code])
+
+    useEffect(() => {
+        const wxState = generateRandomName(8);
+        setState(wxState)
         new window.WxLogin({
             self_redirect: true,
             id: wechatLoginContainerID,
-            appid: "wx8b7f856da1e0485c",
+            appid: process.env.WECHAT_LOGIN_APPID,
             scope: 'snsapi_login', // 写死，网页应用暂时只支持这个值
             redirect_uri: `https://zs.guijutech.com/learninglang/login/wechat`, // 扫码成功后重定向地址
-            state: generateRandomName(8)// 随机字符串
+            state: wxState// 随机字符串
             // href: initialState?.isLandscape ? '': location.origin + '/WechatWebLogin.css', // 随机字符串
         });
 
         const iframe = document.getElementById(wechatLoginContainerID).querySelectorAll('iframe')[0]
         iframe.addEventListener('load', async function (event) {
             try {
-                const parsed = queryString.parse(iframe + "")
+                const parsed = queryString.parse(iframe.contentWindow.location.search)
                 console.log(parsed);
-                const res = await wechatLogin(parsed.code, parsed.state);
-                console.log(res);
-                if (res.type==='error') {
-                    toast.error("登录失败")
-                }
+                setCode(parsed.code)
+
+
             } catch (e) {
                 console.log(e);
             }

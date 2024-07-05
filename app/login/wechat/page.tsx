@@ -11,3 +11,7 @@ export default async function WechatLogining() {
       </div>
   )
 }
+
+WechatLogining.getLayout = function(page) {
+    return <></>;
+};
