@@ -21,7 +21,7 @@ function getUserInitials(name: string) {
 }
 
 export function UserMenu({ user }: UserMenuProps) {
-  const displayName = user.email.includes("@wechat.com") ? `微信用户${user.email.slice(0, 6)}`: user.email
+  const displayName = user.hasOwnProperty('name') ? user.name : user.email.includes("@wechat.com") ? `微信用户${user.email.slice(0, 6)}`: user.email
 
   return (
     <div className="flex items-center justify-between">

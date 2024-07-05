@@ -75,18 +75,26 @@ export async function authenticate(
 
 export async function wechatLogin(code:string, state:string) {
   'use server'
+  let userNickName = '';
   const response = await fetch(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${process.env.WECHAT_LOGIN_APPID}&secret=${process.env.WECHAT_LOGIN_SECRET}&code=${code}&grant_type=authorization_code`);
   console.log(process.env.WECHAT_LOGIN_APPID)
   console.log(process.env.WECHAT_LOGIN_SECRET)
   if (response.status === 200) {
     const wechat_data = await response.json()
-    console.log("wechat_data!!!!!!!!!!!!!!!!");
-    console.log(wechat_data);
     if (wechat_data.hasOwnProperty('errcode') || !wechat_data.hasOwnProperty('openid')) {
       return {
         type: 'error',
         resultCode: ResultCode.InvalidCredentials
       }
+    }
+    // get user info
+    try {
+      const uInfoResponse = await fetch(`https://api.weixin.qq.com/sns/userinfo?access_token=${wechat_data["access_token"]}&openid=${wechat_data["openid"]}`);
+      if (uInfoResponse.status == 200) {
+        const wechatUserInfo = await uInfoResponse.json();
+        userNickName=wechatUserInfo['nickname']
+      }
+    } catch (e) {
     }
 
     const email = `${wechat_data['openid']}@wechat.com`;
@@ -105,9 +113,9 @@ export async function wechatLogin(code:string, state:string) {
     const hashedPassword = getStringFromBuffer(hashedPasswordBuffer)
 
     try {
-      const result = await createUser(email, hashedPassword, salt)
+      const result = await createUser(email, hashedPassword, salt, userNickName)
 
-      if (result.resultCode === ResultCode.UserCreated) {
+      if (result.resultCode === ResultCode.UserCreated || result.resultCode === ResultCode.UserAlreadyExists) {
         await signIn('credentials', {
           email,
           password,
@@ -118,7 +126,6 @@ export async function wechatLogin(code:string, state:string) {
         result.resultCode = ResultCode.UserLoggedIn;
         result.type = "success";
       }
-
       return result;
     } catch (error) {
       if (error instanceof AuthError) {

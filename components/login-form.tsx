@@ -54,7 +54,7 @@ export default function LoginForm() {
                 if (res.type==='error') {
                     toast.error("登录失败")
                 } else {
-                    toast.success("登录成功")
+                    toast.success("登录成功");
                     router.refresh()
                 }
             })()
@@ -80,7 +80,6 @@ export default function LoginForm() {
                 const parsed = queryString.parse(iframe.contentWindow.location.search)
                 console.log(parsed);
                 setCode(parsed.code)
-
 
             } catch (e) {
                 console.log(e);

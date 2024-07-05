@@ -10,15 +10,21 @@ import { AuthError } from 'next-auth'
 export async function createUser(
   email: string,
   hashedPassword: string,
-  salt: string
+  salt: string,
+  userNickName?: string
 ) {
   const existingUser = await getUser(email)
 
   if (existingUser) {
+    if (userNickName) {
+      existingUser["nickname"] = userNickName;
+      await kv.hmset(`user:${email}`, existingUser);
+    }
+
     return {
       type: 'error',
       resultCode: ResultCode.UserAlreadyExists
-    }
+    };
   } else {
     const user = {
       id: crypto.randomUUID(),
@@ -26,8 +32,11 @@ export async function createUser(
       password: hashedPassword,
       salt
     }
+    if (userNickName) {
+      user["nickname"] = userNickName
+    }
 
-    await kv.hmset(`user:${email}`, user)
+    await kv.hmset(`user:${email}`, user);
 
     return {
       type: 'success',

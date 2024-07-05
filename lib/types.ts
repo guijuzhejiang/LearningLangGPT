@@ -23,6 +23,7 @@ export interface Session {
   user: {
     id: string
     email: string
+    name?: string
   }
 }
 
@@ -36,4 +37,5 @@ export interface User extends Record<string, any> {
   email: string
   password: string
   salt: string
+  nickname: string
 }
