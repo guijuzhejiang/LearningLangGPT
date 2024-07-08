@@ -1,5 +1,5 @@
 import 'server-only'
-
+import {RunnableWithMessageHistory} from "@langchain/core/runnables";
 import {
     createAI,
     createStreamableUI,
@@ -26,7 +26,7 @@ import {getChat, saveChat, saveCountDown} from '@/app/actions'
 import {UserMessage} from '@/components/stocks/message'
 import {Chat} from '@/lib/types'
 import {auth} from '@/auth'
-import {ChatPromptTemplate, PromptTemplate} from "@langchain/core/prompts";
+import {ChatPromptTemplate, MessagesPlaceholder, PromptTemplate} from "@langchain/core/prompts";
 import Groq from "groq-sdk";
 import {ChatGroq} from "@langchain/groq";
 import {BufferWindowMemory, ChatMessageHistory} from "langchain/memory";
@@ -40,49 +40,72 @@ const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') 
 
 const chatChainDB = {} as { [key: string]: any };
 const abortSignal = {} as { [key: string]: any };
-const langchainTools = {"translator": null, "prompter": {}, "chatSummarizer":null};
+const langchainTools = {translator: null, prompter: {}, chatSummarizer: null};
 
+const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+const model = new ChatGroq({
+    modelName: "llama3-70b-8192",
+    apiKey: process.env.GROQ_API_KEY,
+    streaming: true,
+    temperature: 0.8,
+});
+model.client = groqClient;
 
-export async function createSummarizer() {
-    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
-    const model = new ChatGroq({
+const fallbacksModels = Array.from(process.env.GROQ_API_KEY_ALTERNATIVE.split(',').map((v, i) => {
+    let tmpModel = new ChatGroq({
         modelName: "llama3-70b-8192",
-        apiKey: process.env.GROQ_API_KEY,
+        apiKey: v,
         streaming: true,
         temperature: 0.8,
     });
-    model.client = groqClient;
+    tmpModel.client = groqClient;
+    return tmpModel;
+}));
 
-    const prompt = new PromptTemplate({
-        inputVariables: ['text'],
-        template: `
-        Use the following step-by-step instructions to respond to user inputs.
-        Step 1 - You will generate concise, entity-dense summaries for the following dialogues,paying particular attention to extracting keywords, names, verbs, and adjectives from them:
-        "{text}"
+// ;(async () => {
+//
+// })()
+
+async function createSummarizerForGetBgUrl() {
+    // const prompt = new PromptTemplate({
+    //     inputVariables: ['text'],
+    //     template: `
+    //     Use the following step-by-step instructions to respond to user inputs.
+    //     Step 1 - You will generate concise, entity-dense summaries for the following dialogues,paying particular attention to extracting keywords, names, verbs, and adjectives from them:
+    //     "{text}"
+    //     Step 2 - Your job is to generate English prompts for stable diffusion based on the highly dense summaries provided above.
+    //     Prompt is used to describe an image, and consists of ordinary common words or phrases
+    //     Example:girl,teacher,books,desk,store
+    //     Respond only the prompt.Don't add extra words other than prompts.
+    //     PROMPT:
+    //     `
+    // });
+    const prompt = ChatPromptTemplate.fromMessages([
+        [
+            "system",
+            `
+            You are a helpful assistant. Answer all questions to the best of your ability. The provided chat history includes facts about the user you are speaking with.
+            `,
+        ],
+        new MessagesPlaceholder("history"),
+        ["human", `
+        Use the following step-by-step instructions to respond.
+        Step 1 - You will generate concise, entity-dense summaries for the above chat messages,paying particular attention to extracting keywords, names, verbs, and adjectives from them:
         Step 2 - Your job is to generate English prompts for stable diffusion based on the highly dense summaries provided above.
         Prompt is used to describe an image, and consists of ordinary common words or phrases
         Example:girl,teacher,books,desk,store
         Respond only the prompt.Don't add extra words other than prompts.
-        PROMPT:
-        `
-    });
-    const chain = loadSummarizationChain(model, {
-        type: 'map_reduce',
-        combineMapPrompt: prompt,
-        combinePrompt: prompt,
-    })
+        `],
+    ]);
 
-    return chain;
+    return prompt.pipe(model).withFallbacks({
+        fallbacks: Array.from(fallbacksModels.map((v, i) => prompt.pipe(v)))
+    });
 }
 
-
-async function getBgUrl(style:number|undefined) {
+async function getBgUrl(style: number | undefined) {
     'use server'
     try {
-        if (!langchainTools.chatSummarizer) {
-            langchainTools.chatSummarizer = await createSummarizer();
-        }
-
         // get info
         const aiState = getMutableAIState<typeof AI>()
         const session = await auth();
@@ -95,23 +118,39 @@ async function getBgUrl(style:number|undefined) {
 
         runAsyncFnWithoutBlocking(async () => {
             try {
+                if (!langchainTools.chatSummarizer) {
+                    langchainTools.chatSummarizer = await createSummarizerForGetBgUrl();
+                }
+
                 console.log("msgs!!!!!!!!!!!");
                 console.log(msgs);
-                const docs = [];
-                const slicedMsgs = msgs.slice(-4);
-                slicedMsgs.forEach(async function (value, index) {
-                    if (value.role === 'assistant') {
-                        docs.push(new Document({pageContent: `${value.content}`}))
-                    }
-                    if (value.role === 'user') {
-                        docs.push(new Document({pageContent: `${value.content}`}))
-                    }
-                });
-                console.log(slicedMsgs);
+                // const docs = [];
+                // const slicedMsgs = msgs.slice(-4);
+                // slicedMsgs.forEach(async function (value, index) {
+                //     if (value.role === 'assistant') {
+                //         docs.push(new Document({pageContent: `${value.content}`}))
+                //     }
+                //     if (value.role === 'user') {
+                //         docs.push(new Document({pageContent: `${value.content}`}))
+                //     }
+                // });
+                // console.log(slicedMsgs);
+                const chatHistory = new ChatMessageHistory();
+
+                if (msgs.length > 0) {
+                    msgs.forEach(async function (value, index) {
+                        if (value.role === 'assistant') {
+                            await chatHistory.addMessage(new AIMessage(value.content));
+                        }
+                        if (value.role === 'user') {
+                            await chatHistory.addMessage(new HumanMessage(value.content));
+                        }
+                    });
+                }
 
                 const res = (await langchainTools.chatSummarizer.invoke({
-                    input_documents: docs
-                })).text;
+                    history: await chatHistory.getMessages()
+                })).content;
                 console.log("bg_summary prompt:");
                 console.log(res);
 
@@ -120,8 +159,8 @@ async function getBgUrl(style:number|undefined) {
                 formData.append('user_id', userId);
                 formData.append('mlen', msgs.length);
                 formData.append('chat_id', chatId);
-                formData.append('style',  style ? style:4);
-                const response = await fetch(process.env.SD_URL+'/zs/bg/generate', {
+                formData.append('style', style ? style : 4);
+                const response = await fetch(process.env.SD_URL + '/zs/bg/generate', {
                     method: 'POST',
                     body: formData,
                 });
@@ -146,37 +185,37 @@ async function getBgUrl(style:number|undefined) {
 
 async function translate(content: string) {
     'use server'
-    // console.log(content);
-    if (!langchainTools.translator) {
-        langchainTools.translator = await createTranslator();
-    }
 
     const textStream = createStreamableValue("");
 
     runAsyncFnWithoutBlocking(async () => {
+        if (!langchainTools.translator) {
+            langchainTools.translator = await createTranslator();
+        }
+
         let buf = "";
         try {
-            let emojiFlag = false;
-            const res = await langchainTools.translator.call({
-                input: content,
-                callbacks: [
-                    {
-                        handleLLMNewToken(token: any) {
-                            // console.log(token);
-                            if (token) {
-                                buf += token;
-                                textStream.update(token);
-                            } else {
-                                // console.log('done11111 ' + token);
+            const res = await langchainTools.translator.invoke(
+                {input: content},
+                {
+                    callbacks: [
+                        {
+                            handleLLMNewToken(token: any) {
                                 // console.log(token);
-                            }
+                                if (token) {
+                                    buf += token;
+                                    textStream.update(token);
+                                } else {
+                                    // console.log('done11111 ' + token);
+                                    // console.log(token);
+                                }
+                            },
+                            handleLLMEnd(token: any) {
+                                textStream.done();
+                            },
                         },
-                        handleLLMEnd(token: any) {
-                            textStream.done();
-                        },
-                    },
-                ],
-            });
+                    ],
+                });
         } catch (e) {
             console.error(e);
         } finally {
@@ -187,35 +226,26 @@ async function translate(content: string) {
 }
 
 export async function createTranslator() {
-    // 你是一个翻译英文的翻译器，你的目标是把任何语言翻译成中文，请翻译时不要带翻译腔，而是要翻译得自然、流畅和地道，使用优美和高雅的表达方式,必须使用中文输出。
+    'use server'
+    const prompt = ChatPromptTemplate.fromMessages([
+        [
+            "system",
+            `
+            下面我让你来充当翻译家，你的目标是把任何语言翻译成中文，请翻译时不要带翻译腔，而是要翻译得自然、流畅和地道，使用优美和高雅的表达方式,不要添加原文没有的标点符号,只回复翻译的内容。
+            `,
+        ],
+        ["human", "请翻译下面这句话：{input}"],
+    ]);
 
-    const prompt = ChatPromptTemplate.fromTemplate(
-        `
-        下面我让你来充当翻译家，你的目标是把任何语言翻译成中文，请翻译时不要带翻译腔，而是要翻译得自然、流畅和地道，使用优美和高雅的表达方式,不要添加原文没有的标点符号,只回复翻译的内容。
-        Human:请翻译下面这句话：“{input}”
-        AI:
-      `
-    );
-    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
-    const model = new ChatGroq({
-        modelName: "llama3-70b-8192",
-        apiKey: process.env.GROQ_API_KEY,
-        streaming: true,
-        temperature: 0.8,
+    return prompt.pipe(model).withFallbacks({
+        fallbacks: Array.from(fallbacksModels.map((v, i) => prompt.pipe(v)))
     });
-
-    model.client = groqClient;
-
-    return new ConversationChain({llm: model, prompt: prompt});
 }
 
-async function getHint(msg:string, chatParams: ChatParams | undefined | null) {
+async function getHint(msg: string, chatParams: ChatParams | undefined | null) {
     'use server'
-    // const msgs = JSON.parse(jmsg);
-    // console.log("msxxxxgs[msgs.length-1]")
-    // console.log(msg)
-    // console.log(chatParams)
-
+    console.log("getHint:");
+    console.log(msg);
     if (!chatParams) {
         const session = await auth();
         const userId = (session && session.user) ? session.user.id : "default";
@@ -227,36 +257,38 @@ async function getHint(msg:string, chatParams: ChatParams | undefined | null) {
         }
     }
 
-    if (!langchainTools.prompter.hasOwnProperty(chatParams.lang)) {
-        langchainTools.prompter[chatParams.lang] = await createPrompter(chatParams.lang);
-    }
-
     const textStream = createStreamableValue("");
 
     runAsyncFnWithoutBlocking(async () => {
+        if (!langchainTools.prompter.hasOwnProperty(chatParams.lang)) {
+            langchainTools.prompter[chatParams.lang] = await createPrompter(chatParams.lang);
+        }
+
         let buf = "";
         try {
             let emojiFlag = false;
-            const res = await langchainTools.prompter[chatParams.lang].call({
-                input: msg,
-                callbacks: [
-                    {
-                        handleLLMNewToken(token: any) {
-                            // console.log(token);
-                            if (token) {
-                                buf += token;
-                                textStream.update(token);
-                            } else {
-                                // console.log('done11111 ' + token);
+            const res = await langchainTools.prompter[chatParams.lang].invoke(
+                {input: msg},
+                {
+                    callbacks: [
+                        {
+                            handleLLMNewToken(token: any) {
                                 // console.log(token);
-                            }
+                                if (token) {
+                                    buf += token;
+                                    textStream.update(token);
+                                } else {
+                                    // console.log('done11111 ' + token);
+                                    // console.log(token);
+                                }
+                            },
+                            handleLLMEnd(token: any) {
+                                textStream.done();
+                            },
                         },
-                        handleLLMEnd(token: any) {
-                            textStream.done();
-                        },
-                    },
-                ],
-            });
+                    ],
+                }
+            );
         } catch (e) {
             console.error(e);
         } finally {
@@ -266,7 +298,7 @@ async function getHint(msg:string, chatParams: ChatParams | undefined | null) {
     return textStream.value
 }
 
-async function delChat(userId:string, chatId:string|boolean) {
+async function delChat(userId: string, chatId: string | boolean) {
     'use server'
 
 }
@@ -292,40 +324,23 @@ const hintPrompts = {
         Halten Sie Ihre Antworten sauber und ordentlich und beschränken Sie sich auf 16 Wörter oder weniger.`,
 }
 
-async function createPrompter(lang:string) {
+async function createPrompter(lang: string) {
     'use server'
-    const prompt = ChatPromptTemplate.fromTemplate(
-        `
-        ${hintPrompts[lang]}
-        Human:{input}
-        AI:
-      `
-    );
-    // console.log("xxxxxxxxxxxxxxxxxxxxxxxxx");
-    // console.log(lang);
-
-    const partialPrompt = await prompt.partial({
-        language: lang,
-    });
-    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
-    const model = new ChatGroq({
-        modelName: "llama3-70b-8192",
-        apiKey: process.env.GROQ_API_KEY,
-        streaming: true,
-        temperature: 0.8,
+    const prompt = await ChatPromptTemplate.fromMessages([
+        [
+            "system",
+            `
+            ${hintPrompts[lang]}
+            `,
+        ],
+        ["human", "{input}"],
+    ]).partial({
+        language: lang
     });
 
-    model.client = groqClient
-
-// const chain = prompt.pipe(llm);
-//     const memory = new BufferWindowMemory({
-//         humanPrefix: "Human",
-//         aiPrefix: "AI",
-//         memoryKey: "history",
-//         k: 10
-//     });
-    // memory.loadMemoryVariables()
-    return new ConversationChain({llm: model, prompt: partialPrompt});
+    return prompt.pipe(model).withFallbacks({
+        fallbacks: Array.from(fallbacksModels.map((v, i) => prompt.pipe(v)))
+    });
 }
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
@@ -409,7 +424,7 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
     }
 }
 
-async function submitUserMessage(content: string, chatParams: ChatParams | undefined | null, remainingSecs:number) {
+async function submitUserMessage(content: string, chatParams: ChatParams | undefined | null, remainingSecs: number) {
     'use server'
     console.error(content);
     // console.error(chatParams);
@@ -456,29 +471,52 @@ async function submitUserMessage(content: string, chatParams: ChatParams | undef
 
         try {
             let emojiFlag = false;
-            const res = await chatChainDB[chatId].chatChain.call({
-                input: content,
-                callbacks: [
-                    {
-                        handleLLMNewToken(token: any) {
-                            // console.log(token);
-                            // await new Promise(resolve => setTimeout(resolve, 250));
-                            // const start = Date.now();
-                            // 使用 while 循环阻塞一段时间
-                            // while (Date.now() - start < 50) {
-                            // 空循环，什么都不做
-                            // }
-                            if (token) {
-                                if (token.includes('*')) {
-                                    emojiFlag = !emojiFlag;
-                                }
-                                if (!emojiFlag) {
-                                    buf += token;
-                                }
 
-                                if (!abortSignal.hasOwnProperty(msgID)) {
-                                    textStream.update(token);
+            const res = await chatChainDB[chatId].chatChain.invoke(
+                {input: content},
+                {
+                    configurable: {
+                        sessionId: chatId,
+                    },
+                    callbacks: [
+                        {
+                            handleLLMNewToken(token: any) {
+                                if (token) {
+                                    if (token.includes('*')) {
+                                        emojiFlag = !emojiFlag;
+                                    }
+                                    if (!emojiFlag) {
+                                        buf += token;
+                                    }
+
+                                    if (!abortSignal.hasOwnProperty(msgID)) {
+                                        textStream.update(token);
+                                    } else {
+                                        textStream.done();
+
+                                        aiState.done({
+                                            ...aiState.get(),
+                                            messages: [
+                                                ...aiState.get().messages,
+                                                {
+                                                    id: nanoid(),
+                                                    role: 'assistant',
+                                                    content: buf,
+                                                }
+                                            ],
+                                            chatParams: chatParams
+                                        });
+
+                                        delete abortSignal[msgID];
+                                    }
+                                    // console.log(token);
                                 } else {
+                                    // console.log('done');
+                                }
+                            },
+                            handleLLMEnd(token: any) {
+                                console.log("----handleLLMEnd")
+                                if (!abortSignal.hasOwnProperty(msgID)) {
                                     textStream.done();
 
                                     aiState.done({
@@ -491,55 +529,32 @@ async function submitUserMessage(content: string, chatParams: ChatParams | undef
                                                 content: buf,
                                             }
                                         ],
-                                        chatParams:chatParams
+                                        chatParams: chatParams
+                                    });
+                                } else {
+                                    textStream.done();
+
+                                    aiState.done({
+                                        ...aiState.get(),
+                                        messages: [
+                                            ...aiState.get().messages,
+                                            {
+                                                id: nanoid(),
+                                                role: 'assistant',
+                                                content: buf,
+                                            }
+                                        ]
                                     });
 
                                     delete abortSignal[msgID];
                                 }
-                                // console.log(token);
-                            } else {
-                                // console.log('done');
-                            }
+                                // console.log("stream:\n", token);
+
+                            },
                         },
-                        handleLLMEnd(token: any) {
-                            if (!abortSignal.hasOwnProperty(msgID)) {
-                                textStream.done();
-
-                                aiState.done({
-                                    ...aiState.get(),
-                                    messages: [
-                                        ...aiState.get().messages,
-                                        {
-                                            id: nanoid(),
-                                            role: 'assistant',
-                                            content: buf,
-                                        }
-                                    ],
-                                    chatParams:chatParams
-                                });
-                            } else {
-                                textStream.done();
-
-                                aiState.done({
-                                    ...aiState.get(),
-                                    messages: [
-                                        ...aiState.get().messages,
-                                        {
-                                            id: nanoid(),
-                                            role: 'assistant',
-                                            content: buf,
-                                        }
-                                    ]
-                                });
-
-                                delete abortSignal[msgID];
-                            }
-                            // console.log("stream:\n", token);
-
-                        },
-                    },
-                ],
-            });
+                    ],
+                }
+            );
         } catch (e) {
             console.error(e);
         } finally {
@@ -711,43 +726,28 @@ const createChatChain = async (msgs, chatParams) => {
         {history}
         Human:{input}
         AI:
-      `)
+    `)
 
+    const prompt = ChatPromptTemplate.fromMessages([
+        [
+            "system",
+            `
+            ${chatPrompts[chatParams.lang].level[chatParams.level]}
+            ${chatPrompts[chatParams.lang].prompt}
+            `,
+        ],
+        new MessagesPlaceholder("history"),
+        ["human", "{input}"],
+    ]);
 
-    const prompt = ChatPromptTemplate.fromTemplate(
-        `
-        ${chatPrompts[chatParams.lang].level[chatParams.level]}
-        ${chatPrompts[chatParams.lang].prompt}
-        {history}
-        Human:{input}
-        AI:
-      `
-    );
     const partialPrompt = await prompt.partial({
         language: chatParams.lang,
         name: chatParams.teacherName
     });
 
+    const chatHistory = new ChatMessageHistory();
 
-    const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
-    const model = new ChatGroq({
-        modelName: "llama3-70b-8192",
-        apiKey: process.env.GROQ_API_KEY,
-        streaming: true,
-        temperature: 0.8,
-    });
-
-    model.client = groqClient
-
-// const chain = prompt.pipe(llm);
-    const memory = new BufferWindowMemory({
-        humanPrefix: "Human",
-        aiPrefix: "AI",
-        memoryKey: "history",
-        k: 10
-    });
     if (msgs.length > 0) {
-        const chatHistory = new ChatMessageHistory();
         msgs.forEach(async function (value, index) {
             if (value.role === 'assistant') {
                 await chatHistory.addMessage(new AIMessage(value.content));
@@ -756,11 +756,30 @@ const createChatChain = async (msgs, chatParams) => {
                 await chatHistory.addMessage(new HumanMessage(value.content));
             }
         });
-        memory.chatHistory = chatHistory;
-
     }
-    // memory.loadMemoryVariables()
-    return new ConversationChain({llm: model, memory: memory, prompt: partialPrompt});
+
+    const chain = partialPrompt.pipe(model).withFallbacks({
+        fallbacks: fallbacksModels
+    })
+
+    if (msgs.length > 0) {
+        msgs.forEach(async function (value, index) {
+            if (value.role === 'assistant') {
+                await chatHistory.addMessage(new AIMessage(value.content));
+            }
+            if (value.role === 'user') {
+                await chatHistory.addMessage(new HumanMessage(value.content));
+            }
+        });
+    }
+    return new RunnableWithMessageHistory({
+        runnable: chain,
+        getMessageHistory: (sessionId) => {
+            return chatHistory
+        },
+        inputMessagesKey: "input",
+        historyMessagesKey: "history",
+    });
 }
 
 export type Message = {
@@ -880,7 +899,8 @@ export const getUIStateFromAIState = (aiState: Chat) => {
                 ) : message.role === 'user' ? (
                     <UserMessage>{message.content}</UserMessage>
                 ) : (
-                    <BotMessage content={message.content} userId={aiState.userId} chatId={aiState.chatId} chatParams={aiState.chatParams}/>
+                    <BotMessage content={message.content} userId={aiState.userId} chatId={aiState.chatId}
+                                chatParams={aiState.chatParams}/>
                 )
         }))
 }

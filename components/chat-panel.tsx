@@ -26,6 +26,7 @@ export interface ChatPanelProps {
     chatOpacity: number,
     setChatOpacity: (value: number) => void
     remainingSecs: number,
+    handleBg: ()=>void,
 }
 
 export function ChatPanel({
@@ -36,7 +37,8 @@ export function ChatPanel({
                               backgroundStyleRef,
                               chatOpacity,
                               setChatOpacity,
-                              remainingSecs
+                              remainingSecs,
+                              handleBg
                           }: ChatPanelProps) {
     const [messages, setMessages] = useUIState<typeof AI>();
     const {submitUserMessage} = useActions();
@@ -102,6 +104,7 @@ export function ChatPanel({
                             chatId={id}
                             userId={session ? session.user.id : 'default'}
                             remainingSecs={remainingSecs}
+                            handleBg={handleBg}
                         />
                     ) : (
                         <Button

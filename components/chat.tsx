@@ -37,7 +37,7 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
 
     const handleCheckBg = async () => {
         try {
-            const response = await fetch(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&check=true&mlen=${messages.length-2}`,
+            const response = await fetch(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&check=true&mlen=${messages.length}`,
                 {
                     method: 'GET',
                 });
@@ -58,37 +58,21 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
 
     }
 
-    useEffect(() => {
-        if (session?.user) {
-            if (!path.includes('chat') && messages.length === 2) {
-                window.history.replaceState({}, '', `/learninglang/chat/${id}`)
-            }
-        }
-
-        if (!session?.user && path === '/') {
-            window.history.replaceState({}, '', `/learninglang`)
-
-        }
-
-
-    }, [id, path, session?.user, messages]);
-
-    useEffect(() => {
-        console.log("messages count " + messages.length);
-        console.log(messages)
-
-        ;(async () => {
+    const handleBg = async () => {
+        try {
             if (session?.user) {
                 if (messages.length === 2 && session?.user) {
                     // alert('refresh');
                     window.sessionStorage.setItem('tts', messages[1].content);
                     router.refresh()
                 }
-                if ((messages.length > 4 && messages.length % 8 === 0) || messages.length === 4) {
+
+                console.log(messages[messages.length-1]?.display?.ref?.current?.completed);
+
+                if (((messages.length > 4 && messages.length % 8 === 0) || messages.length === 4) && messages[messages.length-1]?.display?.ref?.current?.completed) {
 
                     const checkRes = await handleCheckBg()
-                    // console.log(checkRes);
-                    // alert(checkRes);
+                    // alert("checkRes");
 
                     if (checkRes) {
                         setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
@@ -112,9 +96,70 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
 
                 }
             }
-        })();
+        } catch (e) {
+        }
 
-    }, [messages]);
+    }
+
+    useEffect(() => {
+        if (session?.user) {
+            if (!path.includes('chat') && messages.length === 2) {
+                window.history.replaceState({}, '', `/learninglang/chat/${id}`)
+            }
+        }
+
+        if (!session?.user && path === '/') {
+            window.history.replaceState({}, '', `/learninglang`)
+
+        }
+
+
+    }, [id, path, session?.user, messages]);
+
+    useEffect(() => {
+        console.log("messages count " + messages.length);
+        console.log(messages)
+
+        // ;(async () => {
+        //     if (session?.user) {
+        //         if (messages.length === 2 && session?.user) {
+        //             // alert('refresh');
+        //             window.sessionStorage.setItem('tts', messages[1].content);
+        //             router.refresh()
+        //         }
+        //
+        //         console.log(messages[messages.length-1]?.display?.ref?.current?.completed);
+        //
+        //         if (((messages.length > 4 && messages.length % 8 === 0) || messages.length === 4) && messages[messages.length-1]?.display?.ref?.current?.completed) {
+        //
+        //             const checkRes = await handleCheckBg()
+        //             alert("checkRes");
+        //
+        //             if (checkRes) {
+        //                 setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
+        //             } else {
+        //                 let bgRes = null;
+        //                 const bgStream = await getBgUrl(backgroundStyleRef?.current?.backgroundStyle);
+        //                 // console.log("bgStream");
+        //                 for await (const delta of readStreamableValue(bgStream)) {
+        //                     if (typeof delta === 'string' && delta.length >0) {
+        //                         bgRes = JSON.parse(delta)
+        //                     }
+        //                 }
+        //                 // console.log(bgRes);
+        //                 if (bgRes.success) {
+        //                     const url = process.env.SD_URL + bgRes.result[0].replace('/service', '');
+        //                     // console.log("url");
+        //                     // console.log(url);
+        //                     setBgUrl(url+'&msmy=%23sfn%');
+        //                 }
+        //             }
+        //
+        //         }
+        //     }
+        // })();
+
+    }, [messages[messages.length-1]?.display?.ref, messages[messages.length-1]?.display?.ref?.current?.completed]);
 
     useEffect(() => {
         const messagesLength = aiState.messages?.length
@@ -132,7 +177,7 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
     useEffect(() => {
         ;(async () => {
             if (session?.user) {
-                setBgUrl(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&mlen=${messages.length<8?2:messages.length%8===0?messages.length-2:(messages.length-(messages.length%8)-2)}`);
+                setBgUrl(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&mlen=${messages.length<8?4:messages.length%8===0?messages.length:(messages.length-(messages.length%8))}`);
             }
         })();
     }, [])
@@ -188,6 +233,7 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
                 chatOpacity={chatOpacity}
                 setChatOpacity={setChatOpacity}
                 remainingSecs={remainingTime}
+                handleBg={handleBg}
                 // voiceContinuationEnable={voiceContinuationEnable}
                 // setVoiceContinuationEnable={setVoiceContinuationEnable}
                 // userSpeakLately={userSpeakLately}

@@ -40,7 +40,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning>
     <head>
       <Script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js" strategy="beforeInteractive"/>
-
     </head>
       <body
         className={cn(

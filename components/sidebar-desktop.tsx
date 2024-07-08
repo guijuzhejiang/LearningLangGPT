@@ -1,3 +1,5 @@
+'use server';
+
 import { Sidebar } from '@/components/sidebar'
 
 import { auth } from '@/auth'

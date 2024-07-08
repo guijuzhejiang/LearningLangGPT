@@ -49,6 +49,7 @@ export interface PromptFormProps {
     chatOpacity?: number,
     setChatOpacity?: (value: number) => void,
     remainingSecs?: number,
+    handleBg?: ()=>void,
 }
 
 export function PromptForm({
@@ -58,6 +59,7 @@ export function PromptForm({
                                chatOpacity,
                                setChatOpacity,
                                remainingSecs,
+                               handleBg
                            }: PromptFormProps) {
 
     const router = useRouter()
@@ -497,7 +499,7 @@ export function PromptForm({
 
     //
     useEffect(() => {
-        // console.log("!xxxxxxxxxxx!!!!!!!!!!!!")
+        console.log("!xxxxxxxxxxx!!!!!!!!!!!!")
         // console.log(messages[messages.length-1])
         if (showHint) {
             if (lastMessage?.display?.ref?.current?.completed) {
@@ -506,6 +508,8 @@ export function PromptForm({
                 })()
             }
         }
+
+        handleBg();
     }, [lastMessage?.display.ref?.current?.completed])
 
     useEffect(() => {
@@ -624,13 +628,8 @@ export function PromptForm({
                                         audioRef.current.pause();
                                         audioRef.current.currentTime = 0;
                                     }
-
-                                    // setTransTexts('');
-                                    // setShowTranslate(false);
-                                    // setCanPlay(false);
-                                    // setCanPlayThrough(false);
-                                    // setHintContent('');
-                                    handleUpdateHint(messages[messages.length - 1].display.ref?.current?.text);
+                                    console.log(messages);
+                                    handleUpdateHint(messages[messages.length - 1].display.ref ? messages[messages.length - 1].display.ref?.current?.text : messages[messages.length - 1].display.props.content);
                                 }}
                             >
                                 <IconRefresh/>
