@@ -13,7 +13,6 @@ module.exports = {
     TTS_URL: process.env.TTS_URL,
     SD_URL: process.env.SD_URL,
     WECHAT_LOGIN_APPID: process.env.WECHAT_LOGIN_APPID,
-    WECHAT_LOGIN_SECRET_KEY: process.env.WECHAT_LOGIN_SECRET_KEY
   },
   basePath:process.env.NODE_ENV === "development"? '/learninglang':'/learninglang',
   // images: {

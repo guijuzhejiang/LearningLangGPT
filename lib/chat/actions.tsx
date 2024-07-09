@@ -67,40 +67,24 @@ const fallbacksModels = Array.from(process.env.GROQ_API_KEY_ALTERNATIVE.split(',
 // })()
 
 async function createSummarizerForGetBgUrl() {
-    // const prompt = new PromptTemplate({
-    //     inputVariables: ['text'],
-    //     template: `
-    //     Use the following step-by-step instructions to respond to user inputs.
-    //     Step 1 - You will generate concise, entity-dense summaries for the following dialogues,paying particular attention to extracting keywords, names, verbs, and adjectives from them:
-    //     "{text}"
-    //     Step 2 - Your job is to generate English prompts for stable diffusion based on the highly dense summaries provided above.
-    //     Prompt is used to describe an image, and consists of ordinary common words or phrases
-    //     Example:girl,teacher,books,desk,store
-    //     Respond only the prompt.Don't add extra words other than prompts.
-    //     PROMPT:
-    //     `
-    // });
-    const prompt = ChatPromptTemplate.fromMessages([
-        [
-            "system",
-            `
-            You are a helpful assistant. Answer all questions to the best of your ability. The provided chat history includes facts about the user you are speaking with.
-            `,
-        ],
-        new MessagesPlaceholder("history"),
-        ["human", `
-        Use the following step-by-step instructions to respond.
-        Step 1 - You will generate concise, entity-dense summaries for the above chat messages,paying particular attention to extracting keywords, names, verbs, and adjectives from them:
+    const prompt = new PromptTemplate({
+        inputVariables: ['text'],
+        template: `
+        Use the following step-by-step instructions to respond to user inputs.
+        Step 1 - You will generate concise, entity-dense summaries for the following dialogues,paying particular attention to extracting keywords, names, verbs, and adjectives from them:
+        "{text}"
         Step 2 - Your job is to generate English prompts for stable diffusion based on the highly dense summaries provided above.
         Prompt is used to describe an image, and consists of ordinary common words or phrases
         Example:girl,teacher,books,desk,store
         Respond only the prompt.Don't add extra words other than prompts.
-        `],
-    ]);
-
-    return prompt.pipe(model).withFallbacks({
-        fallbacks: Array.from(fallbacksModels.map((v, i) => prompt.pipe(v)))
+        PROMPT:
+        `
     });
+    return  loadSummarizationChain(model.withFallbacks(fallbacksModels), {
+        type: 'map_reduce',
+        combineMapPrompt: prompt,
+        combinePrompt: prompt,
+    })
 }
 
 async function getBgUrl(style: number | undefined) {
@@ -124,33 +108,21 @@ async function getBgUrl(style: number | undefined) {
 
                 console.log("msgs!!!!!!!!!!!");
                 console.log(msgs);
-                // const docs = [];
-                // const slicedMsgs = msgs.slice(-4);
-                // slicedMsgs.forEach(async function (value, index) {
-                //     if (value.role === 'assistant') {
-                //         docs.push(new Document({pageContent: `${value.content}`}))
-                //     }
-                //     if (value.role === 'user') {
-                //         docs.push(new Document({pageContent: `${value.content}`}))
-                //     }
-                // });
-                // console.log(slicedMsgs);
-                const chatHistory = new ChatMessageHistory();
-
-                if (msgs.length > 0) {
-                    msgs.forEach(async function (value, index) {
-                        if (value.role === 'assistant') {
-                            await chatHistory.addMessage(new AIMessage(value.content));
-                        }
-                        if (value.role === 'user') {
-                            await chatHistory.addMessage(new HumanMessage(value.content));
-                        }
-                    });
-                }
+                const docs = [];
+                const slicedMsgs = msgs.slice(-4);
+                slicedMsgs.forEach(async function (value, index) {
+                    if (value.role === 'assistant') {
+                        docs.push(new Document({pageContent: `${value.content}`}))
+                    }
+                    if (value.role === 'user') {
+                        docs.push(new Document({pageContent: `${value.content}`}))
+                    }
+                });
+                console.log(slicedMsgs);
 
                 const res = (await langchainTools.chatSummarizer.invoke({
-                    history: await chatHistory.getMessages()
-                })).content;
+                    input_documents: docs
+                })).text;
                 console.log("bg_summary prompt:");
                 console.log(res);
 

@@ -205,7 +205,10 @@ export function PromptForm({
             }
         };
 
-        checkMicrophone();
+        if (remainingSecs !== 0) {
+            checkMicrophone();
+        }
+
 
         if (sessionStorage.getItem("fromRoot")) {
             sessionStorage.removeItem("fromRoot");
@@ -508,8 +511,9 @@ export function PromptForm({
                 })()
             }
         }
-
-        handleBg();
+        ;(async () => {
+            await handleBg();
+        })()
     }, [lastMessage?.display.ref?.current?.completed])
 
     useEffect(() => {
