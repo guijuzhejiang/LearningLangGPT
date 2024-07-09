@@ -95,7 +95,7 @@ export function SidebarActions({
                   setDeleteDialogOpen(false)
                   router.refresh()
                   router.push('/')
-                  toast.success('Chat deleted')
+                  toast.success('对话已删除')
                   Object.keys(Cookies.get()).forEach(function(cookieName) {
                     if (cookieName.includes(chat.id)) {
                       Cookies.remove(cookieName);
