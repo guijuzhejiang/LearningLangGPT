@@ -20,7 +20,7 @@ import {
     formatNumber,
     runAsyncFnWithoutBlocking,
     sleep,
-    nanoid
+    nanoid, reloadGroqProxy
 } from '@/lib/utils'
 import {getChat, saveChat, saveCountDown} from '@/app/actions'
 import {UserMessage} from '@/components/stocks/message'
@@ -48,6 +48,7 @@ const model = new ChatGroq({
     apiKey: process.env.GROQ_API_KEY,
     streaming: true,
     temperature: 0.8,
+    maxRetries:0
 });
 model.client = groqClient;
 
@@ -57,6 +58,7 @@ const fallbacksModels = Array.from(process.env.GROQ_API_KEY_ALTERNATIVE.split(',
         apiKey: v,
         streaming: true,
         temperature: 0.8,
+        maxRetries:0
     });
     tmpModel.client = groqClient;
     return tmpModel;
@@ -65,6 +67,7 @@ const fallbacksModels = Array.from(process.env.GROQ_API_KEY_ALTERNATIVE.split(',
 // ;(async () => {
 //
 // })()
+
 
 async function createSummarizerForGetBgUrl() {
     const prompt = new PromptTemplate({
@@ -120,9 +123,26 @@ async function getBgUrl(style: number | undefined) {
                 });
                 console.log(slicedMsgs);
 
-                const res = (await langchainTools.chatSummarizer.invoke({
-                    input_documents: docs
-                })).text;
+                let res = null;
+                const maxRetries = 3;
+                let retries = 0;
+                const proceed = async ()=>{
+                    try {
+                        res = await langchainTools.chatSummarizer.invoke({
+                            input_documents: docs
+                        });
+                    } catch (e) {
+                        retries++;
+                        if (retries < maxRetries) {
+                            await reloadGroqProxy(model, fallbacksModels);
+                            await proceed();
+                        }
+                    }
+                }
+
+                await proceed();
+
+                res = res.text;
                 console.log("bg_summary prompt:");
                 console.log(res);
 
@@ -165,8 +185,10 @@ async function translate(content: string) {
             langchainTools.translator = await createTranslator();
         }
 
-        let buf = "";
-        try {
+        const maxRetries = 3;
+        let retries = 0;
+        const proceed = async ()=>{
+            let buf = "";
             const res = await langchainTools.translator.invoke(
                 {input: content},
                 {
@@ -185,11 +207,27 @@ async function translate(content: string) {
                             handleLLMEnd(token: any) {
                                 textStream.done();
                             },
+                            // async handleLLMError(e:any) {
+                            //     retries++;
+                            //     if (retries < maxRetries) {
+                            //         await reloadGroqProxy(model, fallbacksModels);
+                            //         await proceed();
+                            //     }
+                            // },
                         },
                     ],
-                });
+                }
+            );
+        }
+        try {
+            await proceed();
         } catch (e) {
             console.error(e);
+            retries++;
+            if (retries < maxRetries) {
+                await reloadGroqProxy(model, fallbacksModels);
+                await proceed();
+            }
         } finally {
         }
     });
@@ -237,8 +275,10 @@ async function getHint(msg: string, chatParams: ChatParams | undefined | null) {
         }
 
         let buf = "";
-        try {
-            let emojiFlag = false;
+        let emojiFlag = false;
+        const maxRetries = 3;
+        let retries = 0;
+        const proceed = async ()=>{
             const res = await langchainTools.prompter[chatParams.lang].invoke(
                 {input: msg},
                 {
@@ -257,12 +297,28 @@ async function getHint(msg: string, chatParams: ChatParams | undefined | null) {
                             handleLLMEnd(token: any) {
                                 textStream.done();
                             },
+                            // async handleLLMError(e:any) {
+                            //     retries++;
+                            //     if (retries < maxRetries) {
+                            //         await reloadGroqProxy(model, fallbacksModels);
+                            //         await proceed();
+                            //     }
+                            // },
                         },
                     ],
                 }
             );
+        }
+        try {
+            await proceed();
         } catch (e) {
             console.error(e);
+
+            retries++;
+            if (retries < maxRetries) {
+                await reloadGroqProxy(model, fallbacksModels);
+                await proceed();
+            }
         } finally {
         }
     });
@@ -441,9 +497,11 @@ async function submitUserMessage(content: string, chatParams: ChatParams | undef
             }
         }
 
-        try {
-            let emojiFlag = false;
 
+        let emojiFlag = false;
+        const maxRetries = 3;
+        let retries = 0;
+        const proceed = async ()=>{
             const res = await chatChainDB[chatId].chatChain.invoke(
                 {input: content},
                 {
@@ -523,12 +581,34 @@ async function submitUserMessage(content: string, chatParams: ChatParams | undef
                                 // console.log("stream:\n", token);
 
                             },
+                            // async handleLLMError(e:any) {
+                            //     retries++;
+                            //     if (retries < maxRetries) {
+                            //         await reloadGroqProxy(model, fallbacksModels);
+                            //         await proceed();
+                            //     }
+                            // },
+                            // handleChainError(e:any) {
+                            //     console.log("handleChainError")
+                            //     console.log(e)
+                            // },
                         },
                     ],
                 }
             );
+        }
+
+        try {
+            await proceed();
         } catch (e) {
+            console.error("error:");
             console.error(e);
+
+            retries++;
+            if (retries < maxRetries) {
+                await reloadGroqProxy(model, fallbacksModels);
+                await proceed();
+            }
         } finally {
         }
     });

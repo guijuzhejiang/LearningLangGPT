@@ -3,6 +3,10 @@ import {customAlphabet} from 'nanoid'
 import {twMerge} from 'tailwind-merge'
 import Cookies from "js-cookie";
 import {ChatParams} from "@/lib/chat/actions";
+import {promises as fs} from "fs";
+import { exec } from 'promisify-child-process';
+// import { promisify } from 'util';
+// const execAsync = promisify(exec);
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -221,4 +225,43 @@ export function toHalfWidth(str: string) {
     return str.replace(/[\uFF01-\uFF5E]/g, function (ch) {
         return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0);
     }).replace(/\u3000/g, ' ');
+}
+
+export async function reloadGroqProxy(model, fallbacksModels) {
+
+    try {
+        const servers = ["103.45.78.170", "120.233.27.129", "58.32.13.22", "103.45.78.164"]
+        const jsonFilePath = "/usr/local/share/shadowsocksr/config.json"
+        // console.log("reloadGroqProxy qqqqqqqqqqqqqqqqqqqq");
+
+        for (let i=0;i<servers.length;i++) {
+            // console.log("reloadGroqProxy 000000000000000000");
+
+            try {
+
+                const jsonData = JSON.parse(await fs.readFile(jsonFilePath, 'utf8'));
+                // console.log("reloadGroqProxy xxxxxxxxxxxxxxxxxxx");
+
+                jsonData.server = servers[i];
+                await fs.writeFile(jsonFilePath, JSON.stringify(jsonData, null, 2));
+
+                await exec(`ssr stop`);
+                await exec(`ssr start`);
+
+                const modelWithFallback = model.withFallbacks({
+                    fallbacks: fallbacksModels,
+                });
+                const result = await modelWithFallback.invoke("test");
+                break;
+            } catch (e) {
+                // console.log("reloadGroqProxy 1111111111111111111111");
+                console.log(e);
+            }
+
+        }
+    } catch (e) {
+        // console.log("reloadGroqProxy 22222222222222222222");
+        console.log(e);
+
+    }
 }

@@ -47,7 +47,11 @@ module.exports = {
   },
   webpack: (config, {isServer}) => {
     config.resolve.extensions.push(".ts", ".tsx")
-    config.resolve.fallback = { fs: false }
+    if (!isServer) {
+      config.resolve.fallback.fs = false
+      config.resolve.fallback.promisify_child_process = false
+      config.resolve.fallback.child_process = false
+    }
     config.plugins.push(
         new CopyPlugin({
           patterns: [

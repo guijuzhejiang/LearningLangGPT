@@ -13,7 +13,7 @@ import {loadSummarizationChain} from "langchain/chains";
 import {Document} from "@langchain/core/documents";
 import {createTranslator} from "@/lib/chat/actions"
 import {createStreamableValue} from "ai/rsc";
-import {runAsyncFnWithoutBlocking, toHalfWidth} from "@/lib/utils";
+import {reloadGroqProxy, runAsyncFnWithoutBlocking, toHalfWidth} from "@/lib/utils";
 import JSON5 from 'json5'
 import moji from 'moji'
 import {ChatMessageHistory} from "langchain/memory";
@@ -323,12 +323,27 @@ export async function getScore(chat: Chat) {
             }
         });
 
+        let res = null;
+        const maxRetries = 3;
+        let retries = 0;
+        const proceed = async ()=>{
+            try {
+                res = await langchainTools.chatSummarizer.invoke(
+                    {input_documents: docs},
+                );
+            } catch (e) {
+                retries++;
+                if (retries < maxRetries) {
+                    await reloadGroqProxy(model, fallbacksModels);
+                    await proceed();
+                }
+            }
+        }
 
-        const res = (await langchainTools.chatSummarizer.invoke({
-            input_documents: docs
-        })).text;
+        await proceed();
+
         console.log(res);
-
+        res = res.text;
         let fixedMsg = res;
 
         const startIndex = res.indexOf('{');
@@ -367,8 +382,13 @@ export async function getTranslate(content: string) {
             langchainTools.translator = await createTranslator();
         }
 
-        let buf = "";
-        try {
+
+
+        const maxRetries = 3;
+        let retries = 0;
+        const proceed = async ()=>{
+            let buf = "";
+
             const res = await langchainTools.translator.invoke(
                 {input: content},
                 {
@@ -387,11 +407,27 @@ export async function getTranslate(content: string) {
                             handleLLMEnd(token: any) {
                                 textStream.done();
                             },
+                            // async handleLLMError(e:any) {
+                            //     retries++;
+                            //     if (retries < maxRetries) {
+                            //         await reloadGroqProxy(model, fallbacksModels);
+                            //         await proceed();
+                            //     }
+                            // },
                         },
                     ],
-                });
+                }
+            );
+        }
+        try {
+            await proceed();
         } catch (e) {
             console.error(e);
+            retries++;
+            if (retries < maxRetries) {
+                await reloadGroqProxy(model, fallbacksModels);
+                await proceed();
+            }
         } finally {
         }
     });
