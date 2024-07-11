@@ -13,6 +13,7 @@ import {useScrollAnchor} from '@/lib/hooks/use-scroll-anchor'
 import * as React from "react";
 import {readStreamableValue} from "ai/rsc";
 import {CountdownCircleTimer} from "react-countdown-circle-timer";
+import {UserGuideButton} from "@/components/user-guide-button";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
@@ -243,19 +244,26 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
             />
 
             {/*  count down clock  */}
-            <div className={`${messages.length===0 && 'hidden'} fixed right-4 top-16`}>
-                <CountdownCircleTimer
-                    isPlaying
-                    size={72}
-                    strokeWidth={6}
-                    duration={remainingSecs}
-                    colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
-                    colorsTime={[10, 6, 3, 0]}
-                    onComplete={() => ({shouldRepeat: false, delay: 1})}
-                >
-                    {renderTime}
-                </CountdownCircleTimer>
-            </div>
+            {messages.length===0 ? (
+                <div className={`fixed top-2 right-4`}>
+                    <UserGuideButton/>
+                </div>
+            ):(
+                <div className={`fixed right-4 top-16 max-md:top-2 max-md:right-4`}>
+                    <CountdownCircleTimer
+                        isPlaying
+                        size={window.innerWidth <= 992 ? 48:72}
+                        strokeWidth={6}
+                        duration={remainingSecs}
+                        colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
+                        colorsTime={[10, 6, 3, 0]}
+                        onComplete={() => ({shouldRepeat: false, delay: 1})}
+                    >
+                        {renderTime}
+                    </CountdownCircleTimer>
+                </div>
+            )}
+
         </div>
     )
 }

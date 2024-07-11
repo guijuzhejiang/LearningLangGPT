@@ -556,6 +556,8 @@ export function PromptForm({
                 responseMessage.display.ref = lastMsgRef;
                 setMessages(currentMessages => [...currentMessages, responseMessage])
                 setLastMessage(responseMessage);
+
+                inputRef.current.focus();
             }}
         >
             {/*// className="peer absolute inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]"*/}
@@ -699,7 +701,7 @@ export function PromptForm({
                         <Button
                             variant="outline"
                             size="icon"
-                            className="absolute left-0 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
+                            className="absolute left-0 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4 z-50"
                             onClick={() => {
                                 router.push('/new')
                             }}
@@ -730,7 +732,7 @@ export function PromptForm({
                 />
 
                 {/* 右边div */}
-                <div className="absolute right-0 top-[13px] sm:right-4 z-50">
+                <div className="absolute right-0 top-[13px] sm:right-4 z-40">
                     <div className={"z-50 absolute -right-1 -top-12 sm:-right-0 flex gap-1"}>
                         {/*提示*/}
                         <Tooltip>
@@ -854,7 +856,7 @@ export function PromptForm({
                 </div>
 
                 <div
-                    className={`absolute z-50 left-0 top-0 w-full h-full bg-gray-300 bg-opacity-40 ${finished ? ('block') : ('hidden')}`}>
+                    className={`absolute z-40 left-0 top-0 w-full h-full bg-gray-300 bg-opacity-40 ${finished ? ('block') : ('hidden')}`}>
                 </div>
             </div>
         </form>

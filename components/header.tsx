@@ -12,7 +12,6 @@ import {SidebarMobile} from './sidebar-mobile'
 import {SidebarToggle} from './sidebar-toggle'
 import {ChatHistory} from './chat-history'
 import {Session} from '@/lib/types'
-import {UserGuideButton} from "@/components/user-guide-button";
 
 async function UserOrLogin() {
     const session = (await auth()) as Session
@@ -83,9 +82,9 @@ export async function Header() {
                     </React.Suspense>
                 </div>
                 <div className="flex items-center justify-end space-x-2">
-                    <React.Suspense>
-                        <UserGuideButton/>
-                    </React.Suspense>
+                    {/*<React.Suspense>*/}
+                    {/*    <UserGuideButton/>*/}
+                    {/*</React.Suspense>*/}
                 </div>
             </header>
         </>
