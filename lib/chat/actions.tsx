@@ -90,7 +90,7 @@ async function createSummarizerForGetBgUrl() {
     })
 }
 
-async function getBgUrl(style: number | undefined) {
+async function getBgUrl(style: number | undefined, teacherGender) {
     'use server'
     try {
         // get info
@@ -144,10 +144,10 @@ async function getBgUrl(style: number | undefined) {
 
                 res = res.text;
                 console.log("bg_summary prompt:");
-                console.log(res);
+                console.log(teacherGender + ','+res);
 
                 const formData = new FormData();
-                formData.append('prompt', res);
+                formData.append('prompt', teacherGender + ','+res);
                 formData.append('user_id', userId);
                 formData.append('mlen', msgs.length);
                 formData.append('chat_id', chatId);

@@ -79,7 +79,7 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
                         setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
                     } else {
                         let bgRes = null;
-                        const bgStream = await getBgUrl(backgroundStyleRef?.current?.backgroundStyle);
+                        const bgStream = await getBgUrl(backgroundStyleRef?.current?.backgroundStyle, chatParams.teacherGender);
                         // console.log("bgStream");
                         for await (const delta of readStreamableValue(bgStream)) {
                             if (typeof delta === 'string' && delta.length >0) {

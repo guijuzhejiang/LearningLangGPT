@@ -54,6 +54,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
       <Chat
         id={chat.id}
         session={session}
+        chatParams={chat.chatParams}
         initialMessages={chat.messages}
         remainingSecs={typeof remainingSecs === 'number'?remainingSecs:60*6}
         missingKeys={missingKeys}
