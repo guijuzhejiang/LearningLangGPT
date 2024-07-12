@@ -18,6 +18,7 @@ export default function LoginForm() {
     const [curLoginMethod, setCurLoginMethod] = useState('wechat')
     const [code, setCode] = useState('')
     const [state, setState] = useState('')
+    const [isPC, setIsPC] = useState(false)
     const iframeRef = useRef(null)
     const wechatReqUrl = `https://www.guijutech.com/service/wechat/login`;
     const wechatLoginContainerID = "wechatLoginContainer";
@@ -62,125 +63,140 @@ export default function LoginForm() {
     }, [code])
 
     useEffect(() => {
-        const wxState = generateRandomName(8);
-        setState(wxState)
-        new window.WxLogin({
-            self_redirect: true,
-            id: wechatLoginContainerID,
-            appid: process.env.WECHAT_LOGIN_APPID,
-            scope: 'snsapi_login', // 写死，网页应用暂时只支持这个值
-            redirect_uri: `https://zs.guijutech.com/learninglang/login/wechat`, // 扫码成功后重定向地址
-            state: wxState// 随机字符串
-            // href: initialState?.isLandscape ? '': location.origin + '/WechatWebLogin.css', // 随机字符串
-        });
+        let ua = navigator.userAgent,
+            isWindowsPhone = /(?:Windows Phone)/.test(ua),
+            isSymbian = /(?:SymbianOS)/.test(ua) || isWindowsPhone,
+            isAndroid = /(?:Android)/.test(ua),
+            isFireFox = /(?:Firefox)/.test(ua),
+            isChrome = /(?:Chrome|CriOS)/.test(ua),
+            isTablet = /(?:iPad|PlayBook)/.test(ua) || (isAndroid && !/(?:Mobile)/.test(ua)) || (isFireFox && /(?:Tablet)/.test(ua)),
+            isPhone = /(?:iPhone)/.test(ua) && !isTablet,
+            isPc = !isPhone && !isAndroid && !isSymbian;
+            setIsPC(isPc);
+        setCurLoginMethod(isPc ?  'wechat':'account')
 
-        const iframe = document.getElementById(wechatLoginContainerID).querySelectorAll('iframe')[0]
-        iframe.addEventListener('load', async function (event) {
-            try {
-                const parsed = queryString.parse(iframe.contentWindow.location.search)
-                console.log(parsed);
-                setCode(parsed.code)
+        if (isPc) {
+            const wxState = generateRandomName(8);
+            setState(wxState)
+            new window.WxLogin({
+                self_redirect: true,
+                id: wechatLoginContainerID,
+                appid: process.env.WECHAT_LOGIN_APPID,
+                scope: 'snsapi_login', // 写死，网页应用暂时只支持这个值
+                redirect_uri: `https://zs.guijutech.com/learninglang/login/wechat`, // 扫码成功后重定向地址
+                state: wxState// 随机字符串
+                // href: initialState?.isLandscape ? '': location.origin + '/WechatWebLogin.css', // 随机字符串
+            });
 
-            } catch (e) {
-                console.log(e);
-            }
-        })
+            const iframe = document.getElementById(wechatLoginContainerID).querySelectorAll('iframe')[0]
+            iframe.addEventListener('load', async function (event) {
+                try {
+                    const parsed = queryString.parse(iframe.contentWindow.location.search)
+                    console.log(parsed);
+                    setCode(parsed.code)
+
+                } catch (e) {
+                    console.log(e);
+                }
+            })
+        }
 
     }, [])
 
     return (
         <div className={"w-full flex items-center justify-center"}>
-            <Tabs.Root
-                className="flex flex-col w-[26.5rem] items-center"
-                defaultValue="wechat"
-                onValueChange={(value)=>{
-                    setCurLoginMethod(value)
-                }}
-            >
-                <Tabs.List className="shrink-0 w-full flex rounded-b-md border-b shadow-md border-mauve6" aria-label="Manage your account">
-                    <Tabs.Trigger
-                        className="bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer"
+
+                <Tabs.Root
+                    className="flex flex-col w-[26.5rem] items-center"
+                    defaultValue={isPC ? "wechat":"account"}
+                    onValueChange={(value)=>{
+                        setCurLoginMethod(value)
+                    }}
+                >
+                    <Tabs.List className="shrink-0 w-full flex rounded-b-md border-b shadow-md border-mauve6" aria-label="Manage your account">
+                        <Tabs.Trigger
+                            className={`${!isPC && 'hidden'} bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer`}
+                            value="wechat"
+                        >
+                            微信
+                        </Tabs.Trigger>
+                        <Tabs.Trigger
+                            className="bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer"
+                            value="account"
+                        >
+                            账号密码
+                        </Tabs.Trigger>
+                    </Tabs.List>
+
+                    <Tabs.Content
+                        forceMount
+                        className={`${curLoginMethod!=='wechat' && 'hidden'} grow outline-none bg-white rounded-b-md flex justify-center w-full pt-4`}
                         value="wechat"
                     >
-                        微信
-                    </Tabs.Trigger>
-                    <Tabs.Trigger
-                        className="bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer"
+                        <div className={" bg-white"} id={wechatLoginContainerID} ref={iframeRef}>
+                        </div>
+                    </Tabs.Content>
+
+                    <Tabs.Content
+                        className={`${curLoginMethod!=='account' && 'hidden'} grow outline-none bg-white flex justify-center w-full border shadow-md pt-4`}
                         value="account"
                     >
-                        账号密码
-                    </Tabs.Trigger>
-                </Tabs.List>
-                <Tabs.Content
-                    forceMount
-                    className={`${curLoginMethod!=='wechat' && 'hidden'} grow outline-none bg-white rounded-b-md flex justify-center w-full pt-4`}
-                    value="wechat"
-                >
-                    <div className={" bg-white"} id={"wechatLoginContainer"} ref={iframeRef}>
-                    </div>
-                </Tabs.Content>
-                <Tabs.Content
-                    className={`${curLoginMethod!=='account' && 'hidden'} grow outline-none bg-white flex justify-center w-full border shadow-md pt-4`}
-                    value="account"
-                >
-                    <form
-                        action={dispatch}
-                    >
-                        <div
-                            className="w-full flex-1  bg-white px-6 md:w-96 dark:bg-zinc-950">
-                            <h1 className="mb-3 text-2xl font-bold">登录</h1>
-                            <div className="w-full">
-                                <div>
-                                    <label
-                                        className="mb-3 mt-5 block text-xs font-medium text-zinc-400"
-                                        htmlFor="email"
-                                    >
-                                        邮箱地址
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950"
-                                            id="email"
-                                            type="email"
-                                            name="email"
-                                            placeholder="输入你的邮箱地址"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <label
-                                        className="mb-3 mt-5 block text-xs font-medium text-zinc-400"
-                                        htmlFor="password"
-                                    >
-                                        密码
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950"
-                                            id="password"
-                                            type="password"
-                                            name="password"
-                                            placeholder="输入密码"
-                                            required
-                                            minLength={6}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <LoginButton/>
-                        </div>
-
-                        <Link
-                            href="/signup"
-                            className="flex flex-row gap-1 text-sm text-zinc-400 justify-center pb-2"
+                        <form
+                            action={dispatch}
                         >
-                            还没有账号? <div className="font-semibold underline">注册</div>
-                        </Link>
-                    </form>
-                </Tabs.Content>
-            </Tabs.Root>
+                            <div
+                                className="w-full flex-1  bg-white px-6 md:w-96 dark:bg-zinc-950 pb-2">
+                                <div className="w-full">
+                                    <div>
+                                        <label
+                                            className="mb-3 mt-5 block text-xs font-medium text-zinc-400"
+                                            htmlFor="email"
+                                        >
+                                            邮箱地址
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950"
+                                                id="email"
+                                                type="email"
+                                                name="email"
+                                                placeholder="输入你的邮箱地址"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="mt-4">
+                                        <label
+                                            className="mb-3 mt-5 block text-xs font-medium text-zinc-400"
+                                            htmlFor="password"
+                                        >
+                                            密码
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                className="peer block w-full rounded-md border bg-zinc-50 px-2 py-[9px] text-sm outline-none placeholder:text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950"
+                                                id="password"
+                                                type="password"
+                                                name="password"
+                                                placeholder="输入密码"
+                                                required
+                                                minLength={6}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <LoginButton/>
+                            </div>
 
+                            <Link
+                                href="/signup"
+                                className="flex flex-row gap-1 text-sm text-zinc-400 justify-center pb-2"
+                            >
+                                还没有账号? <div className="font-semibold underline">注册</div>
+                            </Link>
+                        </form>
+                    </Tabs.Content>
+                </Tabs.Root>
         </div>
     )
 }

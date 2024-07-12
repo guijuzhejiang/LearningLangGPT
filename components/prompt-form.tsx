@@ -118,7 +118,13 @@ export function PromptForm({
     }
 
     const handleUseHint = async (e) => {
-        e.preventDefault();
+        try {
+            e.preventDefault();
+
+        } catch (e) {
+
+        }
+
         if (voiceContinuationEnable) {
             setHintContent('');
             setShowTranslate(false);
