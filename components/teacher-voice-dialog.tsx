@@ -170,7 +170,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                             </div>
                         </Dialog.Description>
 
-                        <div className="grid grid-cols-5 gap-2">
+                        <div className="grid grid-cols-5 gap-2 max-md:grid-cols-2">
                             {
                                 Object.entries(teachers[dialogTeacherGender]).map(([key, value], i) => {
                                     return (
