@@ -7,7 +7,7 @@ import type {AI} from '@/lib/chat/actions'
 import {usePathname} from "next/navigation";
 import {TeacherVoiceDialog} from "@/components/teacher-voice-dialog";
 import {Session} from "@/lib/types";
-import {cn} from "@/lib/utils";
+import {cacheUserCookies, cn} from "@/lib/utils";
 import {IconArrowDown} from "@/components/ui/icons";
 import {Button} from "@/components/ui/button";
 import {nanoid} from "nanoid";
@@ -102,7 +102,7 @@ export function ChatPanel({
                             setChatOpacity={setChatOpacity}
                             backgroundStyleRef={backgroundStyleRef}
                             chatId={id}
-                            userId={session ? session.user.id : 'default'}
+                            userId={session?.user?.id ? session.user.id : 'default'}
                             remainingSecs={remainingSecs}
                             handleBg={handleBg}
                         />
@@ -132,6 +132,8 @@ export function ChatPanel({
                                     lang: langDialogRef?.current.lang,
                                     level: levelDialogRef?.current.level,
                                 }
+
+                                cacheUserCookies(session?.user?.id ? session?.user?.id:"default", id, chatParams)
                                 const responseMessage = await submitUserMessage(
                                     sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message.replaceAll('{lang}', sceneDialogRef?.current.ChineseLangs[langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"]),
                                     chatParams,

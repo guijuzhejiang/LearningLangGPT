@@ -7,7 +7,6 @@ import {Cross2Icon} from '@radix-ui/react-icons';
 import {usePathname} from "next/navigation";
 import {updateUserCookies, loadUserCookies, stopAllAudio} from "@/lib/utils";
 import {forwardRef, useImperativeHandle} from "react";
-import {LangDialog} from "@/components/lang-dialog";
 interface ChatShareDialogProps extends DialogProps {
     userId: string
 }

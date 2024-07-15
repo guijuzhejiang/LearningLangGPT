@@ -164,18 +164,25 @@ export function arrayBufferToAudioBuffer(arrayBuffer, context) {
 }
 
 export function cacheUserCookies(uid:string, cid:string, userData: ChatParams) {
-    const userSession = Cookies.get(`chat_${uid}_${cid}`)
-    Cookies.set(`chat_${uid}_${cid}`, JSON.stringify(userData), { expires: 365 });
+    Cookies.set(uid==="default"? "chat_default":`chat_${uid}_${cid}`, JSON.stringify(userData), { expires: 365 });
 }
 
 export function loadCacheUserCookies(uid:string, cid:string) {
-    const userSession = Cookies.get(`chat_${uid}_${cid}`)
-    console.log("asdasdxcaedfgeqg");
+    const userSession = Cookies.get(uid==="default"? "chat_default":`chat_${uid}_${cid}`)
+    // console.log("asdasdxcaedfgeqg");
+    // console.log(uid);
+    // console.log(cid);
     if (userSession) {
         console.log(JSON.parse(userSession));
 
     }
-    return userSession ? JSON.parse(userSession) : null;
+    return userSession ? JSON.parse(userSession) : {
+        teacherName: "Mary",
+        teacherGender: "female",
+        scene: 0,
+        lang: "English",
+        level: 0,
+    };
 }
 
 const defaultConfig = {

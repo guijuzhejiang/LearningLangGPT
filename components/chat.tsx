@@ -32,7 +32,6 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
     const [bgUrl, setBgUrl] = React.useState('')
     const {getBgUrl} = useActions();
     const backgroundStyleRef = React.useRef(null);
-    const childDivRef = React.useRef(null);
     const [chatOpacity, setChatOpacity] = React.useState(1)
     const [remainingTime, setRemainingTime] = React.useState(remainingSecs)
 

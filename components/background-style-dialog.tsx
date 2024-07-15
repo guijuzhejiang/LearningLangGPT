@@ -19,7 +19,7 @@ interface ChatShareDialogProps extends DialogProps {
     setChatOpacity?: (value: number) => void
 }
 
-export const BackgroundDialogDialog = forwardRef(({userId,
+export const BackgroundDialog = forwardRef(({userId,
                                                       hide,
                                                       chatOpacity,
                                                       setChatOpacity,
@@ -233,5 +233,5 @@ export const BackgroundDialogDialog = forwardRef(({userId,
     )
 });
 
-BackgroundDialogDialog.displayName = "BackgroundDialogDialog";
+BackgroundDialog.displayName = "BackgroundDialog";
 

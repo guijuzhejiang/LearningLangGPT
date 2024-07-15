@@ -19,7 +19,6 @@ import {
     IconPlayMedia,
     IconTranslate,
     IconStop,
-    IconScoreSheet,
     IconExit,
     IconBackground
 } from '@/components/ui/icons'
@@ -39,7 +38,7 @@ import {spinner} from "@/components/stocks";
 import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
 import {getChat, saveCountDown} from "@/app/actions";
-import {BackgroundDialogDialog} from "@/components/background-style-dialog";
+import {BackgroundDialog} from "@/components/background-style-dialog";
 
 
 export interface PromptFormProps {
@@ -537,6 +536,7 @@ export function PromptForm({
             ref={formRef}
             onSubmit={async (e: any) => {
                 e.preventDefault()
+                setChatOpacity(1);
                 setHintContent('');
                 setShowTranslate(false);
                 // Blur focus on mobile
@@ -568,7 +568,7 @@ export function PromptForm({
         >
             {/*// className="peer absolute inset-y-0 z-30 hidden -translate-x-full border-r bg-muted duration-300 ease-in-out data-[state=open]:translate-x-0 lg:flex lg:w-[250px] xl:w-[300px]"*/}
             <div onKeyDown={handleKeyDown} className={`${(showHint && messages.length > 1) ? '':'hidden'} relative duration-300 ease-in-out mb-4 grid gap-2 px-4 sm:px-0`}>
-                <div className={"z-40 absolute right-2 -top-3 sm:right-3"}>
+                <div  className={"z-40 absolute right-2 -top-3 sm:right-3"}>
                     {/* 播放 tts */}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -723,6 +723,7 @@ export function PromptForm({
                 <Textarea
                     ref={inputRef}
                     tabIndex={0}
+                    onFocus={()=>{setChatOpacity(1)}}
                     onKeyDown={onKeyDown}
                     disabled={micOn ? STTIng : false}
                     placeholder={voiceContinuationEnable ? "正在听..." : "发送消息."}
@@ -770,7 +771,7 @@ export function PromptForm({
                         </Tooltip>
 
                         {/*改变背景风格*/}
-                        <BackgroundDialogDialog
+                        <BackgroundDialog
                             userId={userId}
                             chatOpacity={chatOpacity}
                             setChatOpacity={setChatOpacity}
