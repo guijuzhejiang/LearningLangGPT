@@ -11,7 +11,7 @@ import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {spinner} from "@/components/stocks";
 import {toast} from "sonner";
-import Image from 'next/image'
+import {Scrollbars} from 'react-custom-scrollbars';
 import {forwardRef, useImperativeHandle} from "react";
 interface ChatShareDialogProps extends DialogProps {
     userId: string
@@ -169,108 +169,117 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                                 </Button>
                             </div>
                         </Dialog.Description>
+                        <Scrollbars
+                            autoHeight
+                            autoWidthMin={'50vw'}
+                            autoHeightMax={'75vh'}
+                        >
+                            <div className="grid grid-cols-5 gap-2 max-md:grid-cols-2">
+                                {
+                                    Object.entries(teachers[dialogTeacherGender]).map(([key, value], i) => {
+                                        return (
+                                            <div key={`teacher${key}`}>
+                                                <Dialog.Close asChild>
+                                                    <button
+                                                        className={`${teachers[teacherGender][teacherName].name === value.name && ('border-4 border-green5')} hover:border-4 hover:border-green5 m-2 btn btn-secondary`}
+                                                        onClick={(e) => {
+                                                            setTeacherName(key);
+                                                            setTeacherGender(dialogTeacherGender);
 
-                        <div className="grid grid-cols-5 gap-2 max-md:grid-cols-2">
-                            {
-                                Object.entries(teachers[dialogTeacherGender]).map(([key, value], i) => {
-                                    return (
-                                        <div key={`teacher${key}`}>
-                                            <Dialog.Close asChild>
-                                                <button
-                                                    className={`${teachers[teacherGender][teacherName].name===value.name && ('border-4 border-green5')} hover:border-4 hover:border-green5 m-2 btn btn-secondary`}
-                                                    onClick={(e) => {
-                                                        setTeacherName(key);
-                                                        setTeacherGender(dialogTeacherGender);
+                                                            // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
+                                                            updateUserCookies(userId, "teacherName", key)
+                                                            updateUserCookies(userId, "teacherGender", dialogTeacherGender)
+                                                        }}>
+                                                        {/*<Image src={`/images/teacher/${teacherGender}/${value.name}.webp`} width={64} height={64}/>*/}
+                                                        <img style={{width: '100%'}}
+                                                             src={`/learninglang/images/teacher/${dialogTeacherGender}/${value.name}.webp`}
+                                                             alt={value.name}/>
+                                                    </button>
+                                                </Dialog.Close>
+                                                <div className={"flex items-center break-all w-full p-2"}>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className={`${value["readingLoud"][0] && value['canPlayThrough'][0] && ('tts-btn-stop')} bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
+                                                                onClick={() => {
+                                                                    stopAllAudio();
+                                                                    value["readingLoud"][1](!value["readingLoud"][0]);
 
-                                                        // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
-                                                        updateUserCookies(userId, "teacherName", key)
-                                                        updateUserCookies(userId, "teacherGender", dialogTeacherGender)
-                                                    }}>
-                                                    {/*<Image src={`/images/teacher/${teacherGender}/${value.name}.webp`} width={64} height={64}/>*/}
-                                                    <img style={{width: '100%'}}
-                                                         src={`/learninglang/images/teacher/${dialogTeacherGender}/${value.name}.webp`} alt={value.name}/>
-                                                </button>
-                                            </Dialog.Close>
-                                            <div className={"flex items-center break-all w-full p-2"}>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="icon"
-                                                            className={`${value["readingLoud"][0] && value['canPlayThrough'][0] && ('tts-btn-stop')} bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
-                                                            onClick={() => {
-                                                                stopAllAudio();
-                                                                value["readingLoud"][1](!value["readingLoud"][0]);
-
-                                                                if (value['canPlayThrough'][0]) {
-                                                                    // console.log(audioRef.current);
-                                                                    if (!value["readingLoud"][0]) {
-                                                                        value["audioRef"].current.play();
+                                                                    if (value['canPlayThrough'][0]) {
+                                                                        // console.log(audioRef.current);
+                                                                        if (!value["readingLoud"][0]) {
+                                                                            value["audioRef"].current.play();
+                                                                        } else {
+                                                                            value["audioRef"].current.pause();
+                                                                            value["audioRef"].current.currentTime = 0;
+                                                                        }
                                                                     } else {
-                                                                        value["audioRef"].current.pause();
-                                                                        value["audioRef"].current.currentTime = 0;
-                                                                    }
-                                                                } else {
-                                                                    const formData = new FormData();
-                                                                    formData.append('text', `Hello!I'm ${key},your English teacher.`);
-                                                                    const startTime = performance.now();
+                                                                        const formData = new FormData();
+                                                                        formData.append('text', `Hello!I'm ${key},your English teacher.`);
+                                                                        const startTime = performance.now();
 
-                                                                    // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
-                                                                    // const session = (await auth()) as Session
-                                                                    value['canPlayThrough'][1](false);
+                                                                        // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
+                                                                        // const session = (await auth()) as Session
+                                                                        value['canPlayThrough'][1](false);
 
-                                                                    formData.append('teacher_name', key);
-                                                                    formData.append('teacher_gender', dialogTeacherGender);
-                                                                    fetch(`${process.env.TTS_URL}`, {
-                                                                        method: 'POST',
-                                                                        body: formData
-                                                                    })
-                                                                        .then(response => {
-                                                                            if (response.ok) {
-                                                                                return response.text();
-                                                                            } else {
+                                                                        formData.append('teacher_name', key);
+                                                                        formData.append('teacher_gender', dialogTeacherGender);
+                                                                        fetch(`${process.env.TTS_URL}`, {
+                                                                            method: 'POST',
+                                                                            body: formData
+                                                                        })
+                                                                            .then(response => {
+                                                                                if (response.ok) {
+                                                                                    return response.text();
+                                                                                } else {
+                                                                                    toast.error('Failed to generate voice');
+                                                                                }
+                                                                            })
+                                                                            .then(wavBuffer => {
+                                                                                // const wavData = new Uint8Array(wavBuffer);
+                                                                                // const wavUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+                                                                                value["audioRef"].current = new Audio("data:audio/wav;base64," + wavBuffer);
+                                                                                // onCanPlayThrough={e => {*/}
+                                                                                //     {/*                    setCanPlayThrough(true);*/}
+                                                                                //     {/*                }}*/}
+                                                                                //     {/*                onPause={e => setReadingLoud(false)}*/}
+                                                                                //     {/*                onEnded={e => setReadingLoud(false)}*/}
+                                                                                value["audioRef"].current.addEventListener('canplay', handleCanPlay);
+                                                                                value["audioRef"].current.addEventListener('pause', () => value["readingLoud"][1](false));
+                                                                                value["audioRef"].current.addEventListener('ended', () => value["readingLoud"][1](false));
+                                                                                value["audioRef"].current.addEventListener('canplaythrough', () => value['canPlayThrough'][1](true));
+                                                                                console.log("tts elapsed " + (performance.now() - startTime) + 'ms')
+                                                                            })
+                                                                            .catch(error => {
                                                                                 toast.error('Failed to generate voice');
-                                                                            }
-                                                                        })
-                                                                        .then(wavBuffer => {
-                                                                            // const wavData = new Uint8Array(wavBuffer);
-                                                                            // const wavUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
-                                                                            value["audioRef"].current = new Audio("data:audio/wav;base64,"+wavBuffer);
-                                                                            // onCanPlayThrough={e => {*/}
-                                                                            //     {/*                    setCanPlayThrough(true);*/}
-                                                                            //     {/*                }}*/}
-                                                                            //     {/*                onPause={e => setReadingLoud(false)}*/}
-                                                                            //     {/*                onEnded={e => setReadingLoud(false)}*/}
-                                                                            value["audioRef"].current.addEventListener('canplay', handleCanPlay);
-                                                                            value["audioRef"].current.addEventListener('pause', ()=> value["readingLoud"][1](false));
-                                                                            value["audioRef"].current.addEventListener('ended', ()=> value["readingLoud"][1](false));
-                                                                            value["audioRef"].current.addEventListener('canplaythrough', ()=> value['canPlayThrough'][1](true));
-                                                                            console.log("tts elapsed " + (performance.now() - startTime) + 'ms')
-                                                                        })
-                                                                        .catch(error => {
-                                                                            toast.error('Failed to generate voice');
-                                                                        });
-                                                                }
-                                                            }}
-                                                        >
-                                                            {value["readingLoud"][0] ? (
-                                                                value["canPlayThrough"][0] ? (<IconStop className="size-6"/>) : (spinner)
-                                                            ) : (
-                                                                <IconPlayMedia className="size-6"/>
-                                                            )}
-                                                            <span className="sr-only">{value["readingLoud"][0] ? ("停止") : ("朗读")}</span>
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>{value["readingLoud"][0] ? ("停止") : ("朗读")}</TooltipContent>
-                                                </Tooltip>
-                                                &nbsp;{value.name}
-                                            </div>
+                                                                            });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {value["readingLoud"][0] ? (
+                                                                    value["canPlayThrough"][0] ? (
+                                                                        <IconStop className="size-6"/>) : (spinner)
+                                                                ) : (
+                                                                    <IconPlayMedia className="size-6"/>
+                                                                )}
+                                                                <span
+                                                                    className="sr-only">{value["readingLoud"][0] ? ("停止") : ("朗读")}</span>
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>{value["readingLoud"][0] ? ("停止") : ("朗读")}</TooltipContent>
+                                                    </Tooltip>
+                                                    &nbsp;{value.name}
+                                                </div>
 
-                                        </div>
-                                    )
-                                })
-                            }
-                        </div>
+                                            </div>
+                                        )
+                                    })
+                                }
+                            </div>
+                        </Scrollbars>
+
 
                         {/*<div className="mt-16 flex justify-end">*/}
                         {/*    <Dialog.Close asChild>*/}

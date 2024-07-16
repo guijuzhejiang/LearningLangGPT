@@ -207,12 +207,12 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
         return () => window.removeEventListener('resize', handleResize);
     }, [])
 
-    const renderTime = ({ remainingTime }) => {
-        const currentTime = React.useRef(remainingTime);
-        const prevTime = React.useRef(null);
-        const isNewTimeFirstTick = React.useRef(false);
-        const [, setOneLastRerender] = React.useState(0);
+    const currentTime = React.useRef(remainingTime);
+    const prevTime = React.useRef(null);
+    const isNewTimeFirstTick = React.useRef(false);
+    const [, setOneLastRerender] = React.useState(0);
 
+    const renderTime = ({ remainingTime }) => {
         if (currentTime.current !== remainingTime) {
             isNewTimeFirstTick.current = true;
             prevTime.current = currentTime.current;
