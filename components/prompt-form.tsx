@@ -20,7 +20,7 @@ import {
     IconTranslate,
     IconStop,
     IconExit,
-    IconBackground
+    IconBackground, IconScoreSheet
 } from '@/components/ui/icons'
 import {
     Tooltip,
@@ -39,6 +39,8 @@ import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from
 import {useMicVAD, utils} from "@ray8716397/vad-react";
 import {getChat, saveCountDown} from "@/app/actions";
 import {BackgroundDialog} from "@/components/background-style-dialog";
+import {ScoreSheetDialog} from "@/components/score-sheet-dialog";
+import {Chat} from "@/lib/types";
 
 
 export interface PromptFormProps {
@@ -48,7 +50,9 @@ export interface PromptFormProps {
     chatOpacity?: number,
     setChatOpacity?: (value: number) => void,
     remainingSecs?: number,
+    setRemainingTime: (value: number) => void,
     handleBg?: ()=>void,
+    chat?: Chat
 }
 
 export function PromptForm({
@@ -58,7 +62,9 @@ export function PromptForm({
                                chatOpacity,
                                setChatOpacity,
                                remainingSecs,
-                               handleBg
+                               setRemainingTime,
+                               handleBg,
+                               chat
                            }: PromptFormProps) {
 
     const router = useRouter()
@@ -71,14 +77,14 @@ export function PromptForm({
     const [timerInterval, setTimerInterval] = React.useState<any>(null);
     const [lastMessage, setLastMessage] = React.useState<any>(null);
     const [hintContent, setHintContent] = React.useState<any>('');
-    const [showHint, setShowHint] = React.useState<boolean>(false);
+    const [showHint, setShowHint] = React.useState<boolean>(true);
     const [gettingHint, setGettingHint] = React.useState<boolean>(false);
     const [readingLoud, setReadingLoud] = React.useState<boolean>(false)
     const [canPlayThrough, setCanPlayThrough] = React.useState(false)
     const [canPlay, setCanPlay] = React.useState(false)
     const [transTexts, setTransTexts] = React.useState('')
     const [showTranslate, setShowTranslate] = React.useState(false);
-    const [finished, setFinished] = React.useState(false);
+    const [finished, setFinished] = React.useState(remainingSecs===0);
 
     const audioRef = React.useRef(null);
     const vadTimeoutMS = 120 * 1000;
@@ -271,12 +277,13 @@ export function PromptForm({
     const vad = useMicVAD({
         workletURL: '/learninglang/vad/vad.worklet.bundle.min.js',
         modelURL: '/learninglang/vad/silero_vad.onnx',
-        startOnLoad: true,
+        startOnLoad: remainingSecs!==0,
         positiveSpeechThreshold: 0.8,
         negativeSpeechThreshold: 0.8 - 0.15,
         minSpeechFrames: 3,
         preSpeechPadFrames: 1,
         redemptionFrames: parseInt(String(8)),
+        // onS
         onVADMisfire: () => {
             console.log('onVADMisfire')
         },
@@ -366,7 +373,7 @@ export function PromptForm({
                 }
             }
         } else {
-            userData = (await getChat(chatId, userId))?.chatParams;
+            userData = chat;
         }
 
         if (canPlay) {
@@ -786,21 +793,43 @@ export function PromptForm({
                                     size="icon"
                                     className={`${messages.length < 2 && 'hidden'} bg-gray-200 hover:bg-gray-50 size-6 rounded-full p-0`}
                                     onClick={async (e) => {
-                                        e.preventDefault();
-                                        stopAllAudio();
-                                        vad.stop();
-                                        setMicOn(false);
-                                        setVoiceContinuationEnable(false);
-                                        saveCountDown(chatId, 0);
-                                        router.push(`/summary/${chatId}`)
+                                        if (remainingSecs === 0) {
+                                            document.getElementById(`score-btn-${chatId}`)?.click();
+                                        } else {
+                                            setRemainingTime(0);
+                                            setFinished(true);
+                                            stopAllAudio();
+                                            vad.stop();
+                                            setMicOn(false);
+                                            setVoiceContinuationEnable(false);
+                                            saveCountDown(chatId, 0);
+                                        }
                                     }}
                                 >
-                                    <IconExit/>
+                                    {remainingSecs===0 ? (
+                                        <IconScoreSheet/>
+                                        ):(
+                                        <IconExit/>
+                                    )}
                                     <span className="sr-only">结束学习,查看评分</span>
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>结束学习,查看评分</TooltipContent>
                         </Tooltip>
+
+                        <button id={"continue-btn"}
+                                className={"hidden"}
+                                onClick={()=>{
+                                    setRemainingTime(360);
+                                    setFinished(false);
+                                    setShowHint(true);
+                                    handleUpdateHint(messages[messages.length - 1].display.ref ? messages[messages.length - 1].display.ref?.current?.text : messages[messages.length - 1].display.props.content);
+
+                                    setMicOn(true);
+                                    setVoiceContinuationEnable(false);
+                                }}
+                        />
+
                     </div>
 
                     {/*提交按钮*/}

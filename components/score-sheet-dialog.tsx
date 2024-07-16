@@ -2,33 +2,36 @@
 
 import * as React from 'react'
 import {type DialogProps} from '@radix-ui/react-dialog'
-import {IconScoreSheet} from '@/components/ui/icons'
+import {IconContinue, IconPlus, IconScoreSheet} from '@/components/ui/icons'
 import * as Dialog from '@radix-ui/react-dialog';
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {forwardRef, useImperativeHandle} from "react";
 import type {Chat} from "@/lib/types";
-import {getScore} from "@/app/actions";
+import {getCountDown, getScore, saveCountDown} from "@/app/actions";
 import {spinner} from "@/components/stocks";
+
 interface ChatShareDialogProps extends DialogProps {
     chat: Chat
-    isRemovePending: boolean
+    isRemovePending: boolean,
+    children: React.ReactNode
 }
+
 import {Scrollbars} from 'react-custom-scrollbars';
 import {Separator} from "@/components/ui/separator";
-import { Cross2Icon } from '@radix-ui/react-icons';
+import {Cross2Icon} from '@radix-ui/react-icons';
 import {ScoreSheet} from "@/components/score-sheet";
-import {usePathname} from "next/navigation";
 
 export const ScoreSheetDialog = forwardRef(({
                                                 chat,
                                                 isRemovePending,
-                                       ...props
-                                   }: ChatShareDialogProps, ref) => {
+                                                children,
+                                                ...props
+                                            }: ChatShareDialogProps, ref) => {
 
     const [summaryContent, setSummaryContent] = React.useState('')
     const [displayJSON, setDisplayJSON] = React.useState(false)
-    const path = usePathname();
+    const [remainingSecs, setRemainingSecs] = React.useState(0)
 
     // useImperativeHandle(ref, () => ({
     //     childMethod() {
@@ -48,13 +51,15 @@ export const ScoreSheetDialog = forwardRef(({
         <>
             <Dialog.Root
                 {...props}
-                onOpenChange={async (open)=>{
+                onOpenChange={async (open) => {
                     if (open) {
                         setDisplayJSON(false);
                         setSummaryContent('');
                         const res = await getScore(chat);
                         setDisplayJSON(typeof res === 'string')
                         setSummaryContent(res);
+
+                        setRemainingSecs(await getCountDown(chat.id))
                     }
                 }}
             >
@@ -62,16 +67,7 @@ export const ScoreSheetDialog = forwardRef(({
                     <span>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    className={`${chat.id === path.split('/').pop() ? 'curScoreSheetBtn':''} size-7 p-0 hover:bg-background`}
-                                    disabled={isRemovePending}
-                                    id={`score-btn-${chat.id}`}
-                                    // onClick={() => {}}
-                                >
-                                    <IconScoreSheet/>
-                                    <span className="sr-only">评分总结</span>
-                                </Button>
+                                {children}
                             </TooltipTrigger>
                             <TooltipContent>评分总结</TooltipContent>
                         </Tooltip>
@@ -85,26 +81,45 @@ export const ScoreSheetDialog = forwardRef(({
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
                             评分总结
                         </Dialog.Title>
-                        <Dialog.Description className="text-mauve11 mt-[10px] mb-1 text-[15px] leading-normal">
+                        <Dialog.Description>
+                            <Scrollbars
+                                // className={"pr-3"}
+                                autoHeight
+                                // autoHeightMin={'80vh'}
+                                autoHeightMax={'85vh'}
+                            >
+                                <div className={"pr-3"}>
+                                    <Separator className={"pt-0.5 mb-2"}/>
+
+                                    {displayJSON ? (
+                                        <p className="w-full whitespace-pre-line">
+                                            {summaryContent ? JSON.stringify(summaryContent) : spinner}
+                                        </p>
+                                    ) : (
+                                        <ScoreSheet summaryString={summaryContent} chat={chat}/>
+                                    )}
+                                </div>
+
+                            </Scrollbars>
                         </Dialog.Description>
 
-                        <Scrollbars
-                            // className={"pr-3"}
-                            autoHeight
-                            // autoHeightMin={'80vh'}
-                            autoHeightMax={'85vh'}
-                        >
-                            <Separator className={"pt-0.5 mb-2"} />
+                        <div
+                            className={`${remainingSecs>0 && "hidden"} mt-2 pr-3 float-right flex gap-2`}>
+                            <Dialog.Close asChild>
+                                <Button className={"w-full px-1 bg-amber-100 hover:bg-amber-200"} variant="outline"
+                                        size="icon"
+                                        onClick={async (e) => {
+                                            await saveCountDown(chat.id, 360)
+                                            // continueCB();
+                                            document.getElementById(`continue-btn`)?.click();
+                                        }}
+                                >
+                                    <IconContinue className={"size-8"}/>
+                                    <span className={"text-xl"}>&nbsp;继续学习(6分钟)</span>
+                                </Button>
+                            </Dialog.Close>
 
-                            {displayJSON ? (
-                                <p className="w-full whitespace-pre-line">
-                                    {summaryContent ? JSON.stringify(summaryContent) : spinner}
-                                </p>
-                            ):(
-                                <ScoreSheet summaryString={summaryContent} chat={chat}/>
-                            )}
-
-                        </Scrollbars>
+                        </div>
 
                         <Dialog.Close asChild>
                             <button

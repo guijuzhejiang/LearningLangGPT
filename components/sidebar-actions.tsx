@@ -1,6 +1,6 @@
 'use client'
 
-import {useRouter} from 'next/navigation'
+import {usePathname, useRouter} from 'next/navigation'
 import * as React from 'react'
 import { toast } from 'sonner'
 import { ServerActionResult, type Chat } from '@/lib/types'
@@ -15,7 +15,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import {IconSpinner, IconTrash} from '@/components/ui/icons'
+import {IconScoreSheet, IconSpinner, IconTrash} from '@/components/ui/icons'
 import {
   Tooltip,
   TooltipContent,
@@ -36,12 +36,24 @@ export function SidebarActions({
   const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [isRemovePending, startRemoveTransition] = React.useTransition()
+  const path = usePathname();
 
   return (
     <>
       <div className="">
         {/* score sheet */}
-        <ScoreSheetDialog chat={chat} isRemovePending={isRemovePending}/>
+        <ScoreSheetDialog chat={chat} isRemovePending={isRemovePending}>
+          <Button
+              variant="ghost"
+              className={`${chat.id === path.split('/').pop() ? 'curScoreSheetBtn':''} size-7 p-0 hover:bg-background`}
+              disabled={isRemovePending}
+              id={`score-btn-${chat.id}`}
+              // onClick={() => {}}
+          >
+            <IconScoreSheet/>
+            <span className="sr-only">评分总结</span>
+          </Button>
+        </ScoreSheetDialog>
 
         <Tooltip>
           <TooltipTrigger asChild>

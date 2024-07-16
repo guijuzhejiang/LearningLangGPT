@@ -24,9 +24,9 @@ export function EmptyScreen() {
         <p className="leading-normal text-muted-foreground">
           你可以随时随地与一位幽默风趣、耐心十足的外语老师对话。无论你说中文还是英文,它都能用纯正流利的外语来回应,循循善诱地帮你练习口语。
         </p>
-        <p className="leading-normal text-muted-foreground flex ">
-          <span>点击按钮</span><span><IconVoiceContinuation /></span><span>后可自动发送语音。</span>
-        </p>
+        {/*<p className="leading-normal text-muted-foreground flex ">*/}
+        {/*  <span>点击按钮</span><span><IconVoiceContinuation /></span><span>后可自动发送语音。</span>*/}
+        {/*</p>*/}
       </div>
     </div>
   )

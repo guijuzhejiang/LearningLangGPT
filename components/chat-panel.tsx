@@ -6,7 +6,7 @@ import {useActions, useUIState} from 'ai/rsc'
 import type {AI} from '@/lib/chat/actions'
 import {usePathname} from "next/navigation";
 import {TeacherVoiceDialog} from "@/components/teacher-voice-dialog";
-import {Session} from "@/lib/types";
+import {Chat, Session} from "@/lib/types";
 import {cacheUserCookies, cn} from "@/lib/utils";
 import {IconArrowDown} from "@/components/ui/icons";
 import {Button} from "@/components/ui/button";
@@ -24,9 +24,11 @@ export interface ChatPanelProps {
     scrollToBottom: () => void,
     backgroundStyleRef: React.Ref<any>,
     chatOpacity: number,
-    setChatOpacity: (value: number) => void
+    setChatOpacity: (value: number) => void,
     remainingSecs: number,
+    setRemainingTime: (value: number) => void,
     handleBg: ()=>void,
+    chat: Chat,
 }
 
 export function ChatPanel({
@@ -38,7 +40,9 @@ export function ChatPanel({
                               chatOpacity,
                               setChatOpacity,
                               remainingSecs,
-                              handleBg
+                              setRemainingTime,
+                              handleBg,
+                              chat
                           }: ChatPanelProps) {
     const [messages, setMessages] = useUIState<typeof AI>();
     const {submitUserMessage} = useActions();
@@ -104,7 +108,9 @@ export function ChatPanel({
                             chatId={id}
                             userId={session?.user?.id ? session.user.id : 'default'}
                             remainingSecs={remainingSecs}
+                            setRemainingTime={setRemainingTime}
                             handleBg={handleBg}
+                            chat={chat}
                         />
                     ) : (
                         <Button
@@ -146,7 +152,7 @@ export function ChatPanel({
                                 ])
                             }}
                         >
-                            <span>开始</span>
+                            <span>开始(6分钟)</span>
                         </Button>
                     )}
                     {/*<FooterText className="hidden sm:block" />*/}

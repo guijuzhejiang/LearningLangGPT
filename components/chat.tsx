@@ -14,16 +14,18 @@ import * as React from "react";
 import {readStreamableValue} from "ai/rsc";
 import {CountdownCircleTimer} from "react-countdown-circle-timer";
 import {UserGuideButton} from "@/components/user-guide-button";
+import {Chat} from "@/lib/types";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
+    chat?: Chat
     id?: string
     session?: Session
     chatParams: ChatParams
     remainingSecs: number
 }
 
-export function Chat({id, className, session, chatParams, remainingSecs}: ChatProps) {
+export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) {
     const router = useRouter();
     const path = usePathname();
     const [messages, setMessages] = useUIState();
@@ -34,6 +36,11 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
     const backgroundStyleRef = React.useRef(null);
     const [chatOpacity, setChatOpacity] = React.useState(1)
     const [remainingTime, setRemainingTime] = React.useState(remainingSecs)
+    const [windowSize, setWindowSize] = React.useState({
+        width: window.innerWidth,
+        height: window.innerHeight,
+    })
+
 
     const handleCheckBg = async () => {
         try {
@@ -117,6 +124,12 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
     }, [id, path, session?.user, messages]);
 
     useEffect(() => {
+        console.log("remainingTime");
+        console.log(remainingTime);
+
+    }, [remainingTime]);
+
+    useEffect(() => {
         console.log("messages count " + messages.length);
         console.log(messages)
 
@@ -175,21 +188,81 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
     })
 
     useEffect(() => {
+        const handleResize = () => {
+            setWindowSize({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
+        };
+
+        window.addEventListener('resize', handleResize);
+
         ;(async () => {
             if (session?.user) {
                 setBgUrl(`${process.env.SD_URL}/learninglang/image/fetch?&uid=${session.user.id}&cid=${id}&mlen=${messages.length<8?4:messages.length%8===0?messages.length:(messages.length-(messages.length%8))}`);
             }
         })();
+
+        // 在组件卸载时移除事件监听器
+        return () => window.removeEventListener('resize', handleResize);
     }, [])
 
     const renderTime = ({ remainingTime }) => {
-        setRemainingTime(remainingTime);
+        const currentTime = React.useRef(remainingTime);
+        const prevTime = React.useRef(null);
+        const isNewTimeFirstTick = React.useRef(false);
+        const [, setOneLastRerender] = React.useState(0);
+
+        if (currentTime.current !== remainingTime) {
+            isNewTimeFirstTick.current = true;
+            prevTime.current = currentTime.current;
+            currentTime.current = remainingTime;
+        } else {
+            isNewTimeFirstTick.current = false;
+        }
+
+        // force one last re-render when the time is over to tirgger the last animation
+        if (remainingTime === 0) {
+            setTimeout(() => {
+                setOneLastRerender((val) => val + 1);
+            }, 20);
+        }
+
+        const isTimeUp = isNewTimeFirstTick.current;
+
         return (
-            <div className={`${messages.length===0 && 'hidden'} timer flex`}>
-                {/*<div className="text">剩下</div>*/}
-                <div style={{fontFamily:"Montserrat"}} className="value text-xl font-bold">{remainingTime}</div>
-                {/*<div className="text">秒</div>*/}
+            // <div className={`${messages.length === 0 && 'hidden'} timer text-center`}>
+            //     <div className="text text-xs max-md:hidden">剩余时间:</div>
+            //     <div key={remainingTime} className={`time-wrapper time ${isTimeUp ? "up" : ""}`}>
+            //         <div style={{fontFamily: "Montserrat"}}
+            //              className="value text-xl font-bold">{remainingTime >= 0 ? remainingTime : 0}s
+            //         </div>
+            // //     </div>
+            //     {prevTime.current !== null && (
+            //         <div
+            //             key={prevTime.current}
+            //             className={`time ${!isTimeUp ? "down" : ""}`}
+            //         >
+            //             <div style={{fontFamily: "Montserrat"}}
+            //                  className="value text-xl font-bold">{prevTime.current}s
+            //             </div>
+            //         </div>
+            //     )}
+            // </div>
+
+        <div className={`${messages.length === 0 && 'hidden'} timer text-center`}>
+            <div className="text text-xs max-md:hidden">剩余时间:</div>
+            <div style={{fontFamily: "Montserrat"}}
+                 className="value text-xl font-bold flex">
+                <div key={remainingTime} className={`w-full time-wrapper`}>
+                    <div className={`time`}>
+                        {remainingTime >= 0 ? remainingTime : 0}
+                    </div>
+                </div>
+                <div className={"max-md:hidden"}>s</div>
             </div>
+            {/*<div className="text">秒</div>*/}
+        </div>
         );
     };
 
@@ -233,8 +306,9 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
                 chatOpacity={chatOpacity}
                 setChatOpacity={setChatOpacity}
                 remainingSecs={remainingTime}
+                setRemainingTime={setRemainingTime}
                 handleBg={handleBg}
-                // voiceContinuationEnable={voiceContinuationEnable}
+                chat={chat}
                 // setVoiceContinuationEnable={setVoiceContinuationEnable}
                 // userSpeakLately={userSpeakLately}
                 // setUserSpeakLately={setUserSpeakLately}
@@ -248,12 +322,12 @@ export function Chat({id, className, session, chatParams, remainingSecs}: ChatPr
                     <UserGuideButton/>
                 </div>
             ):(
-                <div className={`fixed right-4 top-16 max-md:top-2 max-md:right-4`}>
+                <div key={remainingTime} className={`fixed right-4 top-16 max-md:top-2 max-md:right-4`}>
                     <CountdownCircleTimer
-                        isPlaying
-                        size={window.innerWidth <= 992 ? 48:72}
-                        strokeWidth={6}
-                        duration={remainingSecs}
+                        isPlaying={remainingTime!==0}
+                        size={windowSize.width <= 992 ? 50:76}
+                        strokeWidth={5}
+                        duration={remainingTime}
                         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
                         colorsTime={[10, 6, 3, 0]}
                         onComplete={() => ({shouldRepeat: false, delay: 1})}
