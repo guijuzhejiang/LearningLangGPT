@@ -35,7 +35,8 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
     const {getBgUrl} = useActions();
     const backgroundStyleRef = React.useRef(null);
     const [chatOpacity, setChatOpacity] = React.useState(1)
-    const [remainingTime, setRemainingTime] = React.useState(remainingSecs)
+    const [chatRemainingTime, setChatRemainingTime] = React.useState(remainingSecs)
+    const [reRenderCountDownKey, setReRenderCountDownKey] = React.useState(0)
     const [windowSize, setWindowSize] = React.useState({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -123,11 +124,11 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
 
     }, [id, path, session?.user, messages]);
 
-    useEffect(() => {
-        console.log("remainingTime");
-        console.log(remainingTime);
-
-    }, [remainingTime]);
+    // useEffect(() => {
+    //     console.log("chatRemainingTime");
+    //     console.log(chatRemainingTime);
+    //
+    // }, [chatRemainingTime]);
 
     useEffect(() => {
         console.log("messages count " + messages.length);
@@ -207,10 +208,19 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
         return () => window.removeEventListener('resize', handleResize);
     }, [])
 
-    const currentTime = React.useRef(remainingTime);
+
+
+    const currentTime = React.useRef(chatRemainingTime);
     const prevTime = React.useRef(null);
     const isNewTimeFirstTick = React.useRef(false);
     const [, setOneLastRerender] = React.useState(0);
+
+    useEffect(() => {
+        setChatRemainingTime(currentTime.current);
+        if (currentTime?.current === 60*6) {
+            setReRenderCountDownKey(reRenderCountDownKey+1)
+        }
+    }, [currentTime?.current])
 
     const renderTime = ({ remainingTime }) => {
         if (currentTime.current !== remainingTime) {
@@ -313,8 +323,8 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
                 scrollToBottom={scrollToBottom}
                 chatOpacity={chatOpacity}
                 setChatOpacity={setChatOpacity}
-                remainingSecs={remainingTime}
-                setRemainingTime={setRemainingTime}
+                remainingSecs={chatRemainingTime}
+                setChatRemainingTime={setChatRemainingTime}
                 handleBg={handleBg}
                 chat={chat}
                 // setVoiceContinuationEnable={setVoiceContinuationEnable}
@@ -330,12 +340,12 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
                     <UserGuideButton/>
                 </div>
             ):(
-                <div key={remainingTime} className={`fixed right-4 top-16 max-md:top-2 max-md:right-4`}>
+                <div key={chatRemainingTime} className={`fixed right-4 top-16 max-md:top-2 max-md:right-4`}>
                     <CountdownCircleTimer
-                        isPlaying={remainingTime!==0}
+                        isPlaying={chatRemainingTime!==0}
                         size={windowSize.width <= 992 ? 50:76}
                         strokeWidth={5}
-                        duration={remainingTime}
+                        duration={chatRemainingTime}
                         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
                         colorsTime={[10, 6, 3, 0]}
                         onComplete={() => ({shouldRepeat: false, delay: 1})}

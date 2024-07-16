@@ -50,7 +50,7 @@ export interface PromptFormProps {
     chatOpacity?: number,
     setChatOpacity?: (value: number) => void,
     remainingSecs?: number,
-    setRemainingTime: (value: number) => void,
+    setChatRemainingTime: (value: number) => void,
     handleBg?: ()=>void,
     chat?: Chat
 }
@@ -62,7 +62,7 @@ export function PromptForm({
                                chatOpacity,
                                setChatOpacity,
                                remainingSecs,
-                               setRemainingTime,
+                               setChatRemainingTime,
                                handleBg,
                                chat
                            }: PromptFormProps) {
@@ -186,6 +186,7 @@ export function PromptForm({
     }, [voiceText]);
 
     useEffect(() => {
+        console.log(remainingSecs)
         if (remainingSecs === 0) {
             setMicOn(false);
             setShowHint(false);
@@ -373,7 +374,7 @@ export function PromptForm({
                 }
             }
         } else {
-            userData = chat;
+            userData = chat?.chatParams;
         }
 
         if (canPlay) {
@@ -796,7 +797,7 @@ export function PromptForm({
                                         if (remainingSecs === 0) {
                                             document.getElementById(`score-btn-${chatId}`)?.click();
                                         } else {
-                                            setRemainingTime(0);
+                                            setChatRemainingTime(0);
                                             setFinished(true);
                                             stopAllAudio();
                                             vad.stop();
@@ -820,7 +821,7 @@ export function PromptForm({
                         <button id={"continue-btn"}
                                 className={"hidden"}
                                 onClick={()=>{
-                                    setRemainingTime(360);
+                                    setChatRemainingTime(60*6);
                                     setFinished(false);
                                     setShowHint(true);
                                     handleUpdateHint(messages[messages.length - 1].display.ref ? messages[messages.length - 1].display.ref?.current?.text : messages[messages.length - 1].display.props.content);

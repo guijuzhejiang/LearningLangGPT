@@ -26,7 +26,7 @@ export interface ChatPanelProps {
     chatOpacity: number,
     setChatOpacity: (value: number) => void,
     remainingSecs: number,
-    setRemainingTime: (value: number) => void,
+    setChatRemainingTime: (value: number) => void,
     handleBg: ()=>void,
     chat: Chat,
 }
@@ -40,7 +40,7 @@ export function ChatPanel({
                               chatOpacity,
                               setChatOpacity,
                               remainingSecs,
-                              setRemainingTime,
+                              setChatRemainingTime,
                               handleBg,
                               chat
                           }: ChatPanelProps) {
@@ -108,7 +108,7 @@ export function ChatPanel({
                             chatId={id}
                             userId={session?.user?.id ? session.user.id : 'default'}
                             remainingSecs={remainingSecs}
-                            setRemainingTime={setRemainingTime}
+                            setChatRemainingTime={setChatRemainingTime}
                             handleBg={handleBg}
                             chat={chat}
                         />
@@ -117,17 +117,12 @@ export function ChatPanel({
                             variant="default"
                             className={"w-full"}
                             onClick={async () => {
-                                // console.log("sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene]")
-                                // console.log(sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message)
-                                // console.log(sceneDialogRef?.current.ChineseLangs);
-                                // console.log(sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message.replaceAll('{lang}', sceneDialogRef?.current.ChineseLangs[langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"])
-                                // );
-                                // alert(langDialogRef?.current.lang);
+                                const lang = langDialogRef?.current?.lang ? langDialogRef?.current?.lang : "English";
                                 setMessages(currentMessages => [
                                     ...currentMessages,
                                     {
                                         id: nanoid(),
-                                        display: <UserMessage>{""+sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message.replaceAll('{lang}', sceneDialogRef?.current.ChineseLangs[langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"])}</UserMessage>
+                                        display: <UserMessage>{""+sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message[lang].replaceAll('{lang}', lang)}</UserMessage>
                                     }
                                 ])
 
@@ -141,7 +136,7 @@ export function ChatPanel({
 
                                 cacheUserCookies(session?.user?.id ? session?.user?.id:"default", id, chatParams)
                                 const responseMessage = await submitUserMessage(
-                                    sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message.replaceAll('{lang}', sceneDialogRef?.current.ChineseLangs[langDialogRef?.current?.lang ? langDialogRef?.current.lang:"English"]),
+                                    sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message[lang].replaceAll('{lang}', lang),
                                     chatParams,
                                     remainingSecs
                                 )

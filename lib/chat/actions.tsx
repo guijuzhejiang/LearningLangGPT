@@ -862,6 +862,87 @@ export type UIState = {
     display: React.ReactNode
 }[]
 
+const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
+const langDisplay = {
+    "English": "英语",
+    "Français": "法语",
+    "Deutsch": "德语",
+}
+
+const levelDisplay = [
+    "初级",
+    "中级",
+    "高级",
+]
+
+const sceneDisplay = [
+    {
+        heading: '无',
+    },
+    {
+        heading: '旅行和住宿',
+    },
+    {
+        heading: '学习方法',
+    },
+    {
+        heading: '自我介绍',
+    },
+    {
+        heading: '工作面试',
+    },
+    {
+        heading: '安排会议',
+    },
+    {
+        heading: '参加会议',
+    },
+    {
+        heading: '购物',
+    },
+    {
+        heading: '邀约',
+    },
+    {
+        heading: '餐馆点餐',
+    },
+    {
+        heading: '医院就诊',
+    },
+    {
+        heading: '兴趣爱好',
+    },
+    {
+        heading: '朋友聚会',
+    },
+    {
+        heading: '预订',
+    },
+    {
+        heading: '打电话',
+    },
+    {
+        heading: '交通问路',
+    },
+    {
+        heading: '职场沟通',
+    },
+    {
+        heading: '休闲娱乐',
+    },
+    {
+        heading: '结交新朋友',
+    },
+]
+
 export const AI = createAI<AIState, UIState>({
     actions: {
         submitUserMessage,
@@ -903,7 +984,15 @@ export const AI = createAI<AIState, UIState>({
             const createdAt = new Date()
             const userId = session.user.id as string
             const path = process.env.NODE_ENV === "development" ? `/chat/${chatId}` : `/chat/${chatId}`
-            const title = messages[0].content.substring(0, 100)
+            // export type ChatParams = {
+            //     teacherName: string
+            //     teacherGender: string
+            //     scene: number
+            //     lang: string
+            //     level: number
+            //
+            // }
+            const title = `${langDisplay[chatParams?.lang]}-${levelDisplay[chatParams?.level]}-${sceneDisplay[chatParams?.scene].heading} ${formatDate(createdAt)}`
 
             const chat: Chat = {
                 id: chatId,

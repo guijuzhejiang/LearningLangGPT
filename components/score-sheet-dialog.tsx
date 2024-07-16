@@ -109,7 +109,7 @@ export const ScoreSheetDialog = forwardRef(({
                                 <Button className={"w-full px-1 bg-amber-100 hover:bg-amber-200"} variant="outline"
                                         size="icon"
                                         onClick={async (e) => {
-                                            await saveCountDown(chat.id, 360)
+                                            await saveCountDown(chat.id, 60*6)
                                             // continueCB();
                                             document.getElementById(`continue-btn`)?.click();
                                         }}
