@@ -255,9 +255,17 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
             <div style={{fontFamily: "Montserrat"}}
                  className="value text-xl font-bold flex">
                 <div key={remainingTime} className={`w-full time-wrapper`}>
-                    <div className={`time`}>
+                    <div className={`time ${isTimeUp ? "up" : ""}`}>
                         {remainingTime >= 0 ? remainingTime : 0}
                     </div>
+                    {prevTime.current !== null && (
+                        <div
+                            key={prevTime.current}
+                            className={`time ${!isTimeUp ? "down" : ""}`}
+                        >
+                            {prevTime.current}
+                        </div>
+                    )}
                 </div>
                 <div className={"max-md:hidden"}>s</div>
             </div>
