@@ -13,7 +13,7 @@ import {loadSummarizationChain} from "langchain/chains";
 import {Document} from "@langchain/core/documents";
 import {createTranslator} from "@/lib/chat/actions"
 import {createStreamableValue} from "ai/rsc";
-import {reloadGroqProxy, runAsyncFnWithoutBlocking, toHalfWidth} from "@/lib/utils";
+import {isChinese, reloadGroqProxy, runAsyncFnWithoutBlocking, toHalfWidth} from "@/lib/utils";
 import JSON5 from 'json5'
 import moji from 'moji'
 import {ChatMessageHistory} from "langchain/memory";
@@ -115,7 +115,7 @@ export async function clearChats() {
     }
 
     const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
-    console.log(chats);
+    // console.log(chats);
     if (!chats.length) {
         return redirect('/')
     }
@@ -201,7 +201,6 @@ export async function getMissingKeys() {
 
 type Summary = {
     vocab: { word: string, explanation: string, phonogram: string, category: string, sentence: string },
-    review: string,
     summary: { content: string, strengths: string[], weaknesses: string[] },
     evaluation: string,
     score: string,
@@ -219,8 +218,8 @@ export async function saveScore(summary: Summary, chat: Chat) {
 }
 
 export async function saveCountDown(chatId: string, count: number) {
-    console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
-    console.log(count)
+    // console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+    // console.log(count)
     const session = await auth()
     if (session && session.user) {
         const pipeline = kv.pipeline();
@@ -232,8 +231,8 @@ export async function saveCountDown(chatId: string, count: number) {
 export async function getCountDown(chatId: string|undefined|null) {
     if (chatId) {
         const a = await kv.get<number>(`count:${chatId}`);
-        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        console.log(a)
+        // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        // console.log(a)
         return await kv.get<number>(`count:${chatId}`);
     } else {
         return null;
@@ -252,7 +251,6 @@ const summarySchema = z.object({
             }
         )
     ),
-    review: z.string(),
     summary: z.object(
         {content: z.string(), strengths: z.array(z.string()), weaknesses: z.array(z.string())}
     ),
@@ -262,26 +260,24 @@ const summarySchema = z.object({
 
 const summarizer = {
     "English": `
-        You are an experienced teacher, friendly, good at summarizing and happy to motivate students. I will pay you a $100 tip if you give a very accurate summary.
+        You are an experienced English teacher, good at summarizing and happy to motivate students.
         Use Simplified Chinese to refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. Review the process of this conversation exercise and give me a general summary of my learning, praising what I did well, suggesting what I didn't do well, and giving me a score. Give me an English level rating based on the content of my answers.
         Please synthesize the above information and the response you give needs to contain the following four fields:
         1.vocab: Refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make example sentences with the word.
-        2.review: Review the chat of this conversation and make a concise summary. Chinese is used here.
-        3.summary: In response to this conversation, summarize and conclude, praising what I did well and suggesting what I didn't do. Chinese is used here.
-        4.evaluation: Please evaluate my English level according to the following criteria, Chinese is used here.
+        2.summary: In response to this conversation, summarize and conclude, praising what I did well and suggesting what I didn't do. Chinese is used here.
+        3.evaluation: Please evaluate my English level according to the following criteria, Chinese is used here.
             (1).Content integrity：Evaluate whether my answer is comprehensive and relevant.
             (2).Sentence Complexity: assess the complexity of the sentence structures I use, including subordinate clauses and diverse sentence types.
             (3).Vocabulary Use: Consider the range and complexity of vocabulary I use, including idiomatic expressions and the use of advanced terminology.
             (4).Grammar and Syntax: review the correctness and complexity of the grammatical structures I use.
             (5).Coherence and Coherence: assess the logical flow and coherence of my responses, including the use of transitional phrases and cohesive devices.
-        5.score: This exercise will be graded according to the ABCDF.
+        4.score: This exercise will be graded according to the ABCDF.
         Please answer in the following JSON format:
         {{
         "vocab":[
         {{"word":"word1","explanation":“Explanation of Word 1 in Chinese”, "phonogram":"Phonetic symbols for word 1", "category": "Lexical properties of word 1", "sentence":"Word 1 Sentence Examples"}}}},
         {{"word":"word2","explanation":“Explanation of Word 2 in Chinese”, "phonogram":"Phonetic symbols for word 2", "category": "Lexical properties of word 2", "sentence":"Word 2 Sentence Examples"}}}}
         ],
-        "review":"The review mentioned above",
         "summary":{{"content":"General summary of the study","strengths":["What's working well1","What's working well2"],"weaknesses":["Deficiencies 1","Deficiencies 2"]}},
         “evaluation”:"The evaluation referred to above",
         "score":"Grading of this exercise"
@@ -293,26 +289,24 @@ const summarizer = {
     CONCISE SUMMARY:
     `,
     "Français":`
-        Vous êtes un professeur expérimenté, sympathique, doué pour les résumés et heureux de motiver les étudiants. Je vous donnerai un pourboire de 100 dollars si vous faites un résumé très précis.
+        Vous êtes professeur de français, doué pour les résumés et heureux de motiver les étudiants.
         Utilisez le chinois simplifié pour affiner les mots clés de cet exercice de conversation et expliquez-les, montrez les symboles phonétiques, montrez les propriétés des mots et faites des phrases. Passez en revue le processus de cet exercice de conversation et faites-moi un résumé général de mon apprentissage, en louant ce que j'ai bien fait, en suggérant ce que je n'ai pas bien fait et en me donnant une note. Attribuez-moi une note de niveau de français en fonction du contenu de mes réponses.
         Veuillez synthétiser les informations ci-dessus et la réponse que vous donnez doit contenir les quatre champs suivants :
         1.vocabulaire : Affinez les mots clés de cet exercice de conversation et expliquez-les, montrez les symboles phonétiques, montrez les propriétés du mot et faites des phrases d'exemple avec le mot.
-        2.révision : Passez en revue les discussions de cette conversation et faites-en un résumé concis. Le chinois est utilisé ici.
-        3.summary : En réponse à cette conversation, résumez et concluez, en louant ce que j'ai bien fait et en suggérant ce que je n'ai pas fait. Le chinois est utilisé ici.
-        4.évaluation : Veuillez évaluer mon niveau de français selon les critères suivants, le chinois est utilisé ici.
+        2.résumé : En réponse à cette conversation, résumez et concluez, en louant ce que j'ai bien fait et en suggérant ce que je n'ai pas fait. Le chinois est utilisé ici.
+        3.évaluation : Veuillez évaluer mon niveau de français selon les critères suivants, le chinois est utilisé ici.
             (1).Intégrité du contenu：Evaluez si ma réponse est complète et pertinente.
             (2).Complexité de la phrase:évaluez la complexité des structures de phrases que j'utilise, y compris les clauses subordonnées et les divers types de phrases.
             (3).Utilisation du vocabulaire:Évaluer l'étendue et la complexité du vocabulaire que j'utilise, y compris les expressions idiomatiques et l'utilisation d'une terminologie avancée.
             (4).Grammaire et syntaxe:examinez l'exactitude et la complexité des structures grammaticales que j'utilise.
             (5).Cohérence et cohésion:évaluer le flux logique et la cohérence de mes réponses, y compris l'utilisation de phrases de transition et de dispositifs de cohésion.
-        5.note : Cet exercice sera noté selon l'ABCDF.
+        4.note : Cet exercice sera noté selon l'ABCDF.
         Veuillez répondre dans le format JSON suivant:
         {{
         "vocab":[
         {{"word":"mot1","explanation":“Explication du mot 1 en chinois”, "phonogram":"Symboles phonétiques pour le mot 1", "category": "Propriétés lexicales du mot 1", "sentence":"Mots 1 Exemples de phrases"}}}},
         {{"word":"mot2","explanation":“Explication du mot 2 en chinois”, "phonogram":"Symboles phonétiques pour le mot 2", "category": "Propriétés lexicales du mot 2", "sentence":"Mots 2 Exemples de phrases"}}}}
         ],
-        "review":"La revue mentionnée ci-dessus",
         "summary":{{"content":"Résumé général de l'étude","strengths":["Ce qui fonctionne bien1","Ce qui fonctionne bien2"],"weaknesses":["Déficiences 1","Déficiences 2"]}},
         “evaluation”:"L'évaluation mentionnée ci-dessus",
         "score":"Notation de cet exercice"
@@ -324,26 +318,24 @@ const summarizer = {
     RÉSUMÉ CONCIS :
     `,
     "Deutsch":`
-        Sie sind ein erfahrener Lehrer, freundlich, können gut zusammenfassen und motivieren gerne Schüler. Ich zahle Ihnen 100 Dollar Trinkgeld, wenn Sie eine sehr genaue Zusammenfassung geben.
+        Sie sind ein Deutschlehrer, können gut zusammenfassen und motivieren gerne Schüler.
         Verwenden Sie vereinfachtes Chinesisch, um die Schlüsselwörter für diese Konversationsübung zu verfeinern, und erklären Sie sie, zeigen Sie phonetische Symbole, zeigen Sie Worteigenschaften und bilden Sie Sätze. Lassen Sie den Ablauf dieser Konversationsübung Revue passieren und geben Sie mir eine allgemeine Zusammenfassung meines Lernens, loben Sie, was ich gut gemacht habe, weisen Sie darauf hin, was ich nicht gut gemacht habe, und geben Sie mir eine Punktzahl. Geben Sie mir eine Bewertung der deutschen Sprache auf der Grundlage des Inhalts meiner Antworten.
         Bitte fassen Sie die oben genannten Informationen zusammen, und Ihre Antwort muss die folgenden vier Felder enthalten:
         1.Vokabeln: Nennen Sie die Schlüsselwörter für diese Konversationsübung und erklären Sie sie, zeigen Sie die phonetischen Symbole, zeigen Sie die Eigenschaften des Wortes und bilden Sie Beispielsätze mit dem Wort.
-        2.review: Wiederholen Sie den Chat dieser Konversation und erstellen Sie eine kurze Zusammenfassung. Hier wird Chinesisch verwendet.
-        3.summary: Fassen Sie das Gespräch zusammen, loben Sie, was ich gut gemacht habe, und sagen Sie, was ich nicht gemacht habe. Hier wird Chinesisch verwendet.
-        4.Bewertung: Bitte bewerten Sie mein Deutschniveau nach den folgenden Kriterien, hier wird Chinesisch verwendet.
+        2.Zusammenfassung: Fassen Sie das Gespräch zusammen, loben Sie, was ich gut gemacht habe, und sagen Sie, was ich nicht gemacht habe. Hier wird Chinesisch verwendet.
+        3.Bewertung: Bitte bewerten Sie mein Deutschniveau nach den folgenden Kriterien, hier wird Chinesisch verwendet.
             (1).Inhaltliche Integrität：Bewerten Sie, ob meine Antwort umfassend und relevant ist.
             (2).Satzkomplexität: Beurteilen Sie die Komplexität der von mir verwendeten Satzstrukturen, einschließlich Nebensätze und verschiedene Satzarten.
             (3).Wortschatzgebrauch: Beurteilen Sie den Umfang und die Komplexität des von mir verwendeten Wortschatzes, einschließlich idiomatischer Ausdrücke und der Verwendung fortgeschrittener Terminologie.
             (4).Grammatik und Syntax: Überprüfen Sie die Korrektheit und Komplexität der von mir verwendeten grammatikalischen Strukturen.
             (5).Kohärenz und Zusammenhalt: Bewertung des logischen Flusses und der Kohärenz meiner Antworten, einschließlich der Verwendung von Übergangsphrasen und kohäsiven Elementen.
-        5.Punktzahl: Diese Übung wird nach dem ABCDF benotet.
+        4.Punktzahl: Diese Übung wird nach dem ABCDF benotet.
         Bitte antworten Sie im folgenden JSON-Format:
         {{
         "vocab":[
         {{"word":"Wort1","explanation":“Erläuterung von Wort 1 auf Chinesisch”, "phonogram":"Phonetische Zeichen für Wort 1", "category": "Lexikalische Eigenschaften von Wort 1", "sentence":"Wort 1 Satzbeispiele"}}}},
         {{"word":"Wort2","explanation":“Erläuterung von Wort 2 auf Chinesisch”, "phonogram":"Phonetische Zeichen für Wort 2", "category": "Lexikalische Eigenschaften von Wort 2", "sentence":"Wort 2 Satzbeispiele"}}}}
         ],
-        "review":"Die oben erwähnte Überprüfung",
         "summary":{{"content":"Allgemeine Zusammenfassung der Studie","strengths":["Was gut funktioniert1","Was gut funktioniert2"],"weaknesses":["Unzulänglichkeiten 1","Unzulänglichkeiten 2"]}},
         “evaluation”:"Die oben erwähnte Bewertung",
         "score":"Benotung dieser Übung"
@@ -420,7 +412,7 @@ export async function getScore(chat: Chat) {
             fixedMsg = res.slice(startIndex, endIndex+1);
         }
 
-        console.log(fixedMsg);
+        // console.log(fixedMsg);
         try {
             fixedMsg = moji(fixedMsg).convert('ZE', 'HE').toString();
             fixedMsg = fixedMsg.replaceAll('\n', '')
@@ -430,6 +422,82 @@ export async function getScore(chat: Chat) {
 
         try {
             const jsonRes = JSON5.parse(fixedMsg);
+            if(jsonRes.evaluation === 'object'){
+                let evalStr = JSON.stringify(jsonRes.evaluation)
+                const sIndex = res.indexOf('{');
+                const eIndex = res.lastIndexOf('}');
+                jsonRes.evaluation = evalStr.slice(sIndex-1, eIndex);
+            }
+            try {
+                let needTransString = [];
+                let needTransIndex = [];
+                Object.keys(jsonRes).forEach((key) => {
+                    // console.log(`${key}: ${jsonRes[key]}`);
+                    if (key === 'vocab') {
+                        jsonRes[key].forEach(function (value, index) {
+                            if (!isChinese(value.explanation)) {
+                                needTransString.push(value.explanation);
+                                needTransIndex.push(`${key}-${index}`);
+                            }
+                        });
+                    } else if (key === 'summary') {
+                        if (!isChinese(jsonRes[key].content)) {
+                            needTransString.push(jsonRes[key].content);
+                            needTransIndex.push(`${key}-content`);
+                        }
+                        jsonRes[key].strengths.forEach(function (value, index) {
+                            if (!isChinese(value)) {
+                                needTransString.push(value);
+                                needTransIndex.push(`${key}-strengths-${index}`);
+                            }
+                        });
+                        jsonRes[key].weaknesses.forEach(function (value, index) {
+                            if (!isChinese(value)) {
+                                needTransString.push(value);
+                                needTransIndex.push(`${key}-weaknesses-${index}`);
+                            }
+                        });
+                    } else if (key === 'evaluation') {
+                        if (!isChinese(jsonRes[key])) {
+                            needTransString.push(jsonRes[key]);
+                            needTransIndex.push(`${key}`);
+                        }
+                    } else if (key === 'score') {
+                        if (!isChinese(jsonRes[key])) {
+                            needTransString.push(jsonRes[key]);
+                            needTransIndex.push(`${key}`);
+                        }
+                    }
+                });
+                const translatedStrings = (await syncTranslate(needTransString.join('|'))).split('|')
+
+                translatedStrings.forEach(function (value, index) {
+                    if (needTransIndex[index].includes("vocab")) {
+                        const parts = needTransIndex[index].split('-');
+                        jsonRes["vocab"][parts[1]]["explanation"] = value;
+
+                    }else if (needTransIndex[index].includes("summary")) {
+                        const parts = needTransIndex[index].split('-');
+                        if (parts[1] === 'content') {
+                            jsonRes["summary"]["content"] = value;
+                        } else if (parts[1] === 'strengths') {
+                            jsonRes["summary"]["strengths"][parts[2]] = value;
+                        } else if (parts[1] === 'weaknesses') {
+                            jsonRes["summary"]["weaknesses"][parts[2]] = value;
+                        }
+
+                    } else if (needTransIndex[index].includes("evaluation")) {
+                        jsonRes["evaluation"] = value;
+
+                    } else if (needTransIndex[index].includes("score")) {
+                        jsonRes["score"] = value;
+
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+            }
+
             await saveScore(jsonRes, chat);
             return jsonRes;
         } catch (e) {
@@ -441,6 +509,38 @@ export async function getScore(chat: Chat) {
     }
 
 }
+
+
+async function syncTranslate(content: string) {
+    'use server'
+
+    if (!langchainTools.translator) {
+        langchainTools.translator = await createTranslator();
+    }
+
+    const maxRetries = 3;
+    let retries = 0;
+    let res = '';
+    const proceed = async ()=>{
+        res = await langchainTools.translator.invoke(
+            {input: content},
+        );
+    }
+    try {
+        await proceed();
+    } catch (e) {
+        console.error(e);
+        retries++;
+        if (retries < maxRetries) {
+            await reloadGroqProxy(model, fallbacksModels);
+            await proceed();
+        }
+    } finally {
+    }
+    return res.content;
+}
+
+
 
 export async function getTranslate(content: string) {
     'use server'
@@ -458,7 +558,6 @@ export async function getTranslate(content: string) {
         let retries = 0;
         const proceed = async ()=>{
             let buf = "";
-
             const res = await langchainTools.translator.invoke(
                 {input: content},
                 {
