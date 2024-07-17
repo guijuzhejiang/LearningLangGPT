@@ -173,7 +173,7 @@ export const ScoreSheet = forwardRef(({
         <Accordion.Root
             className="border-1 p-0.5  bg-mauve6 rounded-md shadow-[0_2px_10px] shadow-black/5"
             type="multiple"
-            defaultValue={["item-vocab", "item-review", "item-summary", "item-score", "item-evaluation",]}
+            defaultValue={["item-vocab", "item-summary", "item-score", "item-evaluation",]}
             collapsible
         >
             <AccordionItem value="item-vocab">
@@ -215,22 +215,22 @@ export const ScoreSheet = forwardRef(({
                 </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-review">
-                <AccordionTrigger
-                    // btn={
-                    //     <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['review']}`:''} chat={chat}/>
-                    // }
-                >
-                    回顾
-                </AccordionTrigger>
-                <AccordionContent>
-                    {typeof summaryString === 'string' ? (spinner) : (
-                        <div className={"flex items-center"}>
-                            <span>{summaryString['review']}</span>
-                        </div>
-                    )}
-                </AccordionContent>
-            </AccordionItem>
+            {/*<AccordionItem value="item-review">*/}
+            {/*    <AccordionTrigger*/}
+            {/*        // btn={*/}
+            {/*        //     <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['review']}`:''} chat={chat}/>*/}
+            {/*        // }*/}
+            {/*    >*/}
+            {/*        回顾*/}
+            {/*    </AccordionTrigger>*/}
+            {/*    <AccordionContent>*/}
+            {/*        {typeof summaryString === 'string' ? (spinner) : (*/}
+            {/*            <div className={"flex items-center"}>*/}
+            {/*                <span>{summaryString['review']}</span>*/}
+            {/*            </div>*/}
+            {/*        )}*/}
+            {/*    </AccordionContent>*/}
+            {/*</AccordionItem>*/}
 
             <AccordionItem value="item-summary">
                 <AccordionTrigger

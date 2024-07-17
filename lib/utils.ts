@@ -272,3 +272,8 @@ export async function reloadGroqProxy(model, fallbacksModels) {
 
     }
 }
+
+export function isChinese(str:string) {
+    const chinesePattern = /[\u4e00-\u9fa5]/;
+    return chinesePattern.test(str);
+}
