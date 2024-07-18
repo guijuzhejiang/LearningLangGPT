@@ -42,7 +42,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <head>
       <Script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js" strategy="beforeInteractive"/>
       {/*<Script src="https://hm.baidu.com/hm.js?d16d39a1b531ab4a982a38f9852f79ea" strategy="lazyOnload"/>*/}
-      <Script src="/bdTrack.js" strategy="lazyOnload"/>
+      <Script src="/learninglang/bdTrack.js" strategy="lazyOnload"/>
     </head>
     <body
         className={cn(
