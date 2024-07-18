@@ -41,19 +41,21 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning>
     <head>
       <Script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js" strategy="beforeInteractive"/>
+      {/*<Script src="https://hm.baidu.com/hm.js?d16d39a1b531ab4a982a38f9852f79ea" strategy="lazyOnload"/>*/}
+      <Script src="/bdTrack.js" strategy="lazyOnload"/>
     </head>
-      <body
+    <body
         className={cn(
-          'font-sans antialiased',
-          GeistSans.variable,
-          GeistMono.variable
+            'font-sans antialiased',
+            GeistSans.variable,
+            GeistMono.variable
         )}
-      >
-        <Toaster position="top-center" />
-        <Providers
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
+    >
+    <Toaster position="top-center"/>
+    <Providers
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
           disableTransitionOnChange
         >
           <div className="flex flex-col min-h-screen">
