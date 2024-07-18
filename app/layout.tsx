@@ -16,7 +16,8 @@ export const metadata = {
     default: 'AI外语通',
     template: `%s - AI外语通`
   },
-  description: 'An AI-powered chatbot for learning language.',
+  keywords: ['免费', '外语学习', '在线', 'AI', '口语'],
+  description: '通过AI聊天方式轻松学外语，提升语言交流能力，提供真实的对话体验，适合各个水平的学习者。立即加入，享受智能互动学习的乐趣！',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',
