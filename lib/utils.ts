@@ -237,7 +237,7 @@ export function toHalfWidth(str: string) {
 export async function reloadGroqProxy(model, fallbacksModels) {
 
     try {
-        const servers = ["103.45.78.170", "120.233.27.129", "58.32.13.22", "103.45.78.164"]
+        const servers = ["103.45.78.170", "183.240.254.104", "120.233.27.129", "58.32.13.22", "103.45.78.164"]
         const jsonFilePath = "/usr/local/share/shadowsocksr/config.json"
         // console.log("reloadGroqProxy qqqqqqqqqqqqqqqqqqqq");
 

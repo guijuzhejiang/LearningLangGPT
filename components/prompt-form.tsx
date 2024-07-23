@@ -792,7 +792,7 @@ export function PromptForm({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className={`${messages.length < 2 && 'hidden'} bg-gray-200 hover:bg-gray-50 size-6 rounded-full p-0`}
+                                    className={`${(messages.length < 2 || userId === 'default') && 'hidden'} bg-gray-200 hover:bg-gray-50 size-6 rounded-full p-0`}
                                     onClick={async (e) => {
                                         if (remainingSecs === 0) {
                                             document.getElementById(`score-btn-${chatId}`)?.click();

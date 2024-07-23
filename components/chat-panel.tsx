@@ -117,26 +117,39 @@ export function ChatPanel({
                             variant="default"
                             className={"w-full"}
                             onClick={async () => {
-                                const lang = langDialogRef?.current?.lang ? langDialogRef?.current?.lang : "English";
+                                const tLang = langDialogRef?.current?.lang ? langDialogRef?.current?.lang : "English";
+                                // eacherName: "Mary",
+                                //         teacherGender: "female",
+                                //         scene: 0,
+                                //         lang: "English",
+                                //         level: 0,
+                                const tName = teacherDialogRef?.current ? teacherDialogRef?.current.teacherName : 'Mary';
+                                const tGender = teacherDialogRef?.current ? teacherDialogRef?.current.teacherGender : 'female';
+                                const tScene = sceneDialogRef?.current ? sceneDialogRef?.current.scene : 0;
+                                const tLevel = levelDialogRef?.current ? levelDialogRef?.current.level : 0;
+
+                                const exampleMsgs = sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message[tLang];
+                                const exampleMsg = exampleMsgs ? exampleMsgs.replaceAll('{lang}', tLang):"Hi";
+
                                 setMessages(currentMessages => [
                                     ...currentMessages,
                                     {
                                         id: nanoid(),
-                                        display: <UserMessage>{""+sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message[lang].replaceAll('{lang}', lang)}</UserMessage>
+                                        display: <UserMessage>{""+exampleMsg}</UserMessage>
                                     }
-                                ])
+                                ]);
 
                                 const chatParams = {
-                                    teacherName: teacherDialogRef?.current.teacherName,
-                                    teacherGender: teacherDialogRef?.current.teacherGender,
-                                    scene: sceneDialogRef?.current.scene,
-                                    lang: langDialogRef?.current.lang,
-                                    level: levelDialogRef?.current.level,
+                                    teacherName: tName,
+                                    teacherGender: tGender,
+                                    scene: tScene,
+                                    lang: tLang,
+                                    level: tLevel,
                                 }
 
                                 cacheUserCookies(session?.user?.id ? session?.user?.id:"default", id, chatParams)
                                 const responseMessage = await submitUserMessage(
-                                    sceneDialogRef?.current.exampleMessages[sceneDialogRef?.current.scene].message[lang].replaceAll('{lang}', lang),
+                                    exampleMsg,
                                     chatParams,
                                     remainingSecs
                                 )
