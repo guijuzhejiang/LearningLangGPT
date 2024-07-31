@@ -133,6 +133,8 @@ export const BotMessage = React.memo(forwardRef(({
             }
         } else {
             const formData = new FormData();
+            // console.log("teeeeeeeeeeeeext");
+            // console.log(text);
             formData.append('text', text);
             const startTime = performance.now();
 
@@ -146,6 +148,10 @@ export const BotMessage = React.memo(forwardRef(({
             formData.append('teacher_name', userData['teacherName']);
             formData.append('teacher_gender', userData['teacherGender']);
             formData.append('lang', userData['teacherGender']);
+
+            console.log("userData");
+            console.log(userData);
+
             fetch(`${process.env.TTS_URL}`, {
                 method: 'POST',
                 body: formData
@@ -162,6 +168,7 @@ export const BotMessage = React.memo(forwardRef(({
                     // const wavUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
                     setWavB64(wavBuffer);
                     audioRef.current = new Audio("data:audio/wav;base64,"+wavBuffer);
+                    console.log(wavBuffer);
                     // onCanPlayThrough={e => {*/}
                     //     {/*                    setCanPlayThrough(true);*/}
                     //     {/*                }}*/}

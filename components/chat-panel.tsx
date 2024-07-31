@@ -7,7 +7,7 @@ import type {AI} from '@/lib/chat/actions'
 import {usePathname} from "next/navigation";
 import {TeacherVoiceDialog} from "@/components/teacher-voice-dialog";
 import {Chat, Session} from "@/lib/types";
-import {cacheUserCookies, cn} from "@/lib/utils";
+import {cacheUserCookies, cn, loadCacheUserCookies} from "@/lib/utils";
 import {IconArrowDown} from "@/components/ui/icons";
 import {Button} from "@/components/ui/button";
 import {nanoid} from "nanoid";
@@ -46,7 +46,10 @@ export function ChatPanel({
                           }: ChatPanelProps) {
     const [messages, setMessages] = useUIState<typeof AI>();
     const {submitUserMessage} = useActions();
-    const path = usePathname();
+
+    const lastMsgRef = React.useRef(null);
+    const [lastMessage, setLastMessage] = React.useState<any>(null);
+
     const teacherDialogRef = React.useRef(null);
     const langDialogRef = React.useRef(null);
     const levelDialogRef = React.useRef(null);
@@ -111,6 +114,9 @@ export function ChatPanel({
                             setChatRemainingTime={setChatRemainingTime}
                             handleBg={handleBg}
                             chat={chat}
+                            lastMsgRef={lastMsgRef}
+                            lastMessage={lastMessage}
+                            setLastMessage={setLastMessage}
                         />
                     ) : (
                         <Button
@@ -154,10 +160,9 @@ export function ChatPanel({
                                     remainingSecs
                                 )
 
-                                setMessages(currentMessages => [
-                                    ...currentMessages,
-                                    responseMessage
-                                ])
+                                responseMessage.display.ref = lastMsgRef;
+                                setMessages(currentMessages => [...currentMessages, responseMessage])
+                                setLastMessage(responseMessage);
                             }}
                         >
                             <span>开始(6分钟)</span>

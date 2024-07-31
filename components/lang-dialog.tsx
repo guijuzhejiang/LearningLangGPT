@@ -41,8 +41,8 @@ export const LangDialog = forwardRef(({
         ;(async () => {
             // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
             const userData = loadUserCookies(userId);
-            console.log("llllllllllllllllllllllll");
-            console.log(userData);
+            // console.log("llllllllllllllllllllllll");
+            // console.log(userData);
             if (userData) {
                 if (userData.hasOwnProperty("lang")) {
                     setLang(userData["lang"]);

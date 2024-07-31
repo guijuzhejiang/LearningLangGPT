@@ -15,6 +15,7 @@ import {readStreamableValue} from "ai/rsc";
 import {CountdownCircleTimer} from "react-countdown-circle-timer";
 import {UserGuideButton} from "@/components/user-guide-button";
 import {Chat} from "@/lib/types";
+import {stopAllAudio} from "@/lib/utils";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
@@ -72,7 +73,7 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
                 if (messages.length === 2 && session?.user) {
                     // alert('refresh');
                     window.sessionStorage.setItem('tts', messages[1].content);
-                    router.refresh()
+                    // router.refresh()
                 }
 
                 console.log(messages[messages.length-1]?.display?.ref?.current?.completed);
@@ -113,6 +114,7 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
         if (session?.user) {
             if (!path.includes('chat') && messages.length === 2) {
                 window.history.replaceState({}, '', `/learninglang/chat/${id}`)
+                // router.refresh()
             }
         }
 
@@ -180,7 +182,8 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
         if (messagesLength === 2 && session?.user) {
             // alert('refresh');
             window.sessionStorage.setItem('tts', aiState.messages[1].content);
-            router.refresh()
+            // stopAllAudio();
+            // router.refresh()
         }
     }, [aiState.messages, router])
 
@@ -313,8 +316,6 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
 
                 <div className="h-px w-full" ref={visibilityRef}/>
             </div>
-{/*<button onClick={()=>{*/}
-{/*    alert(backgroundStyleRef?.current?.backgroundStyle);}}>{backgroundStyleRef?.current?.backgroundStyle}</button>*/}
             <ChatPanel
                 id={id}
                 session={session}
@@ -327,11 +328,6 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
                 setChatRemainingTime={setChatRemainingTime}
                 handleBg={handleBg}
                 chat={chat}
-                // setVoiceContinuationEnable={setVoiceContinuationEnable}
-                // userSpeakLately={userSpeakLately}
-                // setUserSpeakLately={setUserSpeakLately}
-                // voiceText={voiceText}
-                // vad={vad}
             />
 
             {/*  count down clock  */}

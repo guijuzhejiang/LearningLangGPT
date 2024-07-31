@@ -72,6 +72,7 @@ export default function LoginForm() {
             isTablet = /(?:iPad|PlayBook)/.test(ua) || (isAndroid && !/(?:Mobile)/.test(ua)) || (isFireFox && /(?:Tablet)/.test(ua)),
             isPhone = /(?:iPhone)/.test(ua) && !isTablet,
             isPc = !isPhone && !isAndroid && !isSymbian;
+        // alert(isPc);
             setIsPC(isPc);
         setCurLoginMethod(isPc ?  'wechat':'account')
 
@@ -108,7 +109,7 @@ export default function LoginForm() {
 
                 <Tabs.Root
                     className="flex flex-col w-[26.5rem] items-center"
-                    defaultValue={isPC ? "wechat":"account"}
+                    value={curLoginMethod}
                     onValueChange={(value)=>{
                         setCurLoginMethod(value)
                     }}

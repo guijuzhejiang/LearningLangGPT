@@ -20,14 +20,13 @@ import {
     IconTranslate,
     IconStop,
     IconExit,
-    IconBackground, IconScoreSheet
+    IconScoreSheet
 } from '@/components/ui/icons'
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger
 } from '@/components/ui/tooltip'
-import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import {useEnterSubmit} from '@/lib/hooks/use-enter-submit'
 import {nanoid} from 'nanoid'
 import {usePathname, useRouter} from 'next/navigation'
@@ -37,9 +36,8 @@ import {readStreamableValue} from "ai/rsc";
 import {spinner} from "@/components/stocks";
 import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
-import {getChat, saveCountDown} from "@/app/actions";
+import {saveCountDown} from "@/app/actions";
 import {BackgroundDialog} from "@/components/background-style-dialog";
-import {ScoreSheetDialog} from "@/components/score-sheet-dialog";
 import {Chat} from "@/lib/types";
 
 
@@ -52,7 +50,10 @@ export interface PromptFormProps {
     remainingSecs?: number,
     setChatRemainingTime: (value: number) => void,
     handleBg?: ()=>void,
-    chat?: Chat
+    chat?: Chat,
+    lastMsgRef?: React.Ref<any>,
+    lastMessage?: object,
+    setLastMessage?: (value: object) => void
 }
 
 export function PromptForm({
@@ -64,7 +65,10 @@ export function PromptForm({
                                remainingSecs,
                                setChatRemainingTime,
                                handleBg,
-                               chat
+                               chat,
+                               lastMsgRef,
+                               lastMessage,
+                               setLastMessage,
                            }: PromptFormProps) {
 
     const router = useRouter()
@@ -73,9 +77,10 @@ export function PromptForm({
     const {submitUserMessage, abortStreaming, getHint, translate} = useActions()
     const [messages, setMessages] = useUIState<typeof AI>()
     const timerRef = React.useRef(null);
-    const lastMsgRef = React.useRef(null);
+    // const lastMsgRef = React.useRef(null);
     const [timerInterval, setTimerInterval] = React.useState<any>(null);
-    const [lastMessage, setLastMessage] = React.useState<any>(null);
+    const [hintInterval, setHintInterval] = React.useState<any>(null);
+    // const [lastMessage, setLastMessage] = React.useState<any>(null);
     const [hintContent, setHintContent] = React.useState<any>('');
     const [showHint, setShowHint] = React.useState<boolean>(true);
     const [gettingHint, setGettingHint] = React.useState<boolean>(false);
@@ -147,7 +152,7 @@ export function PromptForm({
                 remainingSecs
             )
             responseMessage.display.ref = lastMsgRef;
-            setMessages(currentMessages => [...currentMessages, responseMessage])
+            setMessages(currentMessages => [...currentMessages, responseMessage]);
             setLastMessage(responseMessage);
         } else {
             setInput(hintContent);
@@ -225,6 +230,19 @@ export function PromptForm({
         if (sessionStorage.getItem("fromRoot")) {
             sessionStorage.removeItem("fromRoot");
             setVoiceContinuationEnable(true);
+        }
+
+        if (inputRef.current) {
+            inputRef.current.focus()
+        }
+        timerRef.current = setInterval(() => {
+            setTimerInterval(true);
+        }, vadTimeoutMS);
+
+        if (messages.length > 1 && showHint) {
+            ;(async () => {
+                handleUpdateHint(messages[messages.length - 1].display.props.content);
+            })()
         }
 
     }, []);
@@ -497,42 +515,55 @@ export function PromptForm({
         }
     }, [userSpeakLately, timerInterval])
 
-    React.useEffect(() => {
-        // console.log("!!!!!!!!")
-        if (inputRef.current) {
-            inputRef.current.focus()
-        }
-        timerRef.current = setInterval(() => {
-            setTimerInterval(true);
-        }, vadTimeoutMS);
-
-        if (messages.length > 1 && showHint) {
-            ;(async () => {
-                handleUpdateHint(messages[messages.length - 1].display.props.content);
-            })()
-        }
-    }, []);
-
     //
     useEffect(() => {
-        console.log("!xxxxxxxxxxx!!!!!!!!!!!!")
+        // console.log("!&&&&&&&&&&&&&&&&!!!!!!!!!!!!")
+        // console.log(messages)
         // console.log(messages[messages.length-1])
+        // console.log(lastMessage)
+        // console.log(showHint)
         if (showHint) {
+            // console.log("xxxxxxxxxx3434343")
+            // console.log(lastMessage?.display?.ref?.current)
             if (lastMessage?.display?.ref?.current?.completed) {
-                ;(async () => {
-                    handleUpdateHint(lastMessage.display.ref?.current?.text);
-                })()
+                console.log("sdasdasdasdasdsasda")
+                if (hintInterval) {
+                    try {
+                        clearInterval(hintInterval);
+                    } catch (e) {
+
+                    }
+                }
+                handleUpdateHint(lastMessage.display.ref?.current?.text);
+            } else {
+                let retryCount = 0;
+                const intervalId = setInterval(() => {
+                    if (lastMessage?.display?.ref?.current?.completed) {
+                        clearInterval(intervalId);
+                        handleUpdateHint(lastMessage.display.ref?.current?.text);
+                    }
+                }, 300);
+                setHintInterval(intervalId);
             }
         }
         ;(async () => {
-            await handleBg();
+            if (userId !== 'default') {
+                await handleBg();
+            }
         })()
-    }, [lastMessage?.display.ref?.current?.completed])
+    }, [lastMessage?.display?.ref?.current?.completed])
 
     useEffect(() => {
         if (showHint) {
             if (voiceContinuationEnable) {
                 ;(async () => {
+                    if (hintInterval) {
+                        try {
+                            clearInterval(hintInterval);
+                        } catch (e) {
+
+                        }
+                    }
                     handleUpdateHint(voiceText);
                 })()
             }
@@ -649,6 +680,13 @@ export function PromptForm({
                                         audioRef.current.currentTime = 0;
                                     }
                                     console.log(messages);
+                                    if (hintInterval) {
+                                        try {
+                                            clearInterval(hintInterval);
+                                        } catch (e) {
+
+                                        }
+                                    }
                                     handleUpdateHint(messages[messages.length - 1].display.ref ? messages[messages.length - 1].display.ref?.current?.text : messages[messages.length - 1].display.props.content);
                                 }}
                             >
@@ -762,6 +800,15 @@ export function PromptForm({
                                         setShowHint(true);
                                         if (hintContent.length === 0) {
                                             const lastMsg = messages[messages.length - 1].display.ref?.current?.text;
+
+                                            if (hintInterval) {
+                                                try {
+                                                    clearInterval(hintInterval);
+                                                } catch (e) {
+
+                                                }
+                                            }
+
                                             if (lastMsg) {
                                                 handleUpdateHint(lastMsg);
                                             } else {
@@ -792,27 +839,32 @@ export function PromptForm({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className={`${(messages.length < 2 || userId === 'default') && 'hidden'} bg-gray-200 hover:bg-gray-50 size-6 rounded-full p-0`}
+                                    className={`${(messages.length < 2) && 'hidden'} bg-gray-200 hover:bg-gray-50 size-6 rounded-full p-0`}
                                     onClick={async (e) => {
-                                        if (remainingSecs === 0) {
-                                            document.getElementById(`score-btn-${chatId}`)?.click();
+                                        if (userId === 'default') {
+                                            router.push('/new')
                                         } else {
-                                            setChatRemainingTime(0);
-                                            setFinished(true);
-                                            stopAllAudio();
-                                            vad.stop();
-                                            setMicOn(false);
-                                            setVoiceContinuationEnable(false);
-                                            saveCountDown(chatId, 0);
+                                            if (remainingSecs === 0) {
+                                                document.getElementById(`score-btn-${chatId}`)?.click();
+                                            } else {
+                                                setChatRemainingTime(0);
+                                                setFinished(true);
+                                                stopAllAudio();
+                                                vad.stop();
+                                                setMicOn(false);
+                                                setVoiceContinuationEnable(false);
+                                                saveCountDown(chatId, 0);
+                                            }
                                         }
+
                                     }}
                                 >
-                                    {remainingSecs===0 ? (
+                                    {remainingSecs===0 && userId !== 'default' ? (
                                         <IconScoreSheet/>
                                         ):(
                                         <IconExit/>
                                     )}
-                                    <span className="sr-only">结束学习,查看评分</span>
+                                    <span className="sr-only">结束学习{userId !== 'default' && ',查看评分' }</span>
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>结束学习,查看评分</TooltipContent>
@@ -824,6 +876,14 @@ export function PromptForm({
                                     setChatRemainingTime(60*6);
                                     setFinished(false);
                                     setShowHint(true);
+
+                                    if (hintInterval) {
+                                        try {
+                                            clearInterval(hintInterval);
+                                        } catch (e) {
+
+                                        }
+                                    }
                                     handleUpdateHint(messages[messages.length - 1].display.ref ? messages[messages.length - 1].display.ref?.current?.text : messages[messages.length - 1].display.props.content);
 
                                     setMicOn(true);
