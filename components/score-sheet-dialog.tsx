@@ -77,7 +77,7 @@ export const ScoreSheetDialog = forwardRef(({
                     <Dialog.Overlay
                         className="z-20 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-right-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-right-1/2 data-[state=open]:slide-in-from-top-[48%] w-full h-full bg-blackA6 fixed inset-0"/>
                     <Dialog.Content
-                        className="z-50 min-w-[60vw] max-w-[80vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
+                        className="z-50 min-w-[60vw] max-w-[80vw] min-h-[60vh] max-h-[90vh] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
                             评分总结
                         </Dialog.Title>
@@ -86,7 +86,8 @@ export const ScoreSheetDialog = forwardRef(({
                                 // className={"pr-3"}
                                 autoHeight
                                 // autoHeightMin={'80vh'}
-                                autoHeightMax={'85vh'}
+                                autoHeightMax={'70vh'}
+                                autoHide={false}
                             >
                                 <div className={"pr-3"}>
                                     <Separator className={"pt-0.5 mb-2"}/>

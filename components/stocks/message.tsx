@@ -168,7 +168,6 @@ export const BotMessage = React.memo(forwardRef(({
                     // const wavUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
                     setWavB64(wavBuffer);
                     audioRef.current = new Audio("data:audio/wav;base64,"+wavBuffer);
-                    console.log(wavBuffer);
                     // onCanPlayThrough={e => {*/}
                     //     {/*                    setCanPlayThrough(true);*/}
                     //     {/*                }}*/}
@@ -188,9 +187,13 @@ export const BotMessage = React.memo(forwardRef(({
 
     useEffect(() => {
         if (completed && messages.length>=2) {
-            stopAllAudio();
-            setReadingLoud(!readingLoud);
-            handleTTS();
+            if (sessionStorage.getItem("firstChat") && userId !== 'default') {
+                sessionStorage.removeItem('firstChat');
+            } else {
+                stopAllAudio();
+                setReadingLoud(!readingLoud);
+                handleTTS();
+            }
         }
     }, [completed])
 
@@ -283,7 +286,7 @@ export const BotMessage = React.memo(forwardRef(({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className={`${readingLoud && canPlayThrough && ('tts-btn-stop')} bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
+                                    className={`bot-tts-btn ${readingLoud && canPlayThrough && ('tts-btn-stop')} bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
                                     onClick={() => {
                                         stopAllAudio();
                                         setReadingLoud(!readingLoud);

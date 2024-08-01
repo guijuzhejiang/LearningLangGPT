@@ -462,6 +462,14 @@ async function submitUserMessage(content: string, chatParams: ChatParams | undef
     const userId = (session && session.user) ? session.user.id : "default";
 //     const chain = await initChatModel();
     const msgID = nanoid();
+
+    const msgs = aiState.get().messages;
+    const chatId = aiState.get().chatId;
+    const textStream = createStreamableValue('')
+    if (!chatParams && userId !== 'default') {
+        chatParams = (await getChat(chatId, userId))?.chatParams
+    }
+
     aiState.update({
         ...aiState.get(),
         messages: [
@@ -470,16 +478,10 @@ async function submitUserMessage(content: string, chatParams: ChatParams | undef
                 id: msgID,
                 role: 'user',
                 content
-            }
-        ]
+            },
+        ],
+        chatParams: chatParams
     })
-
-    const msgs = aiState.get().messages;
-    const chatId = aiState.get().chatId;
-    const textStream = createStreamableValue('')
-    if (!chatParams && userId !== 'default') {
-        chatParams = (await getChat(chatId, userId))?.chatParams
-    }
 
     runAsyncFnWithoutBlocking(async () => {
         let buf = "";
@@ -992,19 +994,23 @@ export const AI = createAI<AIState, UIState>({
             //     level: number
             //
             // }
-            const title = `${langDisplay[chatParams?.lang]}-${levelDisplay[chatParams?.level]}-${sceneDisplay[chatParams?.scene].heading} ${formatDate(createdAt)}`
+            try {
+                const title = `${langDisplay[chatParams?.lang]}-${levelDisplay[chatParams?.level]}-${sceneDisplay[chatParams?.scene].heading} ${formatDate(createdAt)}`
 
-            const chat: Chat = {
-                id: chatId,
-                title,
-                userId,
-                createdAt,
-                messages,
-                path,
-                chatParams
+                const chat: Chat = {
+                    id: chatId,
+                    title,
+                    userId,
+                    createdAt,
+                    messages,
+                    path,
+                    chatParams
+                }
+
+                await saveChat(chat)
+            } catch (e) {
+                console.log(e)
             }
-
-            await saveChat(chat)
         } else {
             return
         }

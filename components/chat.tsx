@@ -15,7 +15,7 @@ import {readStreamableValue} from "ai/rsc";
 import {CountdownCircleTimer} from "react-countdown-circle-timer";
 import {UserGuideButton} from "@/components/user-guide-button";
 import {Chat} from "@/lib/types";
-import {stopAllAudio} from "@/lib/utils";
+import {useSidebar} from "@/lib/hooks/use-sidebar";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
@@ -82,6 +82,7 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
 
                     const checkRes = await handleCheckBg()
                     // alert("checkRes");
+                    // alert(checkRes);
 
                     if (checkRes) {
                         setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
@@ -106,16 +107,29 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
                 }
             }
         } catch (e) {
+            console.error(e);
         }
 
     }
 
     useEffect(() => {
         if (session?.user) {
-            if (!path.includes('chat') && messages.length === 2) {
-                window.history.replaceState({}, '', `/learninglang/chat/${id}`)
+            // if (!path.includes('chat') && messages.length === 1) {
+            //     window.history.replaceState({}, '', `/learninglang/chat/${id}`)
                 // router.refresh()
+                // setTimeout(()=>{router.push(`/chat/${id}`)},200)
+            // }
+            if(messages.length === 2 && session?.user.id !== 'default'){
+                window.history.replaceState({}, '', `/learninglang/chat/${id}`)
+                // router.refresh();
             }
+            // if (path.includes('chat') && messages.length === 2) {
+            //     // window.history.replaceState({}, '', `/learninglang/chat/${id}`)
+            //     // router.push(`/chat/${id}`)
+            //     // router.prefetch(`/chat/${id}`)
+            //     // location.reload();
+            //     // setTimeout(()=>{router.push(`/chat/${id}`)},200)
+            // }
         }
 
         if (!session?.user && path === '/') {
@@ -126,72 +140,29 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
 
     }, [id, path, session?.user, messages]);
 
-    // useEffect(() => {
-    //     console.log("chatRemainingTime");
-    //     console.log(chatRemainingTime);
-    //
-    // }, [chatRemainingTime]);
-
-    useEffect(() => {
-        console.log("messages count " + messages.length);
-        console.log(messages)
-
-        // ;(async () => {
-        //     if (session?.user) {
-        //         if (messages.length === 2 && session?.user) {
-        //             // alert('refresh');
-        //             window.sessionStorage.setItem('tts', messages[1].content);
-        //             router.refresh()
-        //         }
-        //
-        //         console.log(messages[messages.length-1]?.display?.ref?.current?.completed);
-        //
-        //         if (((messages.length > 4 && messages.length % 8 === 0) || messages.length === 4) && messages[messages.length-1]?.display?.ref?.current?.completed) {
-        //
-        //             const checkRes = await handleCheckBg()
-        //             alert("checkRes");
-        //
-        //             if (checkRes) {
-        //                 setBgUrl(`${process.env.SD_URL}${checkRes.replace('/service','')}`);
-        //             } else {
-        //                 let bgRes = null;
-        //                 const bgStream = await getBgUrl(backgroundStyleRef?.current?.backgroundStyle);
-        //                 // console.log("bgStream");
-        //                 for await (const delta of readStreamableValue(bgStream)) {
-        //                     if (typeof delta === 'string' && delta.length >0) {
-        //                         bgRes = JSON.parse(delta)
-        //                     }
-        //                 }
-        //                 // console.log(bgRes);
-        //                 if (bgRes.success) {
-        //                     const url = process.env.SD_URL + bgRes.result[0].replace('/service', '');
-        //                     // console.log("url");
-        //                     // console.log(url);
-        //                     setBgUrl(url+'&msmy=%23sfn%');
-        //                 }
-        //             }
-        //
-        //         }
-        //     }
-        // })();
-
-    }, [messages[messages.length-1]?.display?.ref, messages[messages.length-1]?.display?.ref?.current?.completed]);
-
     useEffect(() => {
         const messagesLength = aiState.messages?.length
         if (messagesLength === 2 && session?.user) {
             // alert('refresh');
             window.sessionStorage.setItem('tts', aiState.messages[1].content);
-            // stopAllAudio();
             // router.refresh()
         }
     }, [aiState.messages, router])
 
     useEffect(() => {
         setNewChatId(id);
-    })
 
+    })
     useEffect(() => {
+        try {
+            if (document.querySelector('.sidebarContainer')) {
+                if (document.querySelector('.sidebarContainer').getAttribute('data-state') === 'open') {
+                    document.querySelector('.sideBarClose').click()
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
         const handleResize = () => {
             setWindowSize({
                 width: window.innerWidth,
@@ -244,25 +215,6 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
         const isTimeUp = isNewTimeFirstTick.current;
 
         return (
-            // <div className={`${messages.length === 0 && 'hidden'} timer text-center`}>
-            //     <div className="text text-xs max-md:hidden">剩余时间:</div>
-            //     <div key={remainingTime} className={`time-wrapper time ${isTimeUp ? "up" : ""}`}>
-            //         <div style={{fontFamily: "Montserrat"}}
-            //              className="value text-xl font-bold">{remainingTime >= 0 ? remainingTime : 0}s
-            //         </div>
-            // //     </div>
-            //     {prevTime.current !== null && (
-            //         <div
-            //             key={prevTime.current}
-            //             className={`time ${!isTimeUp ? "down" : ""}`}
-            //         >
-            //             <div style={{fontFamily: "Montserrat"}}
-            //                  className="value text-xl font-bold">{prevTime.current}s
-            //             </div>
-            //         </div>
-            //     )}
-            // </div>
-
         <div className={`${messages.length === 0 && 'hidden'} timer text-center`}>
             <div className="text text-xs max-md:hidden">剩余时间:</div>
             <div style={{fontFamily: "Montserrat"}}

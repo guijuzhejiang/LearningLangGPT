@@ -112,7 +112,6 @@ export function PromptForm({
     const [audioBuffer, setAudioBuffer] = React.useState([]);
     // 1min有没有讲话
     const [userSpeakLately, setUserSpeakLately] = React.useState<Date>(new Date());
-    const [userAudioMedia, setUserAudioMedia] = React.useState(null);
 
     const handleKeyDown = async (
         event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -239,11 +238,20 @@ export function PromptForm({
             setTimerInterval(true);
         }, vadTimeoutMS);
 
-        if (messages.length > 1 && showHint) {
+        if (messages.length > 1 && showHint && path.includes('chat')) {
             ;(async () => {
                 handleUpdateHint(messages[messages.length - 1].display.props.content);
             })()
         }
+
+        // console.log("%%%%%%%%%%%%%%%%%%%%%%%");
+        // console.log(lastMessage);
+        // console.log(messages);
+        if (messages.length === 2) {
+            // handleTTS(messages[messages.length-1].display.props.content);
+            document.querySelector('.bot-tts-btn').click()
+        }
+
 
     }, []);
 
@@ -353,14 +361,19 @@ export function PromptForm({
     // PART TTS
     const handleCanPlay = (e) => {
         console.log(e);
-        if (e.target) {
-            const element = e.target as HTMLMediaElement;
-            element.play();
-            element.removeEventListener('canplay', handleCanPlay);
+        try {
+            if (e.target) {
+                const element = e.target as HTMLMediaElement;
+                element.muted = false;
+                // element.play();
+                element.removeEventListener('canplay', handleCanPlay);
+            }
+        } catch (e) {
+
         }
     }
 
-    const handleTTS = async () => {
+    const handleTTS = async (content) => {
         let userData = {
             teacherGender: 'female',
             teacherName: 'Mary',
@@ -405,7 +418,7 @@ export function PromptForm({
             }
         } else {
             const formData = new FormData();
-            formData.append('text', hintContent);
+            formData.append('text', content);
             formData.append('teacher_name', userData['teacherName']);
             formData.append('teacher_gender', userData['teacherGender']);
             formData.append('lang', userData['teacherGender']);
@@ -424,6 +437,9 @@ export function PromptForm({
                 .then(wavBuffer => {
                     setCanPlay(true);
                     audioRef.current = new Audio("data:audio/wav;base64,"+wavBuffer);
+                    audioRef.current.setAttribute("autoplay", true);
+                    audioRef.current.setAttribute("playsinline", true);
+                    audioRef.current.setAttribute("mute", true);
                     audioRef.current.addEventListener('canplay', handleCanPlay);
                     audioRef.current.addEventListener('pause', ()=> setReadingLoud(false));
                     audioRef.current.addEventListener('ended', ()=> setReadingLoud(false));
@@ -456,7 +472,7 @@ export function PromptForm({
                     setVoiceContinuationEnable(false);
 
                     if (timerRef.current) {
-                        clearInterval(timerRef.current);
+                        clearTimeout(timerRef.current);
                         setUserSpeakLately(false);
                     }
                 } else {
@@ -509,40 +525,64 @@ export function PromptForm({
                     vad.stop()
                     setMicOn(false);
                     setVoiceContinuationEnable(false);
-                    clearInterval(timerRef.current);
+                    clearTimeout(timerRef.current);
                 }
             }
         }
     }, [userSpeakLately, timerInterval])
 
-    //
+
+    const timtoutCheck = () => {
+        if (lastMessage?.display?.ref?.current?.completed) {
+            if(messages.length === 2 && userId !== 'default'){
+                // window.history.replaceState({}, '', `/learninglang/chat/${chatId}`)
+                router.refresh();
+            }
+            handleUpdateHint(lastMessage.display.ref?.current?.text);
+        } else {
+            const intervalId = setTimeout(timtoutCheck, 800);
+            setHintInterval(intervalId);
+        }
+    };
+
     useEffect(() => {
-        // console.log("!&&&&&&&&&&&&&&&&!!!!!!!!!!!!")
+        console.log("!&&&&&&&&&&&&&&&&!!!!!!!!!!!!")
+        console.log(userId)
         // console.log(messages)
         // console.log(messages[messages.length-1])
         // console.log(lastMessage)
         // console.log(showHint)
+
+        if(messages.length === 2 && userId !== 'default'){
+            window.history.replaceState({}, '', `/learninglang/chat/${chatId}`)
+            router.refresh();
+        }
+
         if (showHint) {
             // console.log("xxxxxxxxxx3434343")
             // console.log(lastMessage?.display?.ref?.current)
             if (lastMessage?.display?.ref?.current?.completed) {
                 console.log("sdasdasdasdasdsasda")
+                if(messages.length === 2 && userId !== 'default'){
+                    // window.history.replaceState({}, '', `/learninglang/chat/${chatId}`)
+                    router.refresh();
+                }
+
                 if (hintInterval) {
                     try {
-                        clearInterval(hintInterval);
+                        setHintInterval(null);
+                        clearTimeout(hintInterval);
                     } catch (e) {
 
                     }
+                } else {
+                    handleUpdateHint(lastMessage.display.ref?.current?.text);
                 }
-                handleUpdateHint(lastMessage.display.ref?.current?.text);
-            } else {
+            }
+            else {
                 let retryCount = 0;
-                const intervalId = setInterval(() => {
-                    if (lastMessage?.display?.ref?.current?.completed) {
-                        clearInterval(intervalId);
-                        handleUpdateHint(lastMessage.display.ref?.current?.text);
-                    }
-                }, 300);
+                let hintSolved = false;
+                const intervalId = setTimeout(timtoutCheck, 800);
                 setHintInterval(intervalId);
             }
         }
@@ -551,6 +591,8 @@ export function PromptForm({
                 await handleBg();
             }
         })()
+
+        // return () => clearTimeout(intervalId);
     }, [lastMessage?.display?.ref?.current?.completed])
 
     useEffect(() => {
@@ -559,7 +601,8 @@ export function PromptForm({
                 ;(async () => {
                     if (hintInterval) {
                         try {
-                            clearInterval(hintInterval);
+                            setHintInterval(null);
+                            clearTimeout(hintInterval);
                         } catch (e) {
 
                         }
@@ -575,6 +618,15 @@ export function PromptForm({
             ref={formRef}
             onSubmit={async (e: any) => {
                 e.preventDefault()
+                if (hintInterval) {
+                    try {
+                        setHintInterval(null);
+                        clearTimeout(hintInterval);
+                    } catch (e) {
+
+                    }
+                }
+
                 setChatOpacity(1);
                 setHintContent('');
                 setShowTranslate(false);
@@ -620,7 +672,7 @@ export function PromptForm({
                                     e.preventDefault();
                                     stopAllAudio();
                                     setReadingLoud(!readingLoud);
-                                    await handleTTS();
+                                    await handleTTS(hintContent);
                                 }}
                             >
                                 {readingLoud ? (
@@ -682,7 +734,8 @@ export function PromptForm({
                                     console.log(messages);
                                     if (hintInterval) {
                                         try {
-                                            clearInterval(hintInterval);
+                                            setHintInterval(null);
+                                            clearTimeout(hintInterval);
                                         } catch (e) {
 
                                         }
@@ -803,7 +856,8 @@ export function PromptForm({
 
                                             if (hintInterval) {
                                                 try {
-                                                    clearInterval(hintInterval);
+                                                    setHintInterval(null);
+                                                    clearTimeout(hintInterval);
                                                 } catch (e) {
 
                                                 }
@@ -826,12 +880,14 @@ export function PromptForm({
                         </Tooltip>
 
                         {/*改变背景风格*/}
-                        <BackgroundDialog
-                            userId={userId}
-                            chatOpacity={chatOpacity}
-                            setChatOpacity={setChatOpacity}
-                            hide={messages.length < 2}
-                            ref={backgroundStyleRef}/>
+                        {userId !== 'default' && (
+                            <BackgroundDialog
+                                userId={userId}
+                                chatOpacity={chatOpacity}
+                                setChatOpacity={setChatOpacity}
+                                hide={messages.length < 2}
+                                ref={backgroundStyleRef}/>
+                        )}
 
                         {/*总结*/}
                         <Tooltip>
@@ -879,7 +935,8 @@ export function PromptForm({
 
                                     if (hintInterval) {
                                         try {
-                                            clearInterval(hintInterval);
+                                            setHintInterval(null);
+                                            clearTimeout(hintInterval);
                                         } catch (e) {
 
                                         }
@@ -914,35 +971,48 @@ export function PromptForm({
                                         <span className="sr-only">语音转文字</span>
                                     </Button>
                                 ) : (
-                                    <Button className={micOn ? "" : "bg-gray-400 opti"} size="icon"
+                                    <Button className={micOn ? "" : "bg-gray-400 relative"} size="icon"
                                             onClick={handleToggleMic}>
                                         <IconMicroPhone
                                             className={vad.userSpeaking && micOn ? "text-blue-400" : ""}/>
                                         <span className="sr-only">语音转文字</span>
+
+                                        {/*<span className={`${!micOn && ('hidden')} absolute -bottom-4 right-0 text-xs text-primary`}>#请使用耳机练习</span>*/}
                                     </Button>
                                 )
                             }
-
                         </TooltipTrigger>
                         <TooltipContent>语音转文字</TooltipContent>
                     </Tooltip>
 
                     {/*只有语音*/}
                     <Tooltip>
-                        <TooltipTrigger asChild className={`ml-1 ${!micOn && ('hidden')}`}>
-                            <Button className={voiceContinuationEnable ? "" : "bg-gray-400 opti"}
-                                    size="icon"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        if (!path.includes('chat')) {
-                                            sessionStorage.setItem("fromRoot", "true")
-                                        }
-                                        setVoiceContinuationEnable(!voiceContinuationEnable);
-                                    }}
-                            >
-                                <IconVoiceContinuation/>
-                                <span className="sr-only">自动语音</span>
-                            </Button>
+                        <TooltipTrigger asChild className={`ml-1`}>
+                            {
+                                vad.loading ? (
+                                    <Button size="icon">
+                                        <IconSpinner/>
+                                        <span className="sr-only">自动语音</span>
+                                    </Button>
+                                ) : (
+                                    <Button className={voiceContinuationEnable ? "" : "bg-gray-400 opti"}
+                                            size="icon"
+                                            onClick={async (e) => {
+                                                e.preventDefault();
+                                                if (!micOn) {
+                                                   await handleToggleMic(e)
+                                                }
+                                                if (!path.includes('chat')) {
+                                                    sessionStorage.setItem("fromRoot", "true");
+                                                }
+                                                setVoiceContinuationEnable(!voiceContinuationEnable);
+                                            }}
+                                    >
+                                        <IconVoiceContinuation/>
+                                        <span className="sr-only">自动语音</span>
+                                    </Button>
+                                )
+                            }
                         </TooltipTrigger>
                         <TooltipContent>自动语音</TooltipContent>
                     </Tooltip>

@@ -13,7 +13,7 @@ interface SidebarMobileProps {
 
 export function SidebarMobile({ children }: SidebarMobileProps) {
   return (
-    <Sheet>
+    <Sheet className={"testest"}>
       <SheetTrigger asChild>
         <Button variant="ghost" className="-ml-2 flex size-9 p-0 lg:hidden">
           <IconSidebar className="size-6" />

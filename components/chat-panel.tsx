@@ -123,6 +123,8 @@ export function ChatPanel({
                             variant="default"
                             className={"w-full"}
                             onClick={async () => {
+                                sessionStorage.setItem("firstChat", "true")
+
                                 const tLang = langDialogRef?.current?.lang ? langDialogRef?.current?.lang : "English";
                                 // eacherName: "Mary",
                                 //         teacherGender: "female",
