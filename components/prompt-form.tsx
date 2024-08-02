@@ -39,6 +39,7 @@ import {useMicVAD, utils} from "@ray8716397/vad-react";
 import {saveCountDown} from "@/app/actions";
 import {BackgroundDialog} from "@/components/background-style-dialog";
 import {Chat} from "@/lib/types";
+import {session} from "@auth/core/lib/actions";
 
 
 export interface PromptFormProps {
@@ -532,25 +533,29 @@ export function PromptForm({
     }, [userSpeakLately, timerInterval])
 
 
-    const timtoutCheck = () => {
-        if (lastMessage?.display?.ref?.current?.completed) {
+    const timtoutUpdateHint = (lastMsgId:string) => {
+        const targetDiv = document.getElementById(lastMsgId);
+        console.log(targetDiv);
+        if (targetDiv && targetDiv.classList.contains('completed')) {
             if(messages.length === 2 && userId !== 'default'){
                 // window.history.replaceState({}, '', `/learninglang/chat/${chatId}`)
                 router.refresh();
             }
-            handleUpdateHint(lastMessage.display.ref?.current?.text);
+            handleUpdateHint(targetDiv.querySelector('p.msg-content').textContent);
+            targetDiv.classList.add('finish');
+            sessionStorage.removeItem(`hint_${lastMsgId}`)
+
         } else {
-            const intervalId = setTimeout(timtoutCheck, 800);
-            setHintInterval(intervalId);
+            setTimeout(timtoutUpdateHint, 800, lastMsgId, );
         }
     };
 
     useEffect(() => {
         console.log("!&&&&&&&&&&&&&&&&!!!!!!!!!!!!")
         console.log(userId)
-        // console.log(messages)
+        console.log(messages)
         // console.log(messages[messages.length-1])
-        // console.log(lastMessage)
+        console.log(lastMessage)
         // console.log(showHint)
 
         if(messages.length === 2 && userId !== 'default'){
@@ -558,32 +563,23 @@ export function PromptForm({
             router.refresh();
         }
 
-        if (showHint) {
+        if (showHint && lastMessage) {
             // console.log("xxxxxxxxxx3434343")
             // console.log(lastMessage?.display?.ref?.current)
             if (lastMessage?.display?.ref?.current?.completed) {
                 console.log("sdasdasdasdasdsasda")
+                console.log(sessionStorage.getItem(`hint_${lastMessage?.id}`))
                 if(messages.length === 2 && userId !== 'default'){
                     // window.history.replaceState({}, '', `/learninglang/chat/${chatId}`)
                     router.refresh();
                 }
 
-                if (hintInterval) {
-                    try {
-                        setHintInterval(null);
-                        clearTimeout(hintInterval);
-                    } catch (e) {
-
-                    }
-                } else {
+                if (null === sessionStorage.getItem(`hint_${lastMessage?.id}`) && !document.getElementById(lastMessage?.id)?.classList.contains('finish')) {
                     handleUpdateHint(lastMessage.display.ref?.current?.text);
                 }
-            }
-            else {
-                let retryCount = 0;
-                let hintSolved = false;
-                const intervalId = setTimeout(timtoutCheck, 800);
-                setHintInterval(intervalId);
+            } else {
+                sessionStorage.setItem(`hint_${lastMessage?.id}`, 'process')
+                setTimeout(timtoutUpdateHint, 800, lastMessage?.id);
             }
         }
         ;(async () => {

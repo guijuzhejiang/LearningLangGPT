@@ -96,9 +96,9 @@ export const LangDialog = forwardRef(({
                                                         updateUserCookies(userId, "lang", key)
                                                     }}
                                                 >
-                                                    <div className="text-sm font-semibold text-center">
-                                                        <div className={"text-6xl"}>{value.emoji}</div>
-                                                        <div>{value.displayName}</div>
+                                                    <div className="font-semibold text-center">
+                                                        <div className={"text-[4.5rem]"}>{value.emoji}</div>
+                                                        <div className={"text-sm"}>{value.displayName}</div>
 
                                                     </div>
                                                     {/*<div className="text-sm font-semibold">{value.emoji}</div>*/}

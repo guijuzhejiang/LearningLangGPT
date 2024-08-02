@@ -615,9 +615,11 @@ async function submitUserMessage(content: string, chatParams: ChatParams | undef
         }
     });
 
+    const msgId = nanoid();
+
     return {
-        id: nanoid(),
-        display: <BotMessage content={textStream.value} userId={userId} chatId={chatId} chatParams={chatParams}/>
+        id: msgId,
+        display: <BotMessage content={textStream.value} userId={userId} chatId={chatId} chatParams={chatParams} msgId={msgId}/>
     }
 }
 
@@ -1047,7 +1049,7 @@ export const getUIStateFromAIState = (aiState: Chat) => {
                     <UserMessage>{message.content}</UserMessage>
                 ) : (
                     <BotMessage content={message.content} userId={aiState.userId} chatId={aiState.chatId}
-                                chatParams={aiState.chatParams}/>
+                                chatParams={aiState.chatParams} msgId={`${aiState.chatId}-${index}`}/>
                 )
         }))
 }

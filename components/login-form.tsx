@@ -6,11 +6,13 @@ import Link from 'next/link'
 import {useEffect, useRef, useState} from 'react'
 import {toast} from 'sonner'
 import {IconSpinner} from './ui/icons'
-import {getMessageFromCode} from '@/lib/utils'
+import {cn, getMessageFromCode} from '@/lib/utils'
 import {useRouter} from 'next/navigation'
 import queryString from 'query-string'
 import * as Tabs from '@radix-ui/react-tabs';
-
+import {isValidPhoneNumber} from 'react-phone-number-input'
+import {defaultCountries, PhoneInput} from 'react-international-phone'
+import 'react-international-phone/style.css'
 
 export default function LoginForm() {
     const router = useRouter()
@@ -20,7 +22,7 @@ export default function LoginForm() {
     const [state, setState] = useState('')
     const [isPC, setIsPC] = useState(false)
     const iframeRef = useRef(null)
-    const wechatReqUrl = `https://www.guijutech.com/service/wechat/login`;
+    // const wechatReqUrl = `https://www.guijutech.com/service/wechat/login`;
     const wechatLoginContainerID = "wechatLoginContainer";
 
     const generateRandomName = (length: number) => {
@@ -74,7 +76,7 @@ export default function LoginForm() {
             isPc = !isPhone && !isAndroid && !isSymbian;
         // alert(isPc);
             setIsPC(isPc);
-        setCurLoginMethod(isPc ?  'wechat':'account')
+        setCurLoginMethod(isPc ?  'wechat':'phone')
 
         if (isPc) {
             const wxState = generateRandomName(8);
@@ -122,6 +124,12 @@ export default function LoginForm() {
                             微信
                         </Tabs.Trigger>
                         <Tabs.Trigger
+                            className={`bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer`}
+                            value="phone"
+                        >
+                            手机
+                        </Tabs.Trigger>
+                        <Tabs.Trigger
                             className="bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer"
                             value="account"
                         >
@@ -131,7 +139,7 @@ export default function LoginForm() {
 
                     <Tabs.Content
                         forceMount
-                        className={`${curLoginMethod!=='wechat' && 'hidden'} grow outline-none bg-white rounded-b-md flex justify-center w-full pt-4`}
+                        className={`${curLoginMethod!=='wechat' && 'hidden'} grow outline-none bg-white rounded-b-md flex justify-center w-full pt-4 shadow-md`}
                         value="wechat"
                     >
                         <div className={" bg-white"} id={wechatLoginContainerID} ref={iframeRef}>
@@ -139,7 +147,15 @@ export default function LoginForm() {
                     </Tabs.Content>
 
                     <Tabs.Content
-                        className={`${curLoginMethod!=='account' && 'hidden'} grow outline-none bg-white flex justify-center w-full border shadow-md pt-4`}
+                        forceMount
+                        className={`${curLoginMethod !== 'phone' && 'hidden'} grow outline-none bg-white rounded-b-md flex justify-center w-full shadow-md`}
+                        value="phone"
+                    >
+                        <PhoneLogin/>
+                    </Tabs.Content>
+
+                    <Tabs.Content
+                        className={`${curLoginMethod !== 'account' && 'hidden'} grow outline-none bg-white flex justify-center w-full border shadow-md pt-4`}
                         value="account"
                     >
                         <form
@@ -213,4 +229,222 @@ function LoginButton() {
             {pending ? <IconSpinner/> : '登录'}
         </button>
     )
+}
+
+function PhoneLogin() {
+    const captchaLength = 5;
+    const phoneLength = 11;
+    const [captcha, setCaptcha] = useState(Array.from({length: captchaLength}, (_, index) => ('')))
+    const [phoneNo, setPhoneNo] = useState('')
+    const [phoneNoValied, setPhoneNoValied] = useState(false)
+    const [step, setStep] = useState('phone-input');
+    const [proceedBtnEnable, setProceedBtnEnable] = useState(false);
+
+    const handleKeyDown = (e) => {
+        if (
+            !/^[0-9]{1}$/.test(e.key)
+            && e.key !== 'Backspace'
+            && e.key !== 'Delete'
+            && e.key !== 'Tab'
+            && !e.metaKey
+        ) {
+            e.preventDefault()
+        }
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            const curIndex = parseInt(e.target.id.split('_').pop());
+            if (e.target.value) {
+                e.target.value = '';
+                captcha[curIndex] = e.target.value
+                setCaptcha(captcha);
+            } else {
+                const curIndex = parseInt(e.target.id.split('_').pop());
+                if (curIndex > 0) {
+                    const prevCaptcha = document.getElementById(`captcha_${curIndex-1}`)
+                    prevCaptcha.value = '';
+                    prevCaptcha?.focus();
+                    captcha[curIndex-1] = e.target.value
+                    setCaptcha(captcha);
+                }
+            }
+            setProceedBtnEnable(captcha.indexOf('') <= -1);
+        }
+
+        // if (e.key === 'Delete' || e.key === 'Backspace') {
+        //     const index = inputs.indexOf(e.target);
+        //     if (index > 0) {
+        //         inputs[index - 1].value = '';
+        //         inputs[index - 1].focus();
+        //     }
+        // }
+    }
+    const handleInput = (e) => {
+        const curIndex = parseInt(e.target.id.split('_').pop());
+        captcha[curIndex] = e.target.value
+        setCaptcha(captcha);
+        if (curIndex + 1 < captchaLength) {
+            document.getElementById(`captcha_${curIndex + 1}`)?.focus();
+        }
+        setProceedBtnEnable(captcha.indexOf('') <= -1);
+    }
+
+    const handlePorceed = (e) => {
+        e.preventDefault();
+        if (step==='phone-input') {
+            setStep('captcha-input')
+            document.getElementById(`captcha_0`)?.focus();
+            setProceedBtnEnable(false);
+        } else if (step==='captcha-input'){
+            if (captcha.indexOf('') > -1) {
+                toast.error("请输入验证码")
+            }
+        }
+    }
+
+    useEffect(() => {
+        document.getElementById(`captcha_0`)?.focus();
+
+    }, []);
+
+    return (
+        <div
+            onKeyDown={() => {
+                // const form = document.getElementById('otp-form')
+                // const inputs = [...form.querySelectorAll('input[type=text]')]
+                // const submit = form.querySelector('button[type=submit]')
+                //
+                // const handleKeyDown = (e) => {
+                //     if (
+                //         !/^[0-9]{1}$/.test(e.key)
+                //         && e.key !== 'Backspace'
+                //         && e.key !== 'Delete'
+                //         && e.key !== 'Tab'
+                //         && !e.metaKey
+                //     ) {
+                //         e.preventDefault()
+                //     }
+                //
+                //     if (e.key === 'Delete' || e.key === 'Backspace') {
+                //         const index = inputs.indexOf(e.target);
+                //         if (index > 0) {
+                //             inputs[index].value = '';
+                //         }
+                //     }
+                //
+                //     // if (e.key === 'Delete' || e.key === 'Backspace') {
+                //     //     const index = inputs.indexOf(e.target);
+                //     //     if (index > 0) {
+                //     //         inputs[index - 1].value = '';
+                //     //         inputs[index - 1].focus();
+                //     //     }
+                //     // }
+                // }
+                //
+
+                //
+                // const handleFocus = (e) => {
+                //     e.target.select()
+                // }
+                //
+                // const handlePaste = (e) => {
+                //     e.preventDefault()
+                //     const text = e.clipboardData.getData('text')
+                //     if (!new RegExp(`^[0-9]{${inputs.length}}$`).test(text)) {
+                //         return
+                //     }
+                //     const digits = text.split('')
+                //     inputs.forEach((input, index) => input.value = digits[index])
+                //     submit.focus()
+                // }
+                //
+                // inputs.forEach((input) => {
+                //     input.addEventListener('input', handleInput)
+                //     input.addEventListener('keydown', handleKeyDown)
+                //     input.addEventListener('focus', handleFocus)
+                //     input.addEventListener('paste', handlePaste)
+                // })
+            }}
+            className="w-full max-w-6xl mx-auto px-4 md:px-6 py-2">
+            <div className="flex justify-center">
+                <div
+                    className="max-w-md mx-auto text-center bg-white px-4 sm:px-8 py-4">
+                    {step === 'phone-input' && (
+                        <>
+                            {/*<header className="mb-8">*/}
+                            {/*    <h1 className="text-2xl font-bold mb-1">请输入手机号</h1>*/}
+                            {/*</header>*/}
+
+                            <PhoneInput
+                                countries={defaultCountries.filter(country =>
+                                    ['cn'].includes(country[1])
+                                )}
+                                disableCountryGuess={false}
+                                disableDialCodeAndPrefix={false}
+                                className={phoneNoValied ? "shadow border-2 border-primary" : "w-full shadow border-2 border-red-500"}
+                                inputClassName={"w-full"}
+                                // countrySelectorStyleProps={{
+                                //     buttonClassName: styles.phoneInputDropDownBtn,
+                                //     dropdownStyleProps: {listItemClassName: styles.phoneInputDropDownContent}
+                                // }}
+                                defaultCountry={'cn'}
+                                inputProps={{
+                                    placeholder: "请输入手机号"
+                                }}
+                                onChange={(p, {country, inputValue}) => {
+                                    setPhoneNo(inputValue.replace(/\s/g, ''))
+                                    const pValied = isValidPhoneNumber(p)
+                                    // captchaButtonRef.current.disabled = !pValied
+                                    setPhoneNoValied(pValied);
+                                    setProceedBtnEnable(pValied);
+                                }}
+                            />
+                        </>
+                    )}
+
+                    {step === 'captcha-input' && (
+                        <>
+                            <header className="mb-8">
+                                <h1 className="text-2xl font-bold mb-1">短信验证码</h1>
+                                <p className="text-[15px] text-slate-500">输入收到的4位数字验证码.</p>
+                            </header>
+                            <form id="otp-form">
+                                <div className="flex items-center justify-center gap-3">
+                                    {captcha.map((item, idx) => (
+                                        <input
+                                            type="text"
+                                            key={`captcha_${idx}`}
+                                            id={`captcha_${idx}`}
+                                            onKeyDown={handleKeyDown}
+                                            onFocus={(e) => {
+                                                e.target.select()
+                                            }}
+                                            onChange={handleInput}
+                                            className="w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded p-4 outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                            pattern="\d*" maxLength={1}/>
+                                    ))}
+                                </div>
+
+                            </form>
+                        </>
+                    )}
+                    <div className="mx-auto mt-4">
+                        <button type="submit"
+                                disabled={!proceedBtnEnable}
+                                onClick={handlePorceed}
+                                className={`my-4 flex h-10 w-full flex-row items-center justify-center rounded-md p-2 text-sm font-semibold ${proceedBtnEnable ? 'bg-zinc-900 text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200' : 'bg-gray-400 text-zinc-100 dark:bg-zinc-100 dark:text-gray-300 dark:hover:bg-zinc-200'}`}
+                        >
+                            发送验证码
+                        </button>
+                    </div>
+
+                    {step === 'captcha-input' && (
+                        <div className="text-sm text-slate-500 mt-4"><a
+                            onClick={() => setStep('phone-input')}
+                            className="cursor-pointer font-medium text-indigo-500 hover:text-indigo-600"
+                        >更换</a>手机号码?</div>
+                    )}
+
+                </div>
+            </div>
+        </div>
+    );
 }

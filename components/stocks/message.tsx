@@ -53,12 +53,14 @@ export const BotMessage = React.memo(forwardRef(({
                                           userId,
                                           chatId,
                                           className,
+                                          msgId,
                                       }: {
     content: string | StreamableValue<string>
     userId?: string
     chatId?: string
     chatParams?: ChatParams | null | undefined
     className?: string
+    msgId?: string
 }, ref) => {
     useImperativeHandle(ref, () => ({
         text,
@@ -216,7 +218,7 @@ export const BotMessage = React.memo(forwardRef(({
     }, [])
 
     return (
-        <div className={cn('group relative flex items-start md:-pl-12', className)}>
+        <div id={msgId} className={cn(`${completed && 'completed '}group relative flex items-start md:-pl-12`, className)}>
             <div
                 className="flex size-[24px] shrink-0 select-none items-center justify-center rounded-md border bg-primary text-primary-foreground shadow-sm">
                 {/*<IconOpenAI/>*/}
@@ -231,7 +233,7 @@ export const BotMessage = React.memo(forwardRef(({
                         remarkPlugins={[remarkGfm, remarkMath]}
                         components={{
                             p({children}) {
-                                return <p className="mb-2 last:mb-0">{children}</p>
+                                return <p className="msg-content mb-2 last:mb-0">{children}</p>
                             },
                             code({node, inline, className, children, ...props}) {
                                 if (children.length) {

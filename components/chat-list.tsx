@@ -43,7 +43,7 @@ export function ChatList({ messages, session, isShared }: ChatList) {
                 <Link href="/signup" className="underline">
                   注册
                 </Link>{' '}
-                以保存并重新查看您的聊天记录！
+                以保存重新查看您的聊天记录并开启背景图像生成功能！
               </p>
             </div>
           </div>

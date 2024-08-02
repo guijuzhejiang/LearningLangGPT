@@ -25,6 +25,9 @@ export function EmptyScreen() {
           你可以随时随地与一位幽默风趣、耐心十足的外语老师对话。无论你说中文还是英文,它都能用纯正流利的外语来回应,循循善诱地帮你练习口语。
         </p>
         <p className="leading-normal text-primary opacity-75">
+          请允许浏览器获取麦克风权限，以确保语音转文本（STT）功能正常运行。
+        </p>
+        <p className="leading-normal text-primary opacity-75">
           为了获得最佳的语音识别效果，请在使用语音输入功能时关闭扬声器并佩戴耳机，以确保语音输入的准确性。
         </p>
         {/*<p className="leading-normal text-muted-foreground flex ">*/}

@@ -148,7 +148,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                     <Dialog.Overlay
                         className="z-20 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-right-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-right-1/2 data-[state=open]:slide-in-from-top-[48%] w-full h-full bg-blackA6 fixed inset-0"/>
                     <Dialog.Content
-                        className="z-50 max-md:w-[85vw] min-w-[60vw] max-w-[95vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
+                        className="z-50 max-md:w-[85vw] min-w-[60vw] max-w-[90vw] max-md:h-[85vh] max-h-[90hw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
                             老师
                         </Dialog.Title>
@@ -172,9 +172,9 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                         <Scrollbars
                             autoHeight
                             autoWidthMin={'50vw'}
-                            autoHeightMax={'75vh'}
+                            autoHeightMax={'65vh'}
                         >
-                            <div className="grid grid-cols-5 gap-2 max-md:grid-cols-2">
+                            <div className="grid grid-cols-5 gap-2 max-md:grid-cols-2 pr-2">
                                 {
                                     Object.entries(teachers[dialogTeacherGender]).map(([key, value], i) => {
                                         return (

@@ -8,10 +8,8 @@ import {Cross2Icon} from '@radix-ui/react-icons';
 import Cookies from 'js-cookie';
 import {usePathname} from "next/navigation";
 import {updateUserCookies, loadUserCookies, stopAllAudio} from "@/lib/utils";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
-import {Button} from "@/components/ui/button";
-import {BotMessage, spinner} from "@/components/stocks";
-import {toast} from "sonner";
+import {Scrollbars} from 'react-custom-scrollbars';
+
 import {forwardRef, useImperativeHandle} from "react";
 interface ChatShareDialogProps extends DialogProps {
     userId: string
@@ -258,39 +256,49 @@ export const SceneDialog = forwardRef(({userId,
                 <Dialog.Portal>
                     <Dialog.Overlay
                         className="z-20 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-right-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-right-1/2 data-[state=open]:slide-in-from-top-[48%] w-full h-full bg-blackA6 fixed inset-0"/>
-                    <Dialog.Content
-                        className="z-50 max-md:w-[85vw] min-w-[60vw] max-w-[95vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
-                        <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
-                            场景
-                        </Dialog.Title>
-                        <Dialog.Description className="text-mauve11 mt-[10px] mb-1 text-[15px] leading-normal">
-                            <span className={"flex items-center"}>
-                                {"请选择场景。"}
-                            </span>
-                        </Dialog.Description>
 
-                        <div className="grid grid-cols-5 gap-2 max-md:grid-cols-2">
-                            {
-                                exampleMessages.map((example, index) => (
-                                    <Dialog.Close asChild key={example.heading}>
-                                        <div
-                                            className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
-                                                index > 1 && 'md:block'
-                                            }`}
-                                            onClick={async () => {
-                                                setScene(index);
-                                                updateUserCookies(userId, "scene", index)
-                                            }}
-                                        >
-                                            <div className="text-sm font-semibold">{example.heading.replaceAll('{lang}', ChineseLangs[lang])}</div>
-                                            <div className="text-sm text-zinc-600">
-                                                {/*{example.subheading}*/}
+
+                    <Dialog.Content
+                        className="z-50 max-md:w-[85vw] min-w-[60vw] max-w-[95vw] max-md:h-[85vh] min-h-[60vh] max-h-[85vh] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
+                        <Scrollbars
+                            autoHeight
+                            autoHeightMin={'100%'}
+                            autoHeightMax={'80vh'}
+                        >
+                            <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
+                                场景
+                            </Dialog.Title>
+                            <Dialog.Description className="text-mauve11 mt-[10px] mb-1 text-[15px] leading-normal">
+                        <span className={"flex items-center"}>
+                            {"请选择场景。"}
+                        </span>
+                            </Dialog.Description>
+                            <div className="grid grid-cols-5 gap-2 max-md:grid-cols-2 pr-2">
+                                {
+                                    exampleMessages.map((example, index) => (
+                                        <Dialog.Close asChild key={example.heading}>
+                                            <div
+                                                className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
+                                                    index > 1 && 'md:block'
+                                                }`}
+                                                onClick={async () => {
+                                                    setScene(index);
+                                                    updateUserCookies(userId, "scene", index)
+                                                }}
+                                            >
+                                                <div
+                                                    className="text-sm font-semibold">{example.heading.replaceAll('{lang}', ChineseLangs[lang])}</div>
+                                                <div className="text-sm text-zinc-600">
+                                                    {/*{example.subheading}*/}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Dialog.Close>
-                                ))
-                            }
-                        </div>
+                                        </Dialog.Close>
+                                    ))
+                                }
+                            </div>
+                        </Scrollbars>
+
+
                         <Dialog.Close asChild>
                             <button
                                 className="text-violet11 hover:bg-violet4 focus:shadow-violet7 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
@@ -300,6 +308,8 @@ export const SceneDialog = forwardRef(({userId,
                             </button>
                         </Dialog.Close>
                     </Dialog.Content>
+
+
                 </Dialog.Portal>
             </Dialog.Root>
         </>
