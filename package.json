@@ -14,6 +14,11 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.9",
+    "@alicloud/credentials": "^2.3.1",
+    "@alicloud/dysmsapi20170525": "^3.0.0",
+    "@alicloud/openapi-client": "^0.4.10",
+    "@alicloud/tea-typescript": "^1.8.0",
+    "@alicloud/tea-util": "^1.4.9",
     "@langchain/community": "^0.2.17",
     "@langchain/core": "^0.2.14",
     "@langchain/groq": "^0.0.13",

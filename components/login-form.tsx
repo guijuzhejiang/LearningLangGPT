@@ -1,7 +1,7 @@
 'use client'
 
 import {useFormState, useFormStatus} from 'react-dom'
-import {authenticate, wechatLogin} from '@/app/login/actions'
+import {authenticate, verifyCaptcha, wechatLogin} from '@/app/login/actions'
 import Link from 'next/link'
 import {useEffect, useRef, useState} from 'react'
 import {toast} from 'sonner'
@@ -13,6 +13,9 @@ import * as Tabs from '@radix-ui/react-tabs';
 import {isValidPhoneNumber} from 'react-phone-number-input'
 import {defaultCountries, PhoneInput} from 'react-international-phone'
 import 'react-international-phone/style.css'
+import {sendCaptcha} from "@/app/login/actions";
+import {spinner} from "@/components/stocks";
+import {Button} from "@/components/ui/button";
 
 export default function LoginForm() {
     const router = useRouter()
@@ -222,23 +225,28 @@ function LoginButton() {
     const {pending} = useFormStatus()
 
     return (
-        <button
+        <Button
             className="my-4 flex h-10 w-full flex-row items-center justify-center rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             aria-disabled={pending}
         >
             {pending ? <IconSpinner/> : '登录'}
-        </button>
+        </Button>
     )
 }
 
 function PhoneLogin() {
     const captchaLength = 5;
+    const captchaCountdown = 60;
     const phoneLength = 11;
     const [captcha, setCaptcha] = useState(Array.from({length: captchaLength}, (_, index) => ('')))
     const [phoneNo, setPhoneNo] = useState('')
     const [phoneNoValied, setPhoneNoValied] = useState(false)
     const [step, setStep] = useState('phone-input');
-    const [proceedBtnEnable, setProceedBtnEnable] = useState(false);
+    const [requestingCaptcha, setRequestingCaptcha] = useState(false);
+    const [requestingCaptchaCountdown, setRequestingCaptchaCountdown] = useState(captchaCountdown);
+    const [requestingCaptchaCounting, setRequestingCaptchaCounting] = useState(false);
+
+    const router = useRouter()
 
     const handleKeyDown = (e) => {
         if (
@@ -266,7 +274,6 @@ function PhoneLogin() {
                     setCaptcha(captcha);
                 }
             }
-            setProceedBtnEnable(captcha.indexOf('') <= -1);
         }
 
         // if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -277,27 +284,80 @@ function PhoneLogin() {
         //     }
         // }
     }
-    const handleInput = (e) => {
+    const handleInput = async (e) => {
         const curIndex = parseInt(e.target.id.split('_').pop());
         captcha[curIndex] = e.target.value
         setCaptcha(captcha);
         if (curIndex + 1 < captchaLength) {
             document.getElementById(`captcha_${curIndex + 1}`)?.focus();
+        } else {
+            try {
+                setRequestingCaptcha(true);
+                const res = await verifyCaptcha(phoneNo, captcha.join(''))
+                setRequestingCaptcha(false);
+
+                if (res.type === 'error') {
+                    toast.error("验证码错误");
+                    setCaptcha(Array.from({length: captchaLength}, (_, index) => ('')));
+                    captcha.map((item,idx)=>{
+                        const targetInput = document.getElementById(`captcha_${idx}`);
+                        targetInput.value = '';
+                        if (idx === 0) {
+                            targetInput?.focus();
+                        }
+                    })
+                } else {
+                    toast.success("登录成功");
+                    router.refresh()
+                }
+            } catch (e) {
+                console.log(e);
+                toast.error("登录失败");
+                setRequestingCaptcha(false);
+            }
+
         }
-        setProceedBtnEnable(captcha.indexOf('') <= -1);
     }
 
-    const handlePorceed = (e) => {
+    const handleReqCaptcha = async ()=> {
+        if (phoneNoValied && phoneNo.length===14) {
+            setRequestingCaptcha(true);
+            const res = await sendCaptcha(phoneNo, captchaLength)
+            setRequestingCaptcha(false);
+            if (res.success) {
+                toast.success("验证码发送成功");
+                setStep('captcha-input')
+
+                setRequestingCaptchaCounting(true);
+                let targetCount = captchaCountdown;
+                const intervalId = setInterval(() => {
+                    targetCount--;
+                    console.log(targetCount);
+                    if (targetCount > 0) {
+                        setRequestingCaptchaCountdown(targetCount);
+                    } else {
+                        setRequestingCaptchaCounting(false);
+                        clearInterval(intervalId);
+                    }
+                }, 1000);
+            } else {
+                toast.error("验证码发送失败");
+
+            }
+        } else {
+
+        }
+
+    }
+
+    const handleProceed = async (e) => {
         e.preventDefault();
         if (step==='phone-input') {
-            setStep('captcha-input')
             document.getElementById(`captcha_0`)?.focus();
-            setProceedBtnEnable(false);
-        } else if (step==='captcha-input'){
-            if (captcha.indexOf('') > -1) {
-                toast.error("请输入验证码")
-            }
+
         }
+        await handleReqCaptcha();
+
     }
 
     useEffect(() => {
@@ -368,11 +428,7 @@ function PhoneLogin() {
                 <div
                     className="max-w-md mx-auto text-center bg-white px-4 sm:px-8 py-4">
                     {step === 'phone-input' && (
-                        <>
-                            {/*<header className="mb-8">*/}
-                            {/*    <h1 className="text-2xl font-bold mb-1">请输入手机号</h1>*/}
-                            {/*</header>*/}
-
+                        <div onKeyDown={(e)=>{if(e.key==='Enter'){handleProceed(e)}}}>
                             <PhoneInput
                                 countries={defaultCountries.filter(country =>
                                     ['cn'].includes(country[1])
@@ -390,21 +446,22 @@ function PhoneLogin() {
                                     placeholder: "请输入手机号"
                                 }}
                                 onChange={(p, {country, inputValue}) => {
-                                    setPhoneNo(inputValue.replace(/\s/g, ''))
+                                    const curP = inputValue.replace(/\s/g, '');
+                                    setPhoneNo(curP)
                                     const pValied = isValidPhoneNumber(p)
                                     // captchaButtonRef.current.disabled = !pValied
-                                    setPhoneNoValied(pValied);
-                                    setProceedBtnEnable(pValied);
+                                    console.log(phoneNo);
+                                    setPhoneNoValied(pValied && curP.length===14);
                                 }}
                             />
-                        </>
+                        </div>
                     )}
 
                     {step === 'captcha-input' && (
                         <>
                             <header className="mb-8">
                                 <h1 className="text-2xl font-bold mb-1">短信验证码</h1>
-                                <p className="text-[15px] text-slate-500">输入收到的4位数字验证码.</p>
+                                <p className="text-[15px] text-slate-500">输入收到的{captchaLength}位数字验证码.</p>
                             </header>
                             <form id="otp-form">
                                 <div className="flex items-center justify-center gap-3">
@@ -417,7 +474,7 @@ function PhoneLogin() {
                                             onFocus={(e) => {
                                                 e.target.select()
                                             }}
-                                            onChange={handleInput}
+                                            onInput={handleInput}
                                             className="w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded p-4 outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                                             pattern="\d*" maxLength={1}/>
                                     ))}
@@ -427,13 +484,28 @@ function PhoneLogin() {
                         </>
                     )}
                     <div className="mx-auto mt-4">
-                        <button type="submit"
-                                disabled={!proceedBtnEnable}
-                                onClick={handlePorceed}
-                                className={`my-4 flex h-10 w-full flex-row items-center justify-center rounded-md p-2 text-sm font-semibold ${proceedBtnEnable ? 'bg-zinc-900 text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200' : 'bg-gray-400 text-zinc-100 dark:bg-zinc-100 dark:text-gray-300 dark:hover:bg-zinc-200'}`}
-                        >
-                            发送验证码
-                        </button>
+                        {requestingCaptcha ? (
+                            <div className={"my-4 flex h-10 w-full flex-row items-center justify-center rounded-md p-2 text-sm font-semibold"}>
+                                {spinner}
+                            </div>
+                            ):(
+                            <Button type="submit"
+                                    disabled={requestingCaptchaCounting}
+                                    onClick={handleProceed}
+                                    className={`my-4 flex h-10 w-full flex-row items-center justify-center rounded-md p-2 text-sm font-semibold ${!requestingCaptchaCounting && phoneNoValied ? 'bg-zinc-900 text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200' : 'bg-gray-400 text-zinc-100 dark:bg-zinc-100 dark:text-gray-300 dark:hover:bg-zinc-200'}`}
+                            >
+                                {requestingCaptchaCounting ? (
+                                    <>
+                                        {requestingCaptchaCountdown}s后可重新发送验证码
+                                    </>
+                                    ):(
+                                    <>
+                                        {`${step==='captcha-input'?' 重新':''}发送验证码`}
+                                    </>
+                                )}
+                            </Button>
+                        )}
+
                     </div>
 
                     {step === 'captcha-input' && (

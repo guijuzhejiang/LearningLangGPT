@@ -5,8 +5,8 @@ import {redirect} from 'next/navigation'
 import {kv} from '@vercel/kv'
 import {z} from "zod";
 import {auth} from '@/auth'
-import {type Chat, User} from '@/lib/types'
-import {ChatPromptTemplate, MessagesPlaceholder, PromptTemplate} from "@langchain/core/prompts";
+import {type Chat} from '@/lib/types'
+import {PromptTemplate} from "@langchain/core/prompts";
 import Groq from "groq-sdk";
 import {ChatGroq} from "@langchain/groq";
 import {loadSummarizationChain} from "langchain/chains";
@@ -16,8 +16,8 @@ import {createStreamableValue} from "ai/rsc";
 import {isChinese, reloadGroqProxy, runAsyncFnWithoutBlocking, toHalfWidth} from "@/lib/utils";
 import JSON5 from 'json5'
 import moji from 'moji'
-import {ChatMessageHistory} from "langchain/memory";
-import {AIMessage, HumanMessage} from "@langchain/core/messages";
+
+
 const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
 const langchainTools = {translator: null, prompter: {}, chatSummarizer: {"English":null,"Français":null,"Deutsch":null}};
@@ -603,3 +603,4 @@ export async function getTranslate(content: string) {
 
     return textStream.value
 }
+

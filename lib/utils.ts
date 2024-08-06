@@ -70,6 +70,7 @@ export const getStringFromBuffer = (buffer: ArrayBuffer) =>
 
 export enum ResultCode {
     InvalidCredentials = 'INVALID_CREDENTIALS',
+    InvalidCaptcha = 'INVALID_CAPTCHA',
     InvalidSubmission = 'INVALID_SUBMISSION',
     UserAlreadyExists = 'USER_ALREADY_EXISTS',
     UnknownError = 'UNKNOWN_ERROR',
@@ -81,6 +82,8 @@ export const getMessageFromCode = (resultCode: string) => {
     switch (resultCode) {
         case ResultCode.InvalidCredentials:
             return '密码错误!'
+        case ResultCode.InvalidCaptcha:
+            return '验证码错误!'
         case ResultCode.InvalidSubmission:
             return 'Invalid submission, please try again!'
         case ResultCode.UserAlreadyExists:
