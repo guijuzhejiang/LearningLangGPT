@@ -736,7 +736,7 @@ export function PromptForm({
 
                                         }
                                     }
-                                    handleUpdateHint(messages[messages.length - 1].display.ref ? messages[messages.length - 1].display.ref?.current?.text : messages[messages.length - 1].display.props.content);
+                                    handleUpdateHint(lastMessage.display.ref?.current?.text ? lastMessage.display.ref?.current?.text : messages[messages.length - 1].display.props.content);
                                 }}
                             >
                                 <IconRefresh/>
@@ -848,7 +848,7 @@ export function PromptForm({
                                         e.preventDefault();
                                         setShowHint(true);
                                         if (hintContent.length === 0) {
-                                            const lastMsg = messages[messages.length - 1].display.ref?.current?.text;
+                                            const lastMsg = lastMessage.display.ref?.current?.text;
 
                                             if (hintInterval) {
                                                 try {
@@ -937,7 +937,7 @@ export function PromptForm({
 
                                         }
                                     }
-                                    handleUpdateHint(messages[messages.length - 1].display.ref ? messages[messages.length - 1].display.ref?.current?.text : messages[messages.length - 1].display.props.content);
+                                    handleUpdateHint(lastMessage.display.ref?.current?.text ? lastMessage.display.ref?.current?.text : messages[messages.length - 1].display.props.content);
 
                                     setMicOn(true);
                                     setVoiceContinuationEnable(false);
