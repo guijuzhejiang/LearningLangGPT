@@ -212,7 +212,7 @@ export function updateUserCookies(uid:string, key:string, value:string) {
         userData[uid] = defaultConfig;
         userData[uid][key] = value;
     }
-    Cookies.set("chatsession", JSON.stringify(userData), { expires: 365 });
+    Cookies.set("chatsession", JSON.stringify(userData), { expires: 1 });
 }
 
 export function loadUserCookies(uid:string) {

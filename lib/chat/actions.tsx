@@ -35,7 +35,7 @@ import {HumanMessage, AIMessage} from "@langchain/core/messages";
 import {createStreamableValue} from "ai/rsc";
 import console from "node:console";
 import {Document} from "@langchain/core/documents";
-
+import { ChatOllama } from "@langchain/ollama";
 const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
 const chatChainDB = {} as { [key: string]: any };
@@ -43,6 +43,15 @@ const abortSignal = {} as { [key: string]: any };
 const langchainTools = {translator: null, prompter: {}, chatSummarizer: null};
 
 const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
+// const model = new ChatOllama({
+//     model: "qwen2:7b-instruct-q5_K_M",
+//     streaming: true,
+//     temperature: 0.8,
+//     numCtx: 16000,
+//     baseUrl: process.env.OLLAMA_URL,
+//     maxRetries:0
+// });
+
 const model = new ChatGroq({
     modelName: "llama3-70b-8192",
     apiKey: process.env.GROQ_API_KEY,

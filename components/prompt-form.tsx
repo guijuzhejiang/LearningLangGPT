@@ -535,7 +535,7 @@ export function PromptForm({
 
     const timtoutUpdateHint = (lastMsgId:string) => {
         const targetDiv = document.getElementById(lastMsgId);
-        console.log(targetDiv);
+        // console.log(targetDiv);
         if (targetDiv && targetDiv.classList.contains('completed')) {
             if(messages.length === 2 && userId !== 'default'){
                 // window.history.replaceState({}, '', `/learninglang/chat/${chatId}`)
