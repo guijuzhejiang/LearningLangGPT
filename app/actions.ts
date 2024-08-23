@@ -20,7 +20,7 @@ import moji from 'moji'
 
 const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
-const langchainTools = {translator: null, prompter: {}, chatSummarizer: {"English": {'en':null,'cn':null},"Français":{'en':null,'cn':null},"Deutsch":{'en':null,'cn':null}}};
+const langchainTools = {translator: {'en':null,'cn':null}, prompter: {}, chatSummarizer: {"English": {'en':null,'cn':null},"Français":{'en':null,'cn':null},"Deutsch":{'en':null,'cn':null}}};
 
 const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
 const model = new ChatGroq({
