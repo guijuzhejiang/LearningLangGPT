@@ -21,7 +21,7 @@ import {Scrollbars} from 'react-custom-scrollbars';
 import {Separator} from "@/components/ui/separator";
 import {Cross2Icon} from '@radix-ui/react-icons';
 import {ScoreSheet} from "@/components/score-sheet";
-import {useTranslations} from "next-intl";
+import {useLocale, useTranslations} from "next-intl";
 
 export const ScoreSheetDialog = forwardRef(({
                                                 chat,
@@ -34,7 +34,7 @@ export const ScoreSheetDialog = forwardRef(({
     const [displayJSON, setDisplayJSON] = React.useState(false)
     const [remainingSecs, setRemainingSecs] = React.useState(0)
     const t = useTranslations('ScoreSheetDialog');
-    // const locale = useLocale();
+    const locale = useLocale();
     // useImperativeHandle(ref, () => ({
     //     childMethod() {
     //         console.log('Child method called');
@@ -57,7 +57,7 @@ export const ScoreSheetDialog = forwardRef(({
                     if (open) {
                         setDisplayJSON(false);
                         setSummaryContent('');
-                        const res = await getScore(chat);
+                        const res = await getScore(chat, locale.includes('zh') ? 'cn':'en');
                         setDisplayJSON(typeof res === 'string')
                         setSummaryContent(res);
 

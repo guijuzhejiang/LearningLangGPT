@@ -19,7 +19,7 @@ import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {usePathname} from "next/navigation";
 import Image from 'next/image'
-import {useTranslations} from "next-intl";
+import {useLocale, useTranslations} from "next-intl";
 
 // Different types of message bubbles.
 
@@ -80,7 +80,7 @@ export const BotMessage = React.memo(forwardRef(({
     const audioRef = React.useRef(null);
     const {translate} = useActions()
     const PromptFormT = useTranslations('PromptForm');
-    // const locale = useLocale();
+    const locale = useLocale();
 
     const handleCanPlay = (e) => {
         // console.log(e);
@@ -318,7 +318,7 @@ export const BotMessage = React.memo(forwardRef(({
                                     className={`bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
                                     onClick={async () => {
                                         setShowTranslate(true);
-                                        const translatedText = await translate(text);
+                                        const translatedText = await translate(text, locale.includes('zh') ? 'cn':'en');
                                         if (typeof translatedText === 'object') {
                                             let value = ''
                                             for await (const delta of readStreamableValue(translatedText)) {
