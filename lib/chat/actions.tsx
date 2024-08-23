@@ -40,7 +40,7 @@ const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') 
 
 const chatChainDB = {} as { [key: string]: any };
 const abortSignal = {} as { [key: string]: any };
-const langchainTools = {translator: null, prompter: {}, chatSummarizer: null};
+const langchainTools = {translator: {'en':null, 'cn':null}, prompter: {}, chatSummarizer: null};
 
 const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
 // const model = new ChatOllama({
@@ -184,21 +184,21 @@ async function getBgUrl(style: number | undefined, teacherGender) {
     }
 }
 
-async function translate(content: string) {
+async function translate(content: string, lang='cn') {
     'use server'
 
     const textStream = createStreamableValue("");
 
     runAsyncFnWithoutBlocking(async () => {
-        if (!langchainTools.translator) {
-            langchainTools.translator = await createTranslator();
+        if (!langchainTools.translator[lang]) {
+            langchainTools.translator[lang] = await createTranslator(lang);
         }
 
         const maxRetries = 3;
         let retries = 0;
         const proceed = async ()=>{
             let buf = "";
-            const res = await langchainTools.translator.invoke(
+            const res = await langchainTools.translator[lang].invoke(
                 {input: content},
                 {
                     callbacks: [
@@ -244,21 +244,38 @@ async function translate(content: string) {
     return textStream.value
 }
 
-export async function createTranslator() {
+export async function createTranslator(lang:string) {
     'use server'
-    const prompt = ChatPromptTemplate.fromMessages([
-        [
-            "system",
-            `
+    if (lang === 'cn') {
+        const prompt = ChatPromptTemplate.fromMessages([
+            [
+                "system",
+                `
             下面我让你来充当翻译家，你的目标是把任何语言翻译成中文，请翻译时不要带翻译腔，而是要翻译得自然、流畅和地道，使用优美和高雅的表达方式,不要添加原文没有的标点符号,只回复翻译的内容。如果输入文本中有'|'，请保留，表示分割多个文本。
             `,
-        ],
-        ["human", "请翻译下面这句话：{input}"],
-    ]);
+            ],
+            ["human", "请翻译下面这句话：{input}"],
+        ]);
 
-    return prompt.pipe(model).withFallbacks({
-        fallbacks: Array.from(fallbacksModels.map((v, i) => prompt.pipe(v)))
-    });
+        return prompt.pipe(model).withFallbacks({
+            fallbacks: Array.from(fallbacksModels.map((v, i) => prompt.pipe(v)))
+        });
+    } else {
+        const prompt = ChatPromptTemplate.fromMessages([
+            [
+                "system",
+                `
+            I'll let you act as a translator, your goal is to translate any language into English, please translate without translation accent, but translate naturally, fluently and authentically, use beautiful and elegant expressions, don't add punctuation marks not found in the original text, and reply only to the translated content. If there is '|' in the input text, please keep it to indicate splitting more than one text.
+            `,
+            ],
+            ["human", "Please translate the following sentence:{input}"],
+        ]);
+
+        return prompt.pipe(model).withFallbacks({
+            fallbacks: Array.from(fallbacksModels.map((v, i) => prompt.pipe(v)))
+        });
+    }
+
 }
 
 async function getHint(msg: string, chatParams: ChatParams | undefined | null) {
@@ -860,6 +877,7 @@ export type ChatParams = {
     scene: number
     lang: string
     level: number
+    createdAt: string
 
 }
 
@@ -994,7 +1012,7 @@ export const AI = createAI<AIState, UIState>({
         if (session && session.user) {
             const {chatId, messages, chatParams} = state
 
-            const createdAt = new Date()
+            const createdAt = formatDate(new Date())
             const userId = session.user.id as string
             const path = process.env.NODE_ENV === "development" ? `/chat/${chatId}` : `/chat/${chatId}`
             // export type ChatParams = {
@@ -1006,7 +1024,7 @@ export const AI = createAI<AIState, UIState>({
             //
             // }
             try {
-                const title = `${langDisplay[chatParams?.lang]}-${levelDisplay[chatParams?.level]}-${sceneDisplay[chatParams?.scene].heading} ${formatDate(createdAt)}`
+                const title = `${langDisplay[chatParams?.lang]}-${levelDisplay[chatParams?.level]}-${sceneDisplay[chatParams?.scene].heading}`
 
                 const chat: Chat = {
                     id: chatId,

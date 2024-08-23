@@ -13,6 +13,7 @@ import {spinner} from "@/components/stocks";
 import {toast} from "sonner";
 import {Scrollbars} from 'react-custom-scrollbars';
 import {forwardRef, useImperativeHandle} from "react";
+import {useLocale, useTranslations} from 'next-intl';
 interface ChatShareDialogProps extends DialogProps {
     userId: string
 }
@@ -30,6 +31,9 @@ export const TeacherVoiceDialog = forwardRef(({userId,
     const [teacherGender, setTeacherGender] = React.useState('female')
     const [dialogTeacherGender, setDialogTeacherGender] = React.useState('female')
     const [teacherName, setTeacherName] = React.useState('Mary')
+    const t = useTranslations('TeacherVoiceDialog');
+    const PromptFormT = useTranslations('PromptForm');
+    const locale = useLocale();
 
     const handleCanPlay = (e) => {
         console.log(e);
@@ -125,7 +129,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
     }, [])
 
     return (
-        <>
+        <div key={locale}>
             <Dialog.Root {...props}>
                 <Dialog.Trigger asChild>
                     <div
@@ -134,7 +138,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                         // onClick={async () => {
                         // }}
                     >
-                        <div className="text-sm font-semibold mb-2">老师</div>
+                        <div className="text-sm font-semibold mb-2">{t('title')}</div>
                         <div className="text-sm text-zinc-600 items-center flex flex-col">
                             <img className={"size-24"}
                                    alt={teachers[teacherGender][teacherName].name}
@@ -150,22 +154,22 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                     <Dialog.Content
                         className="z-50 max-md:w-[85vw] min-w-[60vw] max-w-[90vw] max-md:h-[85vh] max-h-[90hw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
-                            老师
+                            {t('title')}
                         </Dialog.Title>
                         <Dialog.Description className="text-mauve11 mt-[10px] mb-1 text-[15px] leading-normal">
                             <span className={"flex items-center"}>
-                                {"点击"}<IconPlayMedia/>{"可试听老师声音,点击头像选择老师。"}
+                                {t('hint0')}<IconPlayMedia/>{t('hint1')}
                             </span>
                             <div className={"grid grid-cols-2 gap-1 mt-1"}>
                                 <Button
                                     onClick={()=>setDialogTeacherGender('female')}
                                     className={`${dialogTeacherGender==="female"?('bg-mauve7'):('bg-white')} w-full text-violet11 shadow-blackA4 hover:bg-mauve5 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none shadow-[0_2px_10px]`}>
-                                    female
+                                    {t('femaleText')}
                                 </Button>
                                 <Button
                                     onClick={()=>setDialogTeacherGender('male')}
                                     className={`${dialogTeacherGender==="male"?('bg-mauve7'):('bg-white')} w-full text-violet11 shadow-blackA4 hover:bg-mauve5 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none shadow-[0_2px_10px]`}>
-                                    male
+                                    {t('maleText')}
                                 </Button>
                             </div>
                         </Dialog.Description>
@@ -264,13 +268,11 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                                                                 ) : (
                                                                     <IconPlayMedia className="size-6"/>
                                                                 )}
-                                                                <span
-                                                                    className="sr-only">{value["readingLoud"][0] ? ("停止") : ("朗读")}</span>
                                                             </Button>
                                                         </TooltipTrigger>
-                                                        <TooltipContent>{value["readingLoud"][0] ? ("停止") : ("朗读")}</TooltipContent>
+                                                        <TooltipContent>{value["readingLoud"][0] ? (PromptFormT('readingLoudStop')) : (PromptFormT('readingLoudStart'))}</TooltipContent>
                                                     </Tooltip>
-                                                    &nbsp;{value.name}
+                                                    &nbsp;<span className={"text-primary-foreground"}>{value.name}</span>
                                                 </div>
 
                                             </div>
@@ -300,7 +302,7 @@ export const TeacherVoiceDialog = forwardRef(({userId,
                     </Dialog.Content>
                 </Dialog.Portal>
             </Dialog.Root>
-        </>
+        </div>
     )
 });
 

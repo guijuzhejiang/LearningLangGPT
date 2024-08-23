@@ -21,6 +21,7 @@ import {Scrollbars} from 'react-custom-scrollbars';
 import {Separator} from "@/components/ui/separator";
 import {Cross2Icon} from '@radix-ui/react-icons';
 import {ScoreSheet} from "@/components/score-sheet";
+import {useTranslations} from "next-intl";
 
 export const ScoreSheetDialog = forwardRef(({
                                                 chat,
@@ -32,7 +33,8 @@ export const ScoreSheetDialog = forwardRef(({
     const [summaryContent, setSummaryContent] = React.useState('')
     const [displayJSON, setDisplayJSON] = React.useState(false)
     const [remainingSecs, setRemainingSecs] = React.useState(0)
-
+    const t = useTranslations('ScoreSheetDialog');
+    // const locale = useLocale();
     // useImperativeHandle(ref, () => ({
     //     childMethod() {
     //         console.log('Child method called');
@@ -69,7 +71,7 @@ export const ScoreSheetDialog = forwardRef(({
                             <TooltipTrigger asChild>
                                 {children}
                             </TooltipTrigger>
-                            <TooltipContent>评分总结</TooltipContent>
+                            <TooltipContent>{t('title')}</TooltipContent>
                         </Tooltip>
                     </span>
                 </Dialog.Trigger>
@@ -79,7 +81,7 @@ export const ScoreSheetDialog = forwardRef(({
                     <Dialog.Content
                         className="z-50 min-w-[60vw] max-w-[80vw] min-h-[60vh] max-h-[90vh] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
-                            评分总结
+                            {t('title')}
                         </Dialog.Title>
                         <Dialog.Description>
                             <Scrollbars
@@ -116,7 +118,7 @@ export const ScoreSheetDialog = forwardRef(({
                                         }}
                                 >
                                     <IconContinue className={"size-8"}/>
-                                    <span className={"text-xl"}>&nbsp;继续学习(6分钟)</span>
+                                    <span className={"text-xl"}>&nbsp;{t('continueBtn')}</span>
                                 </Button>
                             </Dialog.Close>
 

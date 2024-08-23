@@ -14,7 +14,7 @@ import {spinner} from "@/components/stocks";
 import {toast} from "sonner";
 import {forwardRef, useImperativeHandle} from "react";
 import {SceneDialog} from "@/components/scene-dialog";
-
+import {useLocale, useTranslations} from 'next-intl';
 interface ChatShareDialogProps extends DialogProps {
     userId: string
 }
@@ -28,12 +28,13 @@ export const LangDialog = forwardRef(({
         lang,
     }))
 
-    const path = usePathname();
-    const [lang, setLang] = React.useState('English')
+    const t = useTranslations('LangDialog');
+    const locale = useLocale();
+    const [lang, setLang] = React.useState(locale==='en' ? 'Français':'English')
     const langDisplay = {
-        "English": {emoji: "🇺🇸", displayName: "英语"},
-        "Français": {emoji: "🇫🇷", displayName: "法语"},
-        "Deutsch": {emoji: "🇩🇪", displayName: "德语"},
+        "English": {emoji: "🇺🇸", displayName: t('english')},
+        "Français": {emoji: "🇫🇷", displayName: t('french')},
+        "Deutsch": {emoji: "🇩🇪", displayName: t('german')},
     }
 
 
@@ -45,14 +46,22 @@ export const LangDialog = forwardRef(({
             // console.log(userData);
             if (userData) {
                 if (userData.hasOwnProperty("lang")) {
-                    setLang(userData["lang"]);
+                    if (!(locale === 'en' && userData["lang"] === 'English')) {
+                        setLang(userData["lang"]);
+                    }
                 }
             }
         })()
     }, [])
 
+    React.useEffect(() => {
+        if (locale === 'en' && lang === 'English') {
+            setLang("Français");
+        }
+    }, [locale])
+
     return (
-        <>
+        <div key={locale}>
             <Dialog.Root {...props}>
                 <Dialog.Trigger asChild>
                     <div
@@ -61,7 +70,7 @@ export const LangDialog = forwardRef(({
                         // onClick={async () => {
                         // }}
                     >
-                        <div className="text-sm font-semibold mb-2">语言</div>
+                        <div className="text-sm font-semibold mb-2">{t('title')}</div>
                         <div className="text-sm text-zinc-600 items-center flex flex-col">
                             <div className={"text-8xl"}>{langDisplay[lang].emoji}</div>
                             <div>{langDisplay[lang].displayName}</div>
@@ -74,40 +83,42 @@ export const LangDialog = forwardRef(({
                     <Dialog.Content
                         className="z-50 max-md:w-[85vw] min-w-[60vw] max-w-[95vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
-                            语言
+                            {t('title')}
                         </Dialog.Title>
                         <Dialog.Description className="text-mauve11 mt-[10px] mb-1 text-[15px] leading-normal">
                             <span className={"flex items-center"}>
-                                {"请选择语言。"}
+                                {t('hint')}
                             </span>
                         </Dialog.Description>
 
                         <div className="w-full grid grid-cols-3 gap-2">
                             {
                                 Object.entries(langDisplay).map(([key, value], i) => {
-                                        return (
-                                            <Dialog.Close key={"l"+key} asChild>
-                                                <div
-                                                    className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
-                                                        i > 1 && 'md:block'
-                                                    }`}
-                                                    onClick={async () => {
-                                                        setLang(key);
-                                                        updateUserCookies(userId, "lang", key)
-                                                    }}
-                                                >
-                                                    <div className="font-semibold text-center">
-                                                        <div className={"text-[4.5rem]"}>{value.emoji}</div>
-                                                        <div className={"text-sm"}>{value.displayName}</div>
+                                        if(!(key === 'English' && locale === "en")){
+                                            return (
+                                                <Dialog.Close key={"l"+key} asChild>
+                                                    <div
+                                                        className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900 ${
+                                                            i > 1 && 'md:block'
+                                                        }`}
+                                                        onClick={async () => {
+                                                            setLang(key);
+                                                            updateUserCookies(userId, "lang", key)
+                                                        }}
+                                                    >
+                                                        <div className="font-semibold text-center">
+                                                            <div className={"text-[4.5rem]"}>{value.emoji}</div>
+                                                            <div className={"text-sm"}>{value.displayName}</div>
 
+                                                        </div>
+                                                        {/*<div className="text-sm font-semibold">{value.emoji}</div>*/}
+                                                        {/*<div className="text-sm text-zinc-600">*/}
+                                                        {/*    {ld}*/}
+                                                        {/*</div>*/}
                                                     </div>
-                                                    {/*<div className="text-sm font-semibold">{value.emoji}</div>*/}
-                                                    {/*<div className="text-sm text-zinc-600">*/}
-                                                    {/*    {ld}*/}
-                                                    {/*</div>*/}
-                                                </div>
-                                            </Dialog.Close>
-                                        )
+                                                </Dialog.Close>
+                                            )
+                                        }
                                     }
                                 )
                             }
@@ -132,7 +143,7 @@ export const LangDialog = forwardRef(({
                     </Dialog.Content>
                 </Dialog.Portal>
             </Dialog.Root>
-        </>
+        </div>
     )
 });
 

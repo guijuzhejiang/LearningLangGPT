@@ -16,6 +16,7 @@ import 'react-international-phone/style.css'
 import {sendCaptcha} from "@/app/login/actions";
 import {spinner} from "@/components/stocks";
 import {Button} from "@/components/ui/button";
+import {useLocale, useTranslations} from "next-intl";
 
 export default function LoginForm() {
     const router = useRouter()
@@ -25,6 +26,10 @@ export default function LoginForm() {
     const [state, setState] = useState('')
     const [isPC, setIsPC] = useState(false)
     const iframeRef = useRef(null)
+
+    const t = useTranslations('LoginForm');
+    // const l = await getLocale();
+    const locale = useLocale();
     // const wechatReqUrl = `https://www.guijutech.com/service/wechat/login`;
     const wechatLoginContainerID = "wechatLoginContainer";
 
@@ -58,9 +63,9 @@ export default function LoginForm() {
                 console.log(code);
                 console.log(res);
                 if (res.type==='error') {
-                    toast.error("登录失败")
+                    toast.error(t('loginFailedToast'))
                 } else {
-                    toast.success("登录成功");
+                    toast.success(t('loginSucceedToast'));
                     router.refresh()
                 }
             })()
@@ -85,6 +90,7 @@ export default function LoginForm() {
             const wxState = generateRandomName(8);
             setState(wxState)
             new window.WxLogin({
+                lang: locale.includes("zh-") ? "cn":"en",
                 self_redirect: true,
                 id: wechatLoginContainerID,
                 appid: process.env.WECHAT_LOGIN_APPID,
@@ -124,19 +130,19 @@ export default function LoginForm() {
                             className={`${!isPC && 'hidden'} bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer`}
                             value="wechat"
                         >
-                            微信
+                            {t('wechatText')}
                         </Tabs.Trigger>
                         <Tabs.Trigger
                             className={`bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer`}
                             value="phone"
                         >
-                            手机
+                            {t('phoneText')}
                         </Tabs.Trigger>
                         <Tabs.Trigger
                             className="bg-white px-5 h-[45px] flex-1 flex items-center justify-center text-[15px] leading-none text-mauve11 select-none first:rounded-tl-md last:rounded-tr-md hover:text-violet11 data-[state=active]:text-violet11 data-[state=active]:shadow-[inset_0_-1px_0_0,0_1px_0_0] data-[state=active]:shadow-current data-[state=active]:focus:relative outline-none cursor-pointer"
                             value="account"
                         >
-                            账号密码
+                            {t('passwordText')}
                         </Tabs.Trigger>
                     </Tabs.List>
 
@@ -172,7 +178,7 @@ export default function LoginForm() {
                                             className="mb-3 mt-5 block text-xs font-medium text-zinc-400"
                                             htmlFor="email"
                                         >
-                                            邮箱地址
+                                            {t('emailLabel')}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -180,7 +186,7 @@ export default function LoginForm() {
                                                 id="email"
                                                 type="email"
                                                 name="email"
-                                                placeholder="输入你的邮箱地址"
+                                                placeholder={t('emailPlaceholder')}
                                                 required
                                             />
                                         </div>
@@ -190,7 +196,7 @@ export default function LoginForm() {
                                             className="mb-3 mt-5 block text-xs font-medium text-zinc-400"
                                             htmlFor="password"
                                         >
-                                            密码
+                                            {t('emailLabel')}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -198,21 +204,21 @@ export default function LoginForm() {
                                                 id="password"
                                                 type="password"
                                                 name="password"
-                                                placeholder="输入密码"
+                                                placeholder={t('passwordPlaceholder')}
                                                 required
                                                 minLength={6}
                                             />
                                         </div>
                                     </div>
                                 </div>
-                                <LoginButton/>
+                                <LoginButton btnText={t('text')}/>
                             </div>
 
                             <Link
                                 href="/signup"
                                 className="flex flex-row gap-1 text-sm text-zinc-400 justify-center pb-2"
                             >
-                                还没有账号? <div className="font-semibold underline">注册</div>
+                                {t('registerHint0')} <div className="font-semibold underline">{t('registerHint1')}</div>
                             </Link>
                         </form>
                     </Tabs.Content>
@@ -221,15 +227,18 @@ export default function LoginForm() {
     )
 }
 
-function LoginButton() {
+function LoginButton({btnText}) {
     const {pending} = useFormStatus()
+    // useEffect(() => {
+    //     console.log(btnText);
+    // }, []);
 
     return (
         <Button
             className="my-4 flex h-10 w-full flex-row items-center justify-center rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             aria-disabled={pending}
         >
-            {pending ? <IconSpinner/> : '登录'}
+            {pending ? <IconSpinner/> : <>{btnText+""}</>}
         </Button>
     )
 }
@@ -245,7 +254,8 @@ function PhoneLogin() {
     const [requestingCaptcha, setRequestingCaptcha] = useState(false);
     const [requestingCaptchaCountdown, setRequestingCaptchaCountdown] = useState(captchaCountdown);
     const [requestingCaptchaCounting, setRequestingCaptchaCounting] = useState(false);
-
+    const t = useTranslations('LoginForm');
+    const locale = useLocale();
     const router = useRouter()
 
     const handleKeyDown = (e) => {
@@ -297,7 +307,7 @@ function PhoneLogin() {
                 setRequestingCaptcha(false);
 
                 if (res.type === 'error') {
-                    toast.error("验证码错误");
+                    toast.error(t('captchaWrongToast'));
                     setCaptcha(Array.from({length: captchaLength}, (_, index) => ('')));
                     captcha.map((item,idx)=>{
                         const targetInput = document.getElementById(`captcha_${idx}`);
@@ -307,12 +317,12 @@ function PhoneLogin() {
                         }
                     })
                 } else {
-                    toast.success("登录成功");
+                    toast.success(t('loginSucceedToast'));
                     router.refresh()
                 }
             } catch (e) {
                 console.log(e);
-                toast.error("登录失败");
+                toast.error(t('loginFailedToast'));
                 setRequestingCaptcha(false);
             }
 
@@ -325,7 +335,7 @@ function PhoneLogin() {
             const res = await sendCaptcha(phoneNo, captchaLength)
             setRequestingCaptcha(false);
             if (res.success) {
-                toast.success("验证码发送成功");
+                toast.success(t('captchaSendSucceedToast'));
                 setStep('captcha-input')
 
                 setRequestingCaptchaCounting(true);
@@ -341,7 +351,7 @@ function PhoneLogin() {
                     }
                 }, 1000);
             } else {
-                toast.error("验证码发送失败");
+                toast.error(t('captchaSendFailedToast'));
 
             }
         } else {
@@ -443,7 +453,7 @@ function PhoneLogin() {
                                 // }}
                                 defaultCountry={'cn'}
                                 inputProps={{
-                                    placeholder: "请输入手机号"
+                                    placeholder: t('phonePlaceholder')
                                 }}
                                 onChange={(p, {country, inputValue}) => {
                                     const curP = inputValue.replace(/\s/g, '');
@@ -460,8 +470,8 @@ function PhoneLogin() {
                     {step === 'captcha-input' && (
                         <>
                             <header className="mb-8">
-                                <h1 className="text-2xl font-bold mb-1">短信验证码</h1>
-                                <p className="text-[15px] text-slate-500">输入收到的{captchaLength}位数字验证码.</p>
+                                <h1 className="text-2xl font-bold mb-1">{t('phoneHeader')}</h1>
+                                <p className="text-[15px] text-slate-500">{t('phoneHint0')}{captchaLength}{t('phoneHint1')}.</p>
                             </header>
                             <form id="otp-form">
                                 <div className="flex items-center justify-center gap-3">
@@ -496,11 +506,11 @@ function PhoneLogin() {
                             >
                                 {requestingCaptchaCounting ? (
                                     <>
-                                        {requestingCaptchaCountdown}s后可重新发送验证码
+                                        {requestingCaptchaCountdown}{t('phoneHint2')}
                                     </>
                                     ):(
                                     <>
-                                        {`${step==='captcha-input'?' 重新':''}发送验证码`}
+                                        {`${step==='captcha-input'? t('phoneResend'):t('phoneSend')}`}
                                     </>
                                 )}
                             </Button>
@@ -512,7 +522,7 @@ function PhoneLogin() {
                         <div className="text-sm text-slate-500 mt-4"><a
                             onClick={() => setStep('phone-input')}
                             className="cursor-pointer font-medium text-indigo-500 hover:text-indigo-600"
-                        >更换</a>手机号码?</div>
+                        >{t('phoneChange0')}</a>&nbsp;{t('phoneChange1')}</div>
                     )}
 
                 </div>

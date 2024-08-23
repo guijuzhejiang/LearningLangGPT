@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/tooltip'
 import Cookies from "js-cookie";
 import {ScoreSheetDialog} from "@/components/score-sheet-dialog";
+import {useLocale, useTranslations} from "next-intl";
 
 interface SidebarActionsProps {
   chat: Chat
@@ -37,9 +38,12 @@ export function SidebarActions({
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [isRemovePending, startRemoveTransition] = React.useTransition()
   const path = usePathname();
+  const t = useTranslations('SidebarActions');
+  const chatHistoryL = useTranslations('ChatHistory');
+  const locale = useLocale();
 
   return (
-    <>
+    <div key={locale}>
       <div className="">
         {/* score sheet */}
         <ScoreSheetDialog chat={chat} isRemovePending={isRemovePending}>
@@ -50,8 +54,8 @@ export function SidebarActions({
               id={`score-btn-${chat.id}`}
               // onClick={() => {}}
           >
-            <IconScoreSheet/>
-            <span className="sr-only">评分总结</span>
+            <IconScoreSheet fill={"#ffffff"}/>
+            <span className="sr-only">{t('scoreBtnTooltip')}</span>
           </Button>
         </ScoreSheetDialog>
 
@@ -67,11 +71,10 @@ export function SidebarActions({
               }}
             >
               <IconTrash />
-              <span className="sr-only">删除</span>
             </Button>
           </TooltipTrigger>
           {/*<TooltipContent>Delete chat</TooltipContent>*/}
-          <TooltipContent>删除</TooltipContent>
+          <TooltipContent>{t('delBtnTooltip')}</TooltipContent>
         </Tooltip>
       </div>
 
@@ -79,14 +82,14 @@ export function SidebarActions({
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>你确定吗?</AlertDialogTitle>
+            <AlertDialogTitle>{chatHistoryL('alertDialogTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              这将会永久删除你的聊天记录.
+              {chatHistoryL('alertDialogDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isRemovePending}>
-              取消
+              {chatHistoryL('alertDialogCancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={isRemovePending}
@@ -107,7 +110,7 @@ export function SidebarActions({
                   setDeleteDialogOpen(false)
                   router.refresh()
                   router.push('/')
-                  toast.success('对话已删除')
+                  toast.success(chatHistoryL('chatDeleteToast'))
                   Object.keys(Cookies.get()).forEach(function(cookieName) {
                     if (cookieName.includes(chat.id)) {
                       Cookies.remove(cookieName);
@@ -117,11 +120,11 @@ export function SidebarActions({
               }}
             >
               {isRemovePending && <IconSpinner className="mr-2 animate-spin" />}
-              删除
+              {t('delBtnTooltip')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

@@ -8,6 +8,7 @@ import {IconGitHub, IconPlayMedia, IconSpinner, IconStop} from '@/components/ui/
 import {spinner} from "@/components/stocks";
 import {toast} from "sonner";
 import {Chat} from "@/lib/types";
+import {useTranslations} from "next-intl";
 
 interface TTSButtonProps extends ButtonProps {
   text?: string
@@ -25,6 +26,7 @@ export function TTSButton({
     const [canPlay, setCanPlay] = React.useState(false)
     const [readingLoud, setReadingLoud] = React.useState<boolean>(false)
     const audioRef = React.useRef(null);
+    const t = useTranslations('PromptForm');
 
     const handleCanPlay = (e) => {
         if (e.target) {
@@ -101,7 +103,7 @@ export function TTSButton({
                   <span className="sr-only">{readingLoud ? ("停止") : ("朗读")}</span>
               </Button>
           </TooltipTrigger>
-          <TooltipContent>朗读</TooltipContent>
+          <TooltipContent>{readingLoud ? (t('readingLoudStop')) : (t('readingLoudStart'))}</TooltipContent>
       </Tooltip>
   )
 }

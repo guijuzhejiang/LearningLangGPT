@@ -1,6 +1,5 @@
 import * as React from 'react'
 import Link from 'next/link'
-
 import {auth} from '@/auth'
 import {Button, buttonVariants} from '@/components/ui/button'
 import {
@@ -12,9 +11,14 @@ import {SidebarMobile} from './sidebar-mobile'
 import {SidebarToggle} from './sidebar-toggle'
 import {ChatHistory} from './chat-history'
 import {Session} from '@/lib/types'
-
+import {getLocale} from "next-intl/server";
+import {UserGuideButton} from "@/components/user-guide-button";
+import {LocaleSwitcherSelect} from "@/components/locale-switcher";
+import {useLocale, useTranslations} from "next-intl";
+import {getTranslations} from 'next-intl/server';
 async function UserOrLogin() {
     const session = (await auth()) as Session
+    const t = await getTranslations('LoginForm');
     return (
         <>
             {session?.user ? (
@@ -36,24 +40,11 @@ async function UserOrLogin() {
                     <UserMenu user={session.user}/>
                 ) : (
                     <Button variant="link" asChild className="-ml-2">
-                        <Link href="/login">登录</Link>
+                        <Link href="/login">{t('text')}</Link>
                     </Button>
                 )}
             </div>
         </>
-    )
-}
-
-async function UserGuide() {
-    const session = (await auth()) as Session
-    return (
-        <Button
-            // onClick={()=>{
-            //
-            // }}
-        >
-            How to use
-        </Button>
     )
 }
 
@@ -70,8 +61,10 @@ async function UserGuide() {
 //     };
 // }
 
-export async function Header() {
-    const session = (await auth()) as Session
+export function Header() {
+    const t = useTranslations('LocaleSwitcher');
+    // const l = await getLocale();
+    const l = useLocale();
     return (
         <>
             <header
@@ -82,9 +75,25 @@ export async function Header() {
                     </React.Suspense>
                 </div>
                 <div className="flex items-center justify-end space-x-2">
-                    {/*<React.Suspense>*/}
-                    {/*    <UserGuideButton/>*/}
-                    {/*</React.Suspense>*/}
+                    <React.Suspense fallback={<div className="flex-1 overflow-auto"/>}>
+                        <UserGuideButton/>
+                    </React.Suspense>
+                    <React.Suspense fallback={<div className="flex-1 overflow-auto"/>}>
+                        <LocaleSwitcherSelect
+                            defaultValue={l}
+                            items={[
+                                {
+                                    value: 'en',
+                                    label: t('en')
+                                },
+                                {
+                                    value: 'zh-cn',
+                                    label: t('zh-cn')
+                                }
+                            ]}
+                            label={t('label')}
+                        />
+                    </React.Suspense>
                 </div>
             </header>
         </>

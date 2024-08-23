@@ -8,10 +8,13 @@ import { toast } from 'sonner'
 import { IconSpinner } from './ui/icons'
 import { getMessageFromCode } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import {useLocale, useTranslations} from 'next-intl';
 
 export default function SignupForm() {
   const router = useRouter()
   const [result, dispatch] = useFormState(signup, undefined)
+  const t = useTranslations('SignupForm');
+  const locale = useLocale();
 
   useEffect(() => {
     if (result) {
@@ -30,14 +33,14 @@ export default function SignupForm() {
       className="flex flex-col items-center gap-4 space-y-3"
     >
       <div className="w-full flex-1 rounded-lg border bg-white px-6 pb-4 pt-8 shadow-md md:w-96 dark:bg-zinc-950">
-        <h1 className="mb-3 text-2xl font-bold">注册</h1>
+        <h1 className="mb-3 text-2xl font-bold">{t('title')}</h1>
         <div className="w-full">
           <div>
             <label
               className="mb-3 mt-5 block text-xs font-medium text-zinc-400"
               htmlFor="email"
             >
-              邮箱
+              {t('emailLabel')}
             </label>
             <div className="relative">
               <input
@@ -45,7 +48,7 @@ export default function SignupForm() {
                 id="email"
                 type="email"
                 name="email"
-                placeholder="输入你的邮箱地址"
+                placeholder={t('emailPlaceholder')}
                 required
               />
             </div>
@@ -55,7 +58,7 @@ export default function SignupForm() {
               className="mb-3 mt-5 block text-xs font-medium text-zinc-400"
               htmlFor="password"
             >
-              密码
+              {t('passwordLabel')}
             </label>
             <div className="relative">
               <input
@@ -63,25 +66,25 @@ export default function SignupForm() {
                 id="password"
                 type="password"
                 name="password"
-                placeholder="输入密码"
+                placeholder={t('passwordPlaceholder')}
                 required
                 minLength={6}
               />
             </div>
           </div>
         </div>
-        <LoginButton />
+        <LoginButton btnText={t('primaryBtnText')}/>
       </div>
 
       <Link href="/login" className="flex flex-row gap-1 text-sm text-zinc-400">
-        已经有账号?
-        <div className="font-semibold underline">登录</div>
+        {t('hint0')}
+        <div className="font-semibold underline">{t('hint1')}</div>
       </Link>
     </form>
   )
 }
 
-function LoginButton() {
+function LoginButton({btnText}:{btnText:string}) {
   const { pending } = useFormStatus()
 
   return (
@@ -89,7 +92,7 @@ function LoginButton() {
       className="my-4 flex h-10 w-full flex-row items-center justify-center rounded-md bg-zinc-900 p-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
       aria-disabled={pending}
     >
-      {pending ? <IconSpinner /> : '创建账号'}
+      {pending ? <IconSpinner /> : btnText}
     </button>
   )
 }

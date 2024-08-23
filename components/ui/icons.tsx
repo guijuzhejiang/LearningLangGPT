@@ -14,7 +14,7 @@ function IconNextChat({
     return (
         <svg
             viewBox="0 0 17 17"
-            fill="none"
+            fill="currentColor"
             xmlns="http://www.w3.org/2000/svg"
             className={cn('size-4', className)}
             {...props}
@@ -249,16 +249,30 @@ function IconMicroPhone({className, ...props}: React.ComponentProps<'svg'>) {
 
 function IconPlayMedia({className, ...props}: React.ComponentProps<'svg'>) {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className={cn('size-4', className)}
-            {...props}
-        >
-            <path fill-rule="evenodd" clip-rule="evenodd"
-                  d="M11 4.9099C11 4.47485 10.4828 4.24734 10.1621 4.54132L6.67572 7.7372C6.49129 7.90626 6.25019 8.00005 6 8.00005H4C3.44772 8.00005 3 8.44776 3 9.00005V15C3 15.5523 3.44772 16 4 16H6C6.25019 16 6.49129 16.0938 6.67572 16.2629L10.1621 19.4588C10.4828 19.7527 11 19.5252 11 19.0902V4.9099ZM8.81069 3.06701C10.4142 1.59714 13 2.73463 13 4.9099V19.0902C13 21.2655 10.4142 22.403 8.81069 20.9331L5.61102 18H4C2.34315 18 1 16.6569 1 15V9.00005C1 7.34319 2.34315 6.00005 4 6.00005H5.61102L8.81069 3.06701ZM20.3166 6.35665C20.8019 6.09313 21.409 6.27296 21.6725 6.75833C22.5191 8.3176 22.9996 10.1042 22.9996 12.0001C22.9996 13.8507 22.5418 15.5974 21.7323 17.1302C21.4744 17.6185 20.8695 17.8054 20.3811 17.5475C19.8927 17.2896 19.7059 16.6846 19.9638 16.1962C20.6249 14.9444 20.9996 13.5175 20.9996 12.0001C20.9996 10.4458 20.6064 8.98627 19.9149 7.71262C19.6514 7.22726 19.8312 6.62017 20.3166 6.35665ZM15.7994 7.90049C16.241 7.5688 16.8679 7.65789 17.1995 8.09947C18.0156 9.18593 18.4996 10.5379 18.4996 12.0001C18.4996 13.3127 18.1094 14.5372 17.4385 15.5604C17.1357 16.0222 16.5158 16.1511 16.0539 15.8483C15.5921 15.5455 15.4632 14.9255 15.766 14.4637C16.2298 13.7564 16.4996 12.9113 16.4996 12.0001C16.4996 10.9859 16.1653 10.0526 15.6004 9.30063C15.2687 8.85905 15.3578 8.23218 15.7994 7.90049Z"
-                  fill="currentColor"></path>
+        <svg fill="none"
+             strokeWidth={1.5}
+             className={cn('size-4', className)}
+             {...props} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g id="SVGRepo_bgCarrier" strokeWidth="4"></g>
+            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+            <g id="SVGRepo_iconCarrier">
+                <g clipPath="url(#clip0_15_174)">
+                    <rect width="24" height="24" fill="white"></rect>
+                    <path d="M3 16V8H6L11 4V20L6 16H3Z" stroke="#000000" strokeLinecap="round"
+                          strokeLinejoin="round"></path>
+                    <path d="M13 9C13 9 15 9.5 15 12C15 14.5 13 15 13 15" stroke="#000000" strokeLinecap="round"
+                          strokeLinejoin="round"></path>
+                    <path d="M15 7C15 7 18 7.83333 18 12C18 16.1667 15 17 15 17" stroke="#000000" strokeLinecap="round"
+                          strokeLinejoin="round"></path>
+                    <path d="M17 5C17 5 21 6.16667 21 12C21 17.8333 17 19 17 19" stroke="#000000" strokeLinecap="round"
+                          strokeLinejoin="round"></path>
+                </g>
+                <defs>
+                    <clipPath id="clip0_15_174">
+                        <rect width="24" height="24" fill="white"></rect>
+                    </clipPath>
+                </defs>
+            </g>
         </svg>
     )
 }
@@ -269,6 +283,8 @@ function IconHint({className, ...props}: React.ComponentProps<'svg'>) {
             xmlns="http://www.w3.org/2000/svg"
             viewBox="-16 32 576 576"
             fill="currentColor"
+            stroke="#000000"
+            strokeWidth="24"
             className={cn('size-4', className)}
             {...props}
         >
@@ -334,7 +350,8 @@ function IconRefresh({className, ...props}: React.ComponentProps<'svg'>) {
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 256 256"
-            fill="currentColor"
+            strokeWidth="12"
+            fill="#000000"
             className={cn('size-4', className)}
             {...props}
         >
@@ -453,7 +470,7 @@ function IconClose({className, ...props}: React.ComponentProps<'svg'>) {
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 256 256"
-            fill="currentColor"
+            fill="#000000"
             className={cn('size-4', className)}
             {...props}
         >
@@ -580,9 +597,9 @@ function IconTranslate({
 }
 
 function IconTeacher({
-                           className,
-                           ...props
-                       }: React.ComponentProps<'svg'>) {
+                         className,
+                         ...props
+                     }: React.ComponentProps<'svg'>) {
     return (
         <svg
             viewBox="0 0 31.312 31.312"
@@ -592,18 +609,24 @@ function IconTeacher({
             {...props}>
             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-            <g id="SVGRepo_iconCarrier"> <g> <g> <path
-                d="M23.098,8.079c0-0.898-0.633-1.42-2.224-1.42c-0.319,0-0.742,0.023-1.351,0.063c-0.141,0.007-0.141,0.07-0.141,0.405 c0,0.164-0.016,0.344-0.156,2.193c-0.117,1.498-0.147,1.904-0.147,2.099c0,0.616,0.312,0.92,1.537,0.92 c1.911,0,2.481-0.795,2.481-1.748c0-0.593-0.228-1.045-0.828-1.233C22.909,9.195,23.098,8.57,23.098,8.079z M21.014,11.324 c-0.148,0-0.328-0.031-0.508-0.085l0.086-1.272c0.18-0.031,0.352-0.046,0.469-0.046c0.522,0,0.709,0.296,0.709,0.686 C21.77,10.903,21.661,11.324,21.014,11.324z M21.115,8.905c-0.141,0-0.289-0.023-0.445-0.063c0.031-0.421,0.047-0.795,0.062-1.068 c0.147-0.023,0.297-0.039,0.406-0.039c0.522,0,0.709,0.273,0.709,0.593C21.848,8.578,21.73,8.905,21.115,8.905z"></path>
-                <path
-                    d="M26.959,3.924c0.468,0,0.468,0.313,0.484,1.03c0,0.109,0.029,0.141,0.257,0.141c0.709,0,1.124-0.296,1.124-0.96 c0-0.772-0.562-1.405-1.795-1.405c-2.293,0-2.629,2.193-2.629,3.231c0,1.919,1.14,2.465,2.209,2.465 c1.067,0,1.623-0.546,1.707-0.897c0.07-0.289,0.117-0.53,0.117-0.694c0-0.148-0.039-0.234-0.156-0.234 c-0.327,0-0.584,0.608-1.442,0.608c-0.664,0-0.976-0.367-0.976-1.327C25.857,5.29,25.977,3.924,26.959,3.924z"></path>
-                <path
-                    d="M14.698,17.064h0.414c0.086,0,0.156-0.047,0.18-0.125l0.257-1.077h1.358c0.086,0.75,0.171,1.202,1.069,1.202h0.397 c0.14,0,0.21-0.039,0.21-0.188c0-0.257-0.21-1.124-1.046-4.486c-0.108-0.444-0.25-0.866-0.772-0.866h-0.742 c-0.187,0-0.217,0-0.303,0.148c-0.328,0.586-1.763,4.174-1.763,4.877C13.958,16.924,14.363,17.064,14.698,17.064z M16.398,12.672 l0.328,2.06H15.83L16.398,12.672z"></path>
-                <polygon
-                    points="2.931,0.463 2.931,3.415 4.221,3.018 4.221,1.752 30.023,1.752 30.023,18.199 9.491,18.199 9.424,19.49 31.312,19.49 31.312,0.463 "></polygon>
-                <circle cx="4.984" cy="7.526" r="3.821"></circle>
-                <polygon
-                    points="8.228,29.104 8.228,22.302 8.228,21.661 8.228,20.791 8.471,20.791 8.825,13.885 15.416,10.471 14.55,8.8 8.525,11.921 6.375,11.921 4.917,13.611 3.509,11.921 0.417,12.338 0.214,19.363 1.527,19.363 1.597,20.791 1.797,20.791 1.797,21.661 1.797,22.302 1.797,29.104 1.534,29.104 0,29.436 0,30.85 1.306,30.85 2.83,30.602 2.844,30.85 4.531,30.85 4.531,29.275 4.531,29.104 4.531,22.302 5.493,22.302 5.493,29.104 5.493,29.275 5.493,30.85 7.182,30.85 7.195,30.602 8.718,30.85 10.024,30.85 10.024,29.436 8.491,29.104 "></polygon>
-                <rect x="23.611" y="14.943" width="5.051" height="1.879"></rect> </g> </g> </g>
+            <g id="SVGRepo_iconCarrier">
+                <g>
+                    <g>
+                        <path
+                            d="M23.098,8.079c0-0.898-0.633-1.42-2.224-1.42c-0.319,0-0.742,0.023-1.351,0.063c-0.141,0.007-0.141,0.07-0.141,0.405 c0,0.164-0.016,0.344-0.156,2.193c-0.117,1.498-0.147,1.904-0.147,2.099c0,0.616,0.312,0.92,1.537,0.92 c1.911,0,2.481-0.795,2.481-1.748c0-0.593-0.228-1.045-0.828-1.233C22.909,9.195,23.098,8.57,23.098,8.079z M21.014,11.324 c-0.148,0-0.328-0.031-0.508-0.085l0.086-1.272c0.18-0.031,0.352-0.046,0.469-0.046c0.522,0,0.709,0.296,0.709,0.686 C21.77,10.903,21.661,11.324,21.014,11.324z M21.115,8.905c-0.141,0-0.289-0.023-0.445-0.063c0.031-0.421,0.047-0.795,0.062-1.068 c0.147-0.023,0.297-0.039,0.406-0.039c0.522,0,0.709,0.273,0.709,0.593C21.848,8.578,21.73,8.905,21.115,8.905z"></path>
+                        <path
+                            d="M26.959,3.924c0.468,0,0.468,0.313,0.484,1.03c0,0.109,0.029,0.141,0.257,0.141c0.709,0,1.124-0.296,1.124-0.96 c0-0.772-0.562-1.405-1.795-1.405c-2.293,0-2.629,2.193-2.629,3.231c0,1.919,1.14,2.465,2.209,2.465 c1.067,0,1.623-0.546,1.707-0.897c0.07-0.289,0.117-0.53,0.117-0.694c0-0.148-0.039-0.234-0.156-0.234 c-0.327,0-0.584,0.608-1.442,0.608c-0.664,0-0.976-0.367-0.976-1.327C25.857,5.29,25.977,3.924,26.959,3.924z"></path>
+                        <path
+                            d="M14.698,17.064h0.414c0.086,0,0.156-0.047,0.18-0.125l0.257-1.077h1.358c0.086,0.75,0.171,1.202,1.069,1.202h0.397 c0.14,0,0.21-0.039,0.21-0.188c0-0.257-0.21-1.124-1.046-4.486c-0.108-0.444-0.25-0.866-0.772-0.866h-0.742 c-0.187,0-0.217,0-0.303,0.148c-0.328,0.586-1.763,4.174-1.763,4.877C13.958,16.924,14.363,17.064,14.698,17.064z M16.398,12.672 l0.328,2.06H15.83L16.398,12.672z"></path>
+                        <polygon
+                            points="2.931,0.463 2.931,3.415 4.221,3.018 4.221,1.752 30.023,1.752 30.023,18.199 9.491,18.199 9.424,19.49 31.312,19.49 31.312,0.463 "></polygon>
+                        <circle cx="4.984" cy="7.526" r="3.821"></circle>
+                        <polygon
+                            points="8.228,29.104 8.228,22.302 8.228,21.661 8.228,20.791 8.471,20.791 8.825,13.885 15.416,10.471 14.55,8.8 8.525,11.921 6.375,11.921 4.917,13.611 3.509,11.921 0.417,12.338 0.214,19.363 1.527,19.363 1.597,20.791 1.797,20.791 1.797,21.661 1.797,22.302 1.797,29.104 1.534,29.104 0,29.436 0,30.85 1.306,30.85 2.83,30.602 2.844,30.85 4.531,30.85 4.531,29.275 4.531,29.104 4.531,22.302 5.493,22.302 5.493,29.104 5.493,29.275 5.493,30.85 7.182,30.85 7.195,30.602 8.718,30.85 10.024,30.85 10.024,29.436 8.491,29.104 "></polygon>
+                        <rect x="23.611" y="14.943" width="5.051" height="1.879"></rect>
+                    </g>
+                </g>
+            </g>
         </svg>
     )
 }
@@ -651,23 +674,23 @@ function IconVoiceContinuation({
 }
 
 function IconScoreSheet({
-                                   className,
-                                   ...props
-                               }: React.ComponentProps<'svg'>) {
+                            className,
+                            ...props
+                        }: React.ComponentProps<'svg'>) {
     return (
         <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
             className={cn('size-4', className)}
             viewBox="0 0 48 48"
-            stroke-width="2.8"
+            strokeWidth="2.8"
+            stroke={"currentColor"}
+            fill={"currentColor"}
             {...props}
         >
-            <g id="SVGRepo_bgCarrier" stroke-width="2"></g>
-            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+            <g id="SVGRepo_bgCarrier" strokeWidth="2"></g>
+            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
             <g id="SVGRepo_iconCarrier">
                 <defs>
-                    <style>{".a{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}"}</style>
+                    <style>{".a{fill:none;stroke-linecap:round;stroke-linejoin:round;}"}</style>
                 </defs>
                 <path className="a"
                       d="M39.5,30.8668V6.5a2,2,0,0,0-2-2h-27a2,2,0,0,0-2,2v35a2,2,0,0,0,2,2h27a2,2,0,0,0,2-2V40.0311"></path>
@@ -686,9 +709,9 @@ function IconScoreSheet({
 }
 
 function IconGuideBook({
-                                   className,
-                                   ...props
-                               }: React.ComponentProps<'svg'>) {
+                           className,
+                           ...props
+                       }: React.ComponentProps<'svg'>) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -709,9 +732,9 @@ function IconGuideBook({
 }
 
 function IconExit({
-                                   className,
-                                   ...props
-                               }: React.ComponentProps<'svg'>) {
+                      className,
+                      ...props
+                  }: React.ComponentProps<'svg'>) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -735,9 +758,9 @@ function IconExit({
 }
 
 function IconContinue({
-                                   className,
-                                   ...props
-                               }: React.ComponentProps<'svg'>) {
+                          className,
+                          ...props
+                      }: React.ComponentProps<'svg'>) {
     return (
         <svg {...props} fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
              className={cn('size-4', className)}
@@ -753,11 +776,11 @@ function IconContinue({
 }
 
 function IconGear({
-                                   className,
-                                   ...props
-                               }: React.ComponentProps<'svg'>) {
+                      className,
+                      ...props
+                  }: React.ComponentProps<'svg'>) {
     return (
-        <svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
+        <svg {...props} fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
              className={cn('size-4', className)}>
             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -769,15 +792,30 @@ function IconGear({
     )
 }
 
-function IconBackground({
-                                   className,
-                                   ...props
-                               }: React.ComponentProps<'svg'>) {
+function IconLang({
+                      className,
+                      ...props
+                  }: React.ComponentProps<'svg'>) {
     return (
-        <svg fill="#000000" className={cn('size-4', className)} version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
-             viewBox="0 0 512 512">
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <svg {...props} fill="currentColor" className={cn('size-4', className)} version="1.1" id="XMLID_275_" xmlns="http://www.w3.org/2000/svg"
+             viewBox="0 0 24 24"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+            <g id="SVGRepo_iconCarrier"> <g id="language"> <g> <path
+                d="M12,24C5.4,24,0,18.6,0,12S5.4,0,12,0s12,5.4,12,12S18.6,24,12,24z M9.5,17c0.6,3.1,1.7,5,2.5,5s1.9-1.9,2.5-5H9.5z M16.6,17c-0.3,1.7-0.8,3.3-1.4,4.5c2.3-0.8,4.3-2.4,5.5-4.5H16.6z M3.3,17c1.2,2.1,3.2,3.7,5.5,4.5c-0.6-1.2-1.1-2.8-1.4-4.5H3.3 z M16.9,15h4.7c0.2-0.9,0.4-2,0.4-3s-0.2-2.1-0.5-3h-4.7c0.2,1,0.2,2,0.2,3S17,14,16.9,15z M9.2,15h5.7c0.1-0.9,0.2-1.9,0.2-3 S15,9.9,14.9,9H9.2C9.1,9.9,9,10.9,9,12C9,13.1,9.1,14.1,9.2,15z M2.5,15h4.7c-0.1-1-0.1-2-0.1-3s0-2,0.1-3H2.5C2.2,9.9,2,11,2,12 S2.2,14.1,2.5,15z M16.6,7h4.1c-1.2-2.1-3.2-3.7-5.5-4.5C15.8,3.7,16.3,5.3,16.6,7z M9.5,7h5.1c-0.6-3.1-1.7-5-2.5-5 C11.3,2,10.1,3.9,9.5,7z M3.3,7h4.1c0.3-1.7,0.8-3.3,1.4-4.5C6.5,3.3,4.6,4.9,3.3,7z"></path> </g> </g> </g></svg>
+    )
+}
+
+function IconBackground({
+                            className,
+                            ...props
+                        }: React.ComponentProps<'svg'>) {
+    return (
+        <svg {...props} strokeWidth="12"
+             stroke="#000000"
+             className={cn('size-4', className)}
+             fill="currentColor" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+             xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xmlSpace="preserve"><g id="SVGRepo_bgCarrier"></g>
+            <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
             <g id="SVGRepo_iconCarrier"> <g> <g> <path
                 d="M468.32,53.08H43.68C19.595,53.08,0,72.675,0,96.76v283.087c0,0.003,0,0.008,0,0.011v35.381 c0,24.085,19.595,43.68,43.68,43.68H468.32c24.085,0,43.68-19.595,43.68-43.68V96.76C512,72.675,492.405,53.08,468.32,53.08z M43.68,442.333c-14.94,0-27.093-12.154-27.093-27.093v-31.951l39.375-39.375h182.344c1.55,0,2.996-0.433,4.238-1.173 l99.592,99.592H43.68z M230.013,299.68v26.851c-0.004,0.155-0.004,0.31,0,0.463v0.332H60.821V299.68H230.013z M116.784,283.093 l13.9-13.899c5.117-5.117,11.92-7.935,19.156-7.935c7.237,0,14.04,2.818,19.156,7.935l13.9,13.899H116.784z M495.413,415.24 c0,14.939-12.153,27.093-27.093,27.093H365.596L255.978,332.715l131.259-131.259c5.117-5.117,11.92-7.935,19.156-7.935 s14.04,2.818,19.156,7.935l69.863,69.863V415.24z M495.413,247.86l-58.133-58.132c-8.251-8.251-19.219-12.794-30.887-12.794 c-11.668,0-22.636,4.544-30.887,12.793L246.6,318.633v-27.247c0-4.58-3.712-8.294-8.294-8.294h-31.951l-25.629-25.629 c-8.251-8.249-19.219-12.793-30.887-12.793c-11.668,0-22.636,4.544-30.887,12.793l-25.629,25.629H52.527 c-4.581,0-8.294,3.713-8.294,8.294v40.797L16.587,359.83V96.76c0-14.939,12.153-27.093,27.093-27.093H468.32 c14.94,0,27.093,12.154,27.093,27.093V247.86z"></path> </g> </g>
                 <g> <g> <path
@@ -785,8 +823,7 @@ function IconBackground({
                 <g> <g> <path
                     d="M238.307,362.713H52.527c-4.581,0-8.294,3.713-8.294,8.294s3.712,8.294,8.294,8.294h185.78 c4.581,0,8.294-3.713,8.294-8.294S242.888,362.713,238.307,362.713z"></path> </g> </g>
                 <g> <g> <path
-                    d="M167.533,398.099H52.527c-4.581,0-8.294,3.713-8.294,8.294c0,4.58,3.712,8.294,8.294,8.294h115.006 c4.581,0,8.294-3.713,8.294-8.294C175.827,401.813,172.115,398.099,167.533,398.099z"></path> </g> </g> </g>
-        </svg>
+                    d="M167.533,398.099H52.527c-4.581,0-8.294,3.713-8.294,8.294c0,4.58,3.712,8.294,8.294,8.294h115.006 c4.581,0,8.294-3.713,8.294-8.294C175.827,401.813,172.115,398.099,167.533,398.099z"></path> </g> </g> </g></svg>
     )
 }
 
@@ -829,5 +866,6 @@ export {
     IconContinue,
     IconBackground,
     IconGear,
+    IconLang,
     IconChevronUpDown
 }

@@ -17,6 +17,7 @@ import {
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
 import { type Chat } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import {useTranslations} from "next-intl";
 
 interface SidebarItemProps {
   index: number
@@ -30,6 +31,24 @@ export function SidebarItem({ index, chat, children }: SidebarItemProps) {
   const isActive = pathname === chat.path
   const [newChatId, setNewChatId] = useLocalStorage('newChatId', null)
   const shouldAnimate = index === 0 && isActive && newChatId
+
+  const langL = useTranslations('LangDialog');
+  const sceneL = useTranslations('SceneDialog');
+  const levelL = useTranslations('LevelDialog');
+  const langDisplay = {
+    "English": langL('english'),
+    "Français": langL('french'),
+    "Deutsch": langL('german'),
+  }
+
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
 
   if (!chat?.id) return null
 
@@ -78,11 +97,12 @@ export function SidebarItem({ index, chat, children }: SidebarItemProps) {
       >
         <div
           className="relative max-h-5 flex-1 select-none overflow-hidden text-ellipsis break-all"
-          title={chat.title}
+          // title={chat.title}
+          title={`${langDisplay[chat.chatParams?.lang]}-${levelL('lv'+chat.chatParams?.level)}-${sceneL('s'+chat.chatParams?.scene)} ${''+chat?.createdAt}`}
         >
           <span className="whitespace-nowrap">
             {shouldAnimate ? (
-              chat.title.split('').map((character, index) => (
+                `${langDisplay[chat.chatParams?.lang]}-${levelL('lv'+chat.chatParams?.level)}-${sceneL('s'+chat.chatParams?.scene)} ${''+chat?.createdAt}`.split('').map((character, index) => (
                 <motion.span
                   key={index}
                   variants={{
@@ -113,7 +133,7 @@ export function SidebarItem({ index, chat, children }: SidebarItemProps) {
                 </motion.span>
               ))
             ) : (
-              <span>{chat.title}</span>
+              <span>{`${langDisplay[chat.chatParams?.lang]}-${levelL('lv'+chat.chatParams?.level)}-${sceneL('s'+chat.chatParams?.scene)} ${''+chat?.createdAt}`}</span>
             )}
           </span>
         </div>

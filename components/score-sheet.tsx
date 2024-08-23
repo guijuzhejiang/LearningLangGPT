@@ -16,6 +16,7 @@ import {Button} from "@/components/ui/button";
 import {readStreamableValue, useActions} from "ai/rsc";
 import {IconTranslate} from "@/components/ui/icons";
 import {getTranslate} from "@/app/actions";
+import {useLocale, useTranslations} from "next-intl";
 
 interface ScoreSheetProps extends CollapsibleProps {
     summaryString: object | string
@@ -86,8 +87,9 @@ const WordItem = ({word,chat, ...props}:{word:{word:string, explanation:string, 
     const [transTexts, setTransTexts] = React.useState<string | undefined>('')
     const [showTranslate, setShowTranslate] = React.useState<boolean>(false)
     // const [refreshKey, setRefreshKey] = React.useState<number>(0)
-
-
+    const t = useTranslations('ScoreSheetDialog');
+    const PromptFormT = useTranslations('PromptForm');
+    const locale = useLocale();
     React.useEffect(() => {
         // console.log(words);
         // setRefreshKey(refreshKey + 1);
@@ -111,7 +113,7 @@ const WordItem = ({word,chat, ...props}:{word:{word:string, explanation:string, 
                     </div>
 
                     <div className={"mt-1.5"}>
-                        <div>例句:</div>
+                        <div>{t('example')}:</div>
                         <div>{word.sentence}</div>
                         <div
                             className={`${showTranslate ? '' : 'hidden'}`}>{transTexts?.length === 0 ? (
@@ -131,7 +133,7 @@ const WordItem = ({word,chat, ...props}:{word:{word:string, explanation:string, 
                                         className={`bg-blue-50 hover:bg-blue-200 size-6 rounded-full p-0 mr-1`}
                                         onClick={async () => {
                                             setShowTranslate(true);
-                                            const translatedText = await getTranslate(word.sentence);
+                                            const translatedText = await getTranslate(word.sentence, locale.includes('zh') ? 'cn':'en');
                                             if (typeof translatedText === 'object') {
                                                 let value = ''
                                                 for await (const delta of readStreamableValue(translatedText)) {
@@ -148,7 +150,7 @@ const WordItem = ({word,chat, ...props}:{word:{word:string, explanation:string, 
                                         <span className="sr-only">翻译</span>
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>翻译</TooltipContent>
+                                <TooltipContent>{PromptFormT('translate')}</TooltipContent>
                             </Tooltip>
                         </div>
                     </div>
@@ -167,7 +169,8 @@ export const ScoreSheet = forwardRef(({
                                           chat,
                                           ...props
                                       }: ScoreSheetProps, ref) => {
-
+    const t = useTranslations('ScoreSheetDialog');
+    // const locale = useLocale();
 
     return (
         <Accordion.Root
@@ -177,7 +180,7 @@ export const ScoreSheet = forwardRef(({
             collapsible
         >
             <AccordionItem value="item-vocab">
-                <AccordionTrigger>单词</AccordionTrigger>
+                <AccordionTrigger>{t('word')}</AccordionTrigger>
                 <AccordionContent>
 
                             <ScrollArea.Root className="">
@@ -238,7 +241,7 @@ export const ScoreSheet = forwardRef(({
                     //     <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['summary']['content']}优势:${summaryString['summary']['strengths']}劣势:${summaryString['summary']['weaknesses']}`:''} chat={chat}/>
                     // }
                 >
-                    总结
+                    {t('summary')}
                 </AccordionTrigger>
                 <AccordionContent>
                     {typeof summaryString === 'string' ? (spinner) : (
@@ -249,7 +252,7 @@ export const ScoreSheet = forwardRef(({
                             <Separator/>
                             <div className="mt-2 grid grid-cols-2 gap-1">
                                 <div>
-                                    <div className={"pb-1"}>优势:</div>
+                                    <div className={"pb-1"}>{t('pros')}:</div>
                                     <ul className={"pl-5 list-disc space-y-1"}>
                                         {summaryString['summary']['strengths'].map((s, index) => {
                                             return (
@@ -260,7 +263,7 @@ export const ScoreSheet = forwardRef(({
                                 </div>
 
                                 <div className={"flex flex-col"}>
-                                    <div className={"pb-1"}>劣势:</div>
+                                    <div className={"pb-1"}>{t('cons')}:</div>
                                     <ul className={"pl-5 list-disc space-y-1"}>
                                         {summaryString['summary']['weaknesses'].map((w, index) => {
                                             return (
@@ -281,14 +284,14 @@ export const ScoreSheet = forwardRef(({
                     //     <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['evaluation']}分数:${summaryString['score']}`:''} chat={chat}/>
                     // }
                 >
-                    评价
+                    {t('evaluation')}
                 </AccordionTrigger>
                 <AccordionContent>
                     {typeof summaryString === 'string' ? (spinner) : (
                         <div className={"flex items-center justify-between"}>
                             <span className={"flex flex-grow pr-4"}>{summaryString['evaluation']}</span>
                             <span className={"flex items-center w-fit flex-shrink-0"}>
-                                <span className={"flex font-bold text-md"}>分数:</span>
+                                <span className={"flex font-bold text-md"}>{t('scoreLabel')}:</span>
                                 <span className={"font-bold text-2xl text-red-500"}>{summaryString['score']}</span>
                             </span>
                         </div>

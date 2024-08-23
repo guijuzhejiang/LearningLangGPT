@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { IconSpinner } from '@/components/ui/icons'
 import Cookies from "js-cookie";
+import {useTranslations} from "next-intl";
 
 interface ClearHistoryProps {
   isEnabled: boolean
@@ -31,25 +32,26 @@ export function ClearHistory({
 }: ClearHistoryProps) {
   const [open, setOpen] = React.useState(false)
   const [isPending, startTransition] = React.useTransition()
-  const router = useRouter()
+  const t = useTranslations('ChatHistory');
+  // const locale = useLocale();
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" disabled={!isEnabled || isPending}>
           {isPending && <IconSpinner className="mr-2" />}
-          清空历史
+          {t('clearHistoryBtn')}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确定?</AlertDialogTitle>
+          <AlertDialogTitle>{t('clearHistoryBtn')}</AlertDialogTitle>
           <AlertDialogDescription>
-            这将永久删除你的聊天历史记录
+            {t('alertDialogDescription')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>取消</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>{t('alertDialogCancel')}</AlertDialogCancel>
           <AlertDialogAction
             disabled={isPending}
             onClick={event => {
@@ -71,7 +73,7 @@ export function ClearHistory({
             }}
           >
             {isPending && <IconSpinner className="mr-2 animate-spin" />}
-            删除
+            {t('alertDialogDelete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

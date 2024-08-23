@@ -5,7 +5,8 @@ import {type DialogProps} from '@radix-ui/react-dialog'
 import * as Dialog from '@radix-ui/react-dialog';
 import {Cross2Icon} from '@radix-ui/react-icons';
 import {usePathname} from "next/navigation";
-import {updateUserCookies, loadUserCookies, stopAllAudio} from "@/lib/utils";
+import {updateUserCookies, loadUserCookies} from "@/lib/utils";
+import {useLocale, useTranslations} from 'next-intl';
 import {forwardRef, useImperativeHandle} from "react";
 interface ChatShareDialogProps extends DialogProps {
     userId: string
@@ -19,12 +20,13 @@ export const LevelDialog = forwardRef(({userId,
         level,
     }))
 
-    const path = usePathname();
+    const t = useTranslations('LevelDialog');
+    const locale = useLocale();
     const [level, setLevel] = React.useState(0)
     const levelDisplay = [
-        "初级",
-        "中级",
-        "高级",
+        t('lv0'),
+        t('lv1'),
+        t('lv2'),
     ]
 
 
@@ -43,7 +45,7 @@ export const LevelDialog = forwardRef(({userId,
     }, [])
 
     return (
-        <>
+        <div key={locale}>
             <Dialog.Root {...props}>
                 <Dialog.Trigger asChild>
                     <div
@@ -52,7 +54,7 @@ export const LevelDialog = forwardRef(({userId,
                         // onClick={async () => {
                         // }}
                     >
-                        <div className="text-sm font-semibold mb-2">等级</div>
+                        <div className="text-sm font-semibold mb-2">{t('title')}</div>
                         <div className="text-sm text-zinc-600 items-center flex flex-col">
                             {levelDisplay[level]}
                         </div>
@@ -64,11 +66,11 @@ export const LevelDialog = forwardRef(({userId,
                     <Dialog.Content
                         className="z-50 max-md:w-[85vw] min-w-[60vw] max-w-[95vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
-                            等级
+                            {t('title')}
                         </Dialog.Title>
                         <Dialog.Description className="text-mauve11 mt-[10px] mb-1 text-[15px] leading-normal">
                             <span className={"flex items-center"}>
-                                {"请选择等级。"}
+                                {t('hint')}
                             </span>
                         </Dialog.Description>
 
@@ -114,7 +116,7 @@ export const LevelDialog = forwardRef(({userId,
                     </Dialog.Content>
                 </Dialog.Portal>
             </Dialog.Root>
-        </>
+        </div>
     )
 });
 

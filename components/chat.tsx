@@ -13,9 +13,8 @@ import {useScrollAnchor} from '@/lib/hooks/use-scroll-anchor'
 import * as React from "react";
 import {readStreamableValue} from "ai/rsc";
 import {CountdownCircleTimer} from "react-countdown-circle-timer";
-import {UserGuideButton} from "@/components/user-guide-button";
 import {Chat} from "@/lib/types";
-import {useSidebar} from "@/lib/hooks/use-sidebar";
+import {useLocale, useTranslations} from "next-intl";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
     initialMessages?: Message[]
@@ -42,6 +41,9 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
         width: window.innerWidth,
         height: window.innerHeight,
     })
+
+    const t = useTranslations('Common');
+    const locale = useLocale();
 
 
     const handleCheckBg = async () => {
@@ -216,7 +218,7 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
 
         return (
         <div className={`${messages.length === 0 && 'hidden'} timer text-center`}>
-            <div className="text text-xs max-md:hidden">剩余时间:</div>
+            <div className="text text-xs max-md:hidden">{t('countDownLabel')}</div>
             <div style={{fontFamily: "Montserrat"}}
                  className="value text-xl font-bold flex">
                 <div key={remainingTime} className={`w-full time-wrapper`}>
@@ -284,14 +286,15 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
 
             {/*  count down clock  */}
             {messages.length===0 ? (
-                <div className={`fixed top-2 right-4`}>
-                    <UserGuideButton/>
-                </div>
+                // <div className={`fixed top-2 right-4`}>
+                //     <UserGuideButton/>
+                // </div>
+                <></>
             ):(
-                <div key={chatRemainingTime} className={`fixed right-4 top-16 max-md:top-2 max-md:right-4`}>
+                <div key={chatRemainingTime} className={`fixed right-4 top-16 `}>
                     <CountdownCircleTimer
                         isPlaying={chatRemainingTime!==0}
-                        size={windowSize.width <= 992 ? 50:76}
+                        size={windowSize.width <= 992 ? 50:80}
                         strokeWidth={5}
                         duration={chatRemainingTime}
                         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}

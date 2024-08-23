@@ -4,6 +4,7 @@ import { Session } from '@/lib/types'
 import Link from 'next/link'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import * as React from "react";
+import {useTranslations} from "next-intl";
 
 export interface ChatList {
   messages: UIState
@@ -18,6 +19,8 @@ export function ChatList({ messages, session, isShared }: ChatList) {
   if (!messages.length) {
     return null
   }
+
+  const t = useTranslations('Common');
 
   return (
 
@@ -35,15 +38,15 @@ export function ChatList({ messages, session, isShared }: ChatList) {
             </div>
             <div className="ml-4 flex-1 space-y-2 overflow-hidden px-1">
               <p className="text-muted-foreground leading-normal">
-                请{' '}
+                {t('needLoginHint0')}{' '}
                 <Link href="/login" className="underline">
-                  登录
+                  {t('needLoginHint1')}
                 </Link>{' '}
-                或{' '}
+                {t('needLoginHint2')}{' '}
                 <Link href="/signup" className="underline">
-                  注册
+                  {t('needLoginHint3')}
                 </Link>{' '}
-                以保存重新查看您的聊天记录并开启背景图像生成功能！
+                {t('needLoginHint4')}
               </p>
             </div>
           </div>

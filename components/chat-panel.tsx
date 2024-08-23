@@ -16,6 +16,7 @@ import {SceneMenu} from "@/components/scene-menu";
 import {SceneDialog} from "@/components/scene-dialog";
 import {LevelDialog} from "@/components/level-dialog";
 import {LangDialog} from "@/components/lang-dialog";
+import {useLocale, useTranslations} from "next-intl";
 
 export interface ChatPanelProps {
     id?: string,
@@ -54,6 +55,9 @@ export function ChatPanel({
     const langDialogRef = React.useRef(null);
     const levelDialogRef = React.useRef(null);
     const sceneDialogRef = React.useRef(null);
+
+    const t = useTranslations('Common');
+    const locale = useLocale();
 
     return (
         <div
@@ -167,7 +171,7 @@ export function ChatPanel({
                                 setLastMessage(responseMessage);
                             }}
                         >
-                            <span>开始(6分钟)</span>
+                            <span>{t("startChatBtn")}</span>
                         </Button>
                     )}
                     {/*<FooterText className="hidden sm:block" />*/}

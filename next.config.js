@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const CopyPlugin = require("copy-webpack-plugin")
+const createNextIntlPlugin = require('next-intl/plugin');
 
-module.exports = {
+const withNextIntl = createNextIntlPlugin();
+
+module.exports = withNextIntl({
   // output: 'export',
   experimental: {
     serverActions: {
@@ -112,4 +115,4 @@ module.exports = {
     return config
   },
 
-}
+})

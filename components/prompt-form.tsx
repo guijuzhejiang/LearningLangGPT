@@ -39,7 +39,7 @@ import {useMicVAD, utils} from "@ray8716397/vad-react";
 import {saveCountDown} from "@/app/actions";
 import {BackgroundDialog} from "@/components/background-style-dialog";
 import {Chat} from "@/lib/types";
-import {session} from "@auth/core/lib/actions";
+import {useTranslations, useLocale} from "next-intl";
 
 
 export interface PromptFormProps {
@@ -95,7 +95,9 @@ export function PromptForm({
     const audioRef = React.useRef(null);
     const vadTimeoutMS = 120 * 1000;
     const path = usePathname();
-
+    const t = useTranslations('PromptForm');
+    const chatHistoryT = useTranslations('ChatHistory');
+    const locale = useLocale();
     const [input, setInput] = React.useState('');
 
     /* PART VAD */
@@ -199,7 +201,7 @@ export function PromptForm({
             setHintContent('');
             setInput('');
             setFinished(true);
-            toast.info("本次学习已结束")
+            toast.info(t('studyFinishToast'))
             saveCountDown(chatId, 0);
             document.getElementById(`score-btn-${chatId}`)?.click();
             vad.stop();
@@ -486,12 +488,12 @@ export function PromptForm({
                     }, vadTimeoutMS);
                 }
             } else {
-                toast.error("麦克风不可用")
+                toast.error(t('micNotAvailToast'))
             }
 
         } catch (e) {
             console.log(e);
-            toast.error('麦克风开启失败')
+            toast.error(t('micOpenErrToast'))
         }
     }
 
@@ -676,10 +678,10 @@ export function PromptForm({
                                 ) : (
                                     <IconPlayMedia className="size-4"/>
                                 )}
-                                <span className="sr-only">{readingLoud ? ("停止") : ("朗读")}</span>
+                                <span className="sr-only">{readingLoud ? (t('readingLoudStop')) : (t('readingLoudStart'))}</span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>朗读</TooltipContent>
+                        <TooltipContent>{t('readingLoudStart')}</TooltipContent>
                     </Tooltip>
 
                     {/* 翻译 */}
@@ -693,7 +695,7 @@ export function PromptForm({
                                 onClick={async (e) => {
                                     e.preventDefault();
                                     setShowTranslate(true);
-                                    const translatedText = await translate(hintContent);
+                                    const translatedText = await translate(hintContent, locale.includes('zh') ? 'cn':'en');
                                     if (typeof translatedText === 'object') {
                                         let value = ''
                                         for await (const delta of readStreamableValue(translatedText)) {
@@ -707,10 +709,10 @@ export function PromptForm({
                                 }}
                             >
                                 <IconTranslate/>
-                                <span className="sr-only">翻译</span>
+                                <span className="sr-only">{t('translate')}</span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>翻译</TooltipContent>
+                        <TooltipContent>{t('translate')}</TooltipContent>
                     </Tooltip>
 
                     {/* 刷新 */}
@@ -740,10 +742,10 @@ export function PromptForm({
                                 }}
                             >
                                 <IconRefresh/>
-                                <span className="sr-only">刷新</span>
+                                <span className="sr-only">{t('refresh')}</span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>刷新</TooltipContent>
+                        <TooltipContent>{t('refresh')}</TooltipContent>
                     </Tooltip>
 
                     {/* 关闭提示 */}
@@ -760,10 +762,10 @@ export function PromptForm({
                                 }}
                             >
                                 <IconClose/>
-                                <span className="sr-only">关闭提示</span>
+                                <span className="sr-only">{t('closeHint')}</span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>关闭提示</TooltipContent>
+                        <TooltipContent>{t('closeHint')}</TooltipContent>
                     </Tooltip>
 
                 </div>
@@ -808,10 +810,10 @@ export function PromptForm({
                             }}
                         >
                             <IconPlus/>
-                            <span className="sr-only">新建对话</span>
+                            <span className="sr-only">{chatHistoryT('newChatBtn')}</span>
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>新建对话</TooltipContent>
+                    <TooltipContent>{chatHistoryT('newChatBtn')}</TooltipContent>
                 </Tooltip>
 
                 {/*输入内容*/}
@@ -821,7 +823,7 @@ export function PromptForm({
                     onFocus={()=>{setChatOpacity(1)}}
                     onKeyDown={onKeyDown}
                     disabled={micOn ? STTIng : false}
-                    placeholder={voiceContinuationEnable ? "正在听..." : "发送消息."}
+                    placeholder={voiceContinuationEnable ? t('voiceContinuationListening') : t('sendMsgPlaceholder')}
                     className={`min-h-[60px] w-full resize-none bg-transparent pl-2 ${(micOn && !voiceContinuationEnable) ? 'pr-[5.59rem]' : 'pr-12'} py-[1.3rem] focus-within:outline-none sm:text-sm`}
                     autoFocus
                     spellCheck={false}
@@ -869,10 +871,10 @@ export function PromptForm({
                                     }}
                                 >
                                     <IconHint/>
-                                    <span className="sr-only">不知道回复什么?点击打开提示</span>
+                                    <span className="sr-only">{t('hintHint')}</span>
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>不知道回复什么?点击打开提示</TooltipContent>
+                            <TooltipContent>{t('hintHint')}</TooltipContent>
                         </Tooltip>
 
                         {/*改变背景风格*/}
@@ -916,10 +918,9 @@ export function PromptForm({
                                         ):(
                                         <IconExit/>
                                     )}
-                                    <span className="sr-only">结束学习{userId !== 'default' && ',查看评分' }</span>
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>结束学习,查看评分</TooltipContent>
+                            <TooltipContent>{t('endStudy')},{t('checkReportCard')}</TooltipContent>
                         </Tooltip>
 
                         <button id={"continue-btn"}
@@ -951,10 +952,9 @@ export function PromptForm({
                         <TooltipTrigger asChild className={`${voiceContinuationEnable && ('hidden')}`}>
                             <Button type="submit" size="icon" disabled={input === ''}>
                                 <IconArrowElbow/>
-                                <span className="sr-only">发送</span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>发送</TooltipContent>
+                        <TooltipContent>{t('send')}</TooltipContent>
                     </Tooltip>
 
                     {/*语音*/}
@@ -964,21 +964,21 @@ export function PromptForm({
                                 vad.loading ? (
                                     <Button size="icon">
                                         <IconSpinner/>
-                                        <span className="sr-only">语音转文字</span>
+                                        {/*<span className="sr-only">语音转文字</span>*/}
                                     </Button>
                                 ) : (
                                     <Button className={micOn ? "" : "bg-gray-400 relative"} size="icon"
                                             onClick={handleToggleMic}>
                                         <IconMicroPhone
                                             className={vad.userSpeaking && micOn ? "text-blue-400" : ""}/>
-                                        <span className="sr-only">语音转文字</span>
+                                        {/*<span className="sr-only">语音转文字</span>*/}
 
                                         {/*<span className={`${!micOn && ('hidden')} absolute -bottom-4 right-0 text-xs text-primary`}>#请使用耳机练习</span>*/}
                                     </Button>
                                 )
                             }
                         </TooltipTrigger>
-                        <TooltipContent>语音转文字</TooltipContent>
+                        <TooltipContent>{t('stt')}</TooltipContent>
                     </Tooltip>
 
                     {/*只有语音*/}
@@ -988,7 +988,7 @@ export function PromptForm({
                                 vad.loading ? (
                                     <Button size="icon">
                                         <IconSpinner/>
-                                        <span className="sr-only">自动语音</span>
+                                        {/*<span className="sr-only">自动语音</span>*/}
                                     </Button>
                                 ) : (
                                     <Button className={voiceContinuationEnable ? "" : "bg-gray-400 opti"}
@@ -1005,12 +1005,12 @@ export function PromptForm({
                                             }}
                                     >
                                         <IconVoiceContinuation/>
-                                        <span className="sr-only">自动语音</span>
+                                        {/*<span className="sr-only">自动语音</span>*/}
                                     </Button>
                                 )
                             }
                         </TooltipTrigger>
-                        <TooltipContent>自动语音</TooltipContent>
+                        <TooltipContent>{t('autoSTT')}</TooltipContent>
                     </Tooltip>
                 </div>
 

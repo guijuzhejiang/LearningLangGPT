@@ -18,6 +18,7 @@ import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import Cookies from "js-cookie";
 import * as Dialog from "@radix-ui/react-dialog";
 import {usePathname} from "next/navigation";
+import {useTranslations} from "next-intl";
 
 
 interface UserGuideButtonProps extends ButtonProps {
@@ -37,6 +38,8 @@ export function UserGuideButton({
 
     const [displayBtnDesc, setDisplayBtnDesc] = React.useState(false)
     const path = usePathname();
+    const t = useTranslations('UserGuide');
+    // const locale = useLocale();
 
     const driverObj = driver({
         onDestroyed:()=>{
@@ -54,19 +57,19 @@ export function UserGuideButton({
         },
         showProgress: true,
         steps: [
-            {popover: {title: '引导', description: '欢迎来到AI外语通'}},
+            {popover: {title: t('dialogTitle'), description: t('content0')}},
             {element: 'div.chatContainer',
                 popover: {
-                    title: '引导',
-                    description: '选择老师、语言、等级和对话场景，点击开始即可开始学习。',
+                    title: t('dialogTitle'),
+                    description: t('content1'),
                     side: "top",
                     align: 'start'
                 }
             },
             {element: 'div.UserOrLoginContainer',
                 popover: {
-                    title: '引导',
-                    description: '注册并登录后，可保存聊天记录，选中对应记录可继续对话学习，点击评分总结按钮查看对话总结。',
+                    title: t('dialogTitle'),
+                    description: t('content2'),
                     side: "bottom",
                     align: 'start'
                 }
@@ -74,7 +77,7 @@ export function UserGuideButton({
             {
                 element: 'div.btnDesContainer',
                 popover: {
-                    // title: '引导',
+                    // title: t('dialogTitle'),
                     // description: '点击选择老师、想学习的语言、学习语言的等级、对话场景，最后点击开始即可开始学习。',
                     side: "bottom",
                     align: 'center'
@@ -107,38 +110,38 @@ export function UserGuideButton({
                                             className={`${!displayBtnDesc && 'hidden'} btnDesContainer z-50 max-w-[80vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none`}>
 
                                             <div className={"text-primary"}>
-                                                <p className={"flex mb-2"}>开始对话练习后会出现下面按钮：</p>
+                                                <p className={"flex mb-2"}>{t('content3p0')}：</p>
                                                 <p className={"flex items-center"}>
                                                     <IconPlayMedia/>
-                                                    <span>&nbsp;:播放对应句子的语音</span>
+                                                    <span>&nbsp;:{t('content3p1')}</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconTranslate/>
-                                                    <span>&nbsp;:显示对应句子的中文翻译</span>
+                                                    <span>&nbsp;:{t('content3p2')}</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconHint/>
-                                                    <span>&nbsp;:点击可显示回复的提示</span>
+                                                    <span>&nbsp;:{t('content3p3')}</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconBackground/>
-                                                    <span>&nbsp;:点击显示背景或显示聊天内容,点击上方悬浮按钮设置背景风格</span>
+                                                    <span>&nbsp;:{t('content3p4')}</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconExit/>
-                                                    <span>&nbsp;:结束学习,查看评分</span>
+                                                    <span>&nbsp;:{t('content3p5')}</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconMicroPhone/>
-                                                    <span>&nbsp;:开启麦克风</span>
+                                                    <span>&nbsp;:{t('content3p6')}</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconVoiceContinuation/>
-                                                    <span>&nbsp;:开启自动语音模式</span>
+                                                    <span>&nbsp;:{t('content3p7')}</span>
                                                 </p>
                                                 <p className={"flex items-center"}>
                                                     <IconArrowElbow/>
-                                                    <span>&nbsp;:发送消息</span>
+                                                    <span>&nbsp;:{t('content3p8')}</span>
                                                 </p>
                                             </div>
                                         </Dialog.Content>
@@ -149,7 +152,7 @@ export function UserGuideButton({
                         </Button>
                     </TooltipTrigger>
                     {/*<TooltipContent>Delete chat</TooltipContent>*/}
-                    <TooltipContent sideOffset={4} collisionPadding={16}>如何使用</TooltipContent>
+                    <TooltipContent sideOffset={4} collisionPadding={16}>{t('btnTooltip')}</TooltipContent>
                 </Tooltip>
             ):(
                 <></>

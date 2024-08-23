@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { signOut } from '@/auth'
 import {redirect} from "next/navigation";
+import {useTranslations} from "next-intl";
 
 export interface UserMenuProps {
   user: Session['user']
@@ -22,6 +23,7 @@ function getUserInitials(name: string) {
 
 export function UserMenu({ user }: UserMenuProps) {
   const displayName = user.hasOwnProperty('name') ? user.name : user.email.includes("@wechat.com") ? `微信用户${user.email.slice(0, 6)}`: user.email
+  const t = useTranslations('Common');
 
   return (
     <div className="flex items-center justify-between">
@@ -51,7 +53,7 @@ export function UserMenu({ user }: UserMenuProps) {
             }}
           >
             <button className=" relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none transition-colors hover:bg-red-500 hover:text-white focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              登出
+              {t('logout')}
             </button>
           </form>
         </DropdownMenuContent>

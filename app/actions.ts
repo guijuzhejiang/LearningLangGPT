@@ -20,7 +20,7 @@ import moji from 'moji'
 
 const {HttpsProxyAgent} = process.env.GROQ_PROXY ? require('https-proxy-agent') : "";
 
-const langchainTools = {translator: null, prompter: {}, chatSummarizer: {"English":null,"Français":null,"Deutsch":null}};
+const langchainTools = {translator: null, prompter: {}, chatSummarizer: {"English": {'en':null,'cn':null},"Français":{'en':null,'cn':null},"Deutsch":{'en':null,'cn':null}}};
 
 const groqClient = process.env.GROQ_PROXY ? new Groq({httpAgent: new HttpsProxyAgent(process.env.GROQ_PROXY),}) : new Groq();
 const model = new ChatGroq({
@@ -258,14 +258,20 @@ const summarySchema = z.object({
     score: z.string()
 });
 
+const summarizerLang = {
+    'English': {'en':'English', 'cn':'Chinese'},
+    'Français': {'en':'Anglais', 'cn':'Chinois'},
+    'Deutsch': {'en':'Englisch', 'cn':'Chinesisch'},
+}
+
 const summarizer = {
     "English": `
         You are an experienced English teacher, good at summarizing and happy to motivate students.
-        Use Simplified Chinese to refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. Review the process of this conversation exercise and give me a general summary of my learning, praising what I did well, suggesting what I didn't do well, and giving me a score. Give me an English level rating based on the content of my answers.
+        Use {lang} to refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make sentences. Review the process of this conversation exercise and give me a general summary of my learning, praising what I did well, suggesting what I didn't do well, and giving me a score. Give me an English level rating based on the content of my answers.
         Please synthesize the above information and the response you give needs to contain the following four fields:
         1.vocab: Refine key words for this conversation exercise and explain them, show phonetic symbols, show word properties, and make example sentences with the word.
-        2.summary: In response to this conversation, summarize and conclude, praising what I did well and suggesting what I didn't do. Chinese is used here.
-        3.evaluation: Please evaluate my English level according to the following criteria, Chinese is used here.
+        2.summary: In response to this conversation, summarize and conclude, praising what I did well and suggesting what I didn't do. {lang} is used here.
+        3.evaluation: Please evaluate my English level according to the following criteria, {lang} is used here.
             (1).Content integrity：Evaluate whether my answer is comprehensive and relevant.
             (2).Sentence Complexity: assess the complexity of the sentence structures I use, including subordinate clauses and diverse sentence types.
             (3).Vocabulary Use: Consider the range and complexity of vocabulary I use, including idiomatic expressions and the use of advanced terminology.
@@ -275,26 +281,26 @@ const summarizer = {
         Please answer in the following JSON format:
         {{
         "vocab":[
-        {{"word":"word1","explanation":“Explanation of Word 1 in Chinese”, "phonogram":"Phonetic symbols for word 1", "category": "Lexical properties of word 1", "sentence":"Word 1 Sentence Examples"}}}},
-        {{"word":"word2","explanation":“Explanation of Word 2 in Chinese”, "phonogram":"Phonetic symbols for word 2", "category": "Lexical properties of word 2", "sentence":"Word 2 Sentence Examples"}}}}
+        {{"word":"word1","explanation":“Explanation of Word 1 in {lang}”, "phonogram":"Phonetic symbols for word 1", "category": "Lexical properties of word 1", "sentence":"Word 1 Sentence Examples"}}}},
+        {{"word":"word2","explanation":“Explanation of Word 2 in {lang}”, "phonogram":"Phonetic symbols for word 2", "category": "Lexical properties of word 2", "sentence":"Word 2 Sentence Examples"}}}}
         ],
         "summary":{{"content":"General summary of the study","strengths":["What's working well1","What's working well2"],"weaknesses":["Deficiencies 1","Deficiencies 2"]}},
         “evaluation”:"The evaluation referred to above",
         "score":"Grading of this exercise"
         }}
         Finally, I would like to emphasize: your reply will be directly used in javascript's JSON.parse parsing, so be sure to answer in standard JSON format, don't include any other non-JSON content, and don't include line breaks.
-        Respond only the valid JSON string without any Chinese symbols, such as Chinese quotation marks.
+        Respond only the valid JSON string without any {lang} symbols, such as {lang} quotation marks.
         Write a concise summary of the following conversation:
     "{text}"
     CONCISE SUMMARY:
     `,
     "Français":`
         Vous êtes professeur de français, doué pour les résumés et heureux de motiver les étudiants.
-        Utilisez le chinois simplifié pour affiner les mots clés de cet exercice de conversation et expliquez-les, montrez les symboles phonétiques, montrez les propriétés des mots et faites des phrases. Passez en revue le processus de cet exercice de conversation et faites-moi un résumé général de mon apprentissage, en louant ce que j'ai bien fait, en suggérant ce que je n'ai pas bien fait et en me donnant une note. Attribuez-moi une note de niveau de français en fonction du contenu de mes réponses.
+        Utilisez le {lang} pour affiner les mots clés de cet exercice de conversation et expliquez-les, montrez les symboles phonétiques, montrez les propriétés des mots et faites des phrases. Passez en revue le processus de cet exercice de conversation et faites-moi un résumé général de mon apprentissage, en louant ce que j'ai bien fait, en suggérant ce que je n'ai pas bien fait et en me donnant une note. Attribuez-moi une note de niveau de français en fonction du contenu de mes réponses.
         Veuillez synthétiser les informations ci-dessus et la réponse que vous donnez doit contenir les quatre champs suivants :
         1.vocabulaire : Affinez les mots clés de cet exercice de conversation et expliquez-les, montrez les symboles phonétiques, montrez les propriétés du mot et faites des phrases d'exemple avec le mot.
-        2.résumé : En réponse à cette conversation, résumez et concluez, en louant ce que j'ai bien fait et en suggérant ce que je n'ai pas fait. Le chinois est utilisé ici.
-        3.évaluation : Veuillez évaluer mon niveau de français selon les critères suivants, le chinois est utilisé ici.
+        2.résumé : En réponse à cette conversation, résumez et concluez, en louant ce que j'ai bien fait et en suggérant ce que je n'ai pas fait. Le {lang} est utilisé ici.
+        3.évaluation : Veuillez évaluer mon niveau de français selon les critères suivants, le {lang} est utilisé ici.
             (1).Intégrité du contenu：Evaluez si ma réponse est complète et pertinente.
             (2).Complexité de la phrase:évaluez la complexité des structures de phrases que j'utilise, y compris les clauses subordonnées et les divers types de phrases.
             (3).Utilisation du vocabulaire:Évaluer l'étendue et la complexité du vocabulaire que j'utilise, y compris les expressions idiomatiques et l'utilisation d'une terminologie avancée.
@@ -304,26 +310,26 @@ const summarizer = {
         Veuillez répondre dans le format JSON suivant:
         {{
         "vocab":[
-        {{"word":"mot1","explanation":“Explication du mot 1 en chinois”, "phonogram":"Symboles phonétiques pour le mot 1", "category": "Propriétés lexicales du mot 1", "sentence":"Mots 1 Exemples de phrases"}}}},
-        {{"word":"mot2","explanation":“Explication du mot 2 en chinois”, "phonogram":"Symboles phonétiques pour le mot 2", "category": "Propriétés lexicales du mot 2", "sentence":"Mots 2 Exemples de phrases"}}}}
+        {{"word":"mot1","explanation":“Explication du mot 1 en {lang}”, "phonogram":"Symboles phonétiques pour le mot 1", "category": "Propriétés lexicales du mot 1", "sentence":"Mots 1 Exemples de phrases"}}}},
+        {{"word":"mot2","explanation":“Explication du mot 2 en {lang}”, "phonogram":"Symboles phonétiques pour le mot 2", "category": "Propriétés lexicales du mot 2", "sentence":"Mots 2 Exemples de phrases"}}}}
         ],
         "summary":{{"content":"Résumé général de l'étude","strengths":["Ce qui fonctionne bien1","Ce qui fonctionne bien2"],"weaknesses":["Déficiences 1","Déficiences 2"]}},
         “evaluation”:"L'évaluation mentionnée ci-dessus",
         "score":"Notation de cet exercice"
         }}
         Enfin, j'aimerais insister sur le fait que votre réponse sera directement utilisée dans l'analyse JSON.parse de javascript. Veillez donc à répondre dans un format JSON standard, à ne pas inclure de contenu autre que JSON et à ne pas inclure de sauts de ligne.
-        Répondre uniquement à la chaîne JSON valide sans aucun symbole chinois, comme les guillemets chinois.
+        Répondre uniquement à la chaîne JSON valide sans aucun symbole {lang}, comme les guillemets {lang}.
         Rédigez un résumé concis de la conversation suivante:
     "{text}"
     RÉSUMÉ CONCIS :
     `,
     "Deutsch":`
         Sie sind ein Deutschlehrer, können gut zusammenfassen und motivieren gerne Schüler.
-        Verwenden Sie vereinfachtes Chinesisch, um die Schlüsselwörter für diese Konversationsübung zu verfeinern, und erklären Sie sie, zeigen Sie phonetische Symbole, zeigen Sie Worteigenschaften und bilden Sie Sätze. Lassen Sie den Ablauf dieser Konversationsübung Revue passieren und geben Sie mir eine allgemeine Zusammenfassung meines Lernens, loben Sie, was ich gut gemacht habe, weisen Sie darauf hin, was ich nicht gut gemacht habe, und geben Sie mir eine Punktzahl. Geben Sie mir eine Bewertung der deutschen Sprache auf der Grundlage des Inhalts meiner Antworten.
+        Verwenden Sie vereinfachtes {lang}, um die Schlüsselwörter für diese Konversationsübung zu verfeinern, und erklären Sie sie, zeigen Sie phonetische Symbole, zeigen Sie Worteigenschaften und bilden Sie Sätze. Lassen Sie den Ablauf dieser Konversationsübung Revue passieren und geben Sie mir eine allgemeine Zusammenfassung meines Lernens, loben Sie, was ich gut gemacht habe, weisen Sie darauf hin, was ich nicht gut gemacht habe, und geben Sie mir eine Punktzahl. Geben Sie mir eine Bewertung der deutschen Sprache auf der Grundlage des Inhalts meiner Antworten.
         Bitte fassen Sie die oben genannten Informationen zusammen, und Ihre Antwort muss die folgenden vier Felder enthalten:
         1.Vokabeln: Nennen Sie die Schlüsselwörter für diese Konversationsübung und erklären Sie sie, zeigen Sie die phonetischen Symbole, zeigen Sie die Eigenschaften des Wortes und bilden Sie Beispielsätze mit dem Wort.
-        2.Zusammenfassung: Fassen Sie das Gespräch zusammen, loben Sie, was ich gut gemacht habe, und sagen Sie, was ich nicht gemacht habe. Hier wird Chinesisch verwendet.
-        3.Bewertung: Bitte bewerten Sie mein Deutschniveau nach den folgenden Kriterien, hier wird Chinesisch verwendet.
+        2.Zusammenfassung: Fassen Sie das Gespräch zusammen, loben Sie, was ich gut gemacht habe, und sagen Sie, was ich nicht gemacht habe. Hier wird {lang} verwendet.
+        3.Bewertung: Bitte bewerten Sie mein Deutschniveau nach den folgenden Kriterien, hier wird {lang} verwendet.
             (1).Inhaltliche Integrität：Bewerten Sie, ob meine Antwort umfassend und relevant ist.
             (2).Satzkomplexität: Beurteilen Sie die Komplexität der von mir verwendeten Satzstrukturen, einschließlich Nebensätze und verschiedene Satzarten.
             (3).Wortschatzgebrauch: Beurteilen Sie den Umfang und die Komplexität des von mir verwendeten Wortschatzes, einschließlich idiomatischer Ausdrücke und der Verwendung fortgeschrittener Terminologie.
@@ -333,25 +339,25 @@ const summarizer = {
         Bitte antworten Sie im folgenden JSON-Format:
         {{
         "vocab":[
-        {{"word":"Wort1","explanation":“Erläuterung von Wort 1 auf Chinesisch”, "phonogram":"Phonetische Zeichen für Wort 1", "category": "Lexikalische Eigenschaften von Wort 1", "sentence":"Wort 1 Satzbeispiele"}}}},
-        {{"word":"Wort2","explanation":“Erläuterung von Wort 2 auf Chinesisch”, "phonogram":"Phonetische Zeichen für Wort 2", "category": "Lexikalische Eigenschaften von Wort 2", "sentence":"Wort 2 Satzbeispiele"}}}}
+        {{"word":"Wort1","explanation":“Erläuterung von Wort 1 auf {lang}”, "phonogram":"Phonetische Zeichen für Wort 1", "category": "Lexikalische Eigenschaften von Wort 1", "sentence":"Wort 1 Satzbeispiele"}}}},
+        {{"word":"Wort2","explanation":“Erläuterung von Wort 2 auf {lang}”, "phonogram":"Phonetische Zeichen für Wort 2", "category": "Lexikalische Eigenschaften von Wort 2", "sentence":"Wort 2 Satzbeispiele"}}}}
         ],
         "summary":{{"content":"Allgemeine Zusammenfassung der Studie","strengths":["Was gut funktioniert1","Was gut funktioniert2"],"weaknesses":["Unzulänglichkeiten 1","Unzulänglichkeiten 2"]}},
         “evaluation”:"Die oben erwähnte Bewertung",
         "score":"Benotung dieser Übung"
         }}
         Abschließend möchte ich noch betonen, dass Ihre Antwort direkt in das JSON.parse-Parsing von Javascript einfließt. Achten Sie also darauf, dass Sie im Standard-JSON-Format antworten, keine anderen Inhalte als JSON enthalten und keine Zeilenumbrüche einfügen.
-        Beantworten Sie nur die gültige JSON-Zeichenfolge ohne chinesische Symbole, wie z. B. chinesische Anführungszeichen.
+        Beantworten Sie nur die gültige JSON-Zeichenfolge ohne {lang} Symbole, wie z. B. {lang} Anführungszeichen.
         Schreiben Sie eine knappe Zusammenfassung der folgenden Konversation:
     "{text}"
     KNAPPE ZUSAMMENFASSUNG:
     `
 }
 
-async function createSummarizerForScore(lang:string) {
+async function createSummarizerForScore(lang:string, clientLang:string) {
     const prompt = new PromptTemplate({
         inputVariables: ['text'],
-        template: summarizer[lang]
+        template: summarizer[lang].replaceAll('{lang}', clientLang)
     });
     return loadSummarizationChain(model.withFallbacks(fallbacksModels), {
         type: 'map_reduce',
@@ -360,24 +366,24 @@ async function createSummarizerForScore(lang:string) {
     });
 }
 
-export async function getScore(chat: Chat) {
+export async function getScore(chat: Chat, lang='cn') {
     const summary = await kv.hgetall<Summary>(`summary:${chat.id}`)
     chat = await getChat(chat.id, chat.userId);
     // // console.log("get sum");
-    console.log(summarizer[chat.chatParams.lang]);
+    // console.log(summarizer[chat.chatParams.lang]);
     // // console.log(summary);
     if (!summary || summary.chatLength + '' !== chat.messages.length + '') {
-        if (!langchainTools.chatSummarizer[chat.chatParams.lang]) {
-            langchainTools.chatSummarizer[chat.chatParams.lang] = await createSummarizerForScore(chat.chatParams.lang);
+        if (!langchainTools.chatSummarizer[chat.chatParams.lang][lang]) {
+            langchainTools.chatSummarizer[chat.chatParams.lang][lang] = await createSummarizerForScore(chat.chatParams.lang, lang);
         }
         // load chat history
         const docs = [];
         chat.messages.forEach(async function (value, index) {
             if (value.role === 'assistant') {
-                docs.push(new Document({pageContent: `You:${value.content}`}))
+                docs.push(new Document({pageContent: `${value.content}`}))
             }
             if (value.role === 'user') {
-                docs.push(new Document({pageContent: `Student:${value.content}`}))
+                docs.push(new Document({pageContent: `${value.content}`}))
             }
         });
 
@@ -386,7 +392,7 @@ export async function getScore(chat: Chat) {
         let retries = 0;
         const proceed = async ()=>{
             try {
-                res = await langchainTools.chatSummarizer[chat.chatParams.lang].invoke(
+                res = await langchainTools.chatSummarizer[chat.chatParams.lang][lang].invoke(
                     {input_documents: docs},
                 );
             } catch (e) {
@@ -435,41 +441,41 @@ export async function getScore(chat: Chat) {
                     // console.log(`${key}: ${jsonRes[key]}`);
                     if (key === 'vocab') {
                         jsonRes[key].forEach(function (value, index) {
-                            if (!isChinese(value.explanation)) {
+                            if (!isChinese(value.explanation) && lang === 'cn') {
                                 needTransString.push(value.explanation);
                                 needTransIndex.push(`${key}-${index}`);
                             }
                         });
                     } else if (key === 'summary') {
-                        if (!isChinese(jsonRes[key].content)) {
+                        if (!isChinese(jsonRes[key].content) && lang === 'cn') {
                             needTransString.push(jsonRes[key].content);
                             needTransIndex.push(`${key}-content`);
                         }
                         jsonRes[key].strengths.forEach(function (value, index) {
-                            if (!isChinese(value)) {
+                            if (!isChinese(value) && lang === 'cn') {
                                 needTransString.push(value);
                                 needTransIndex.push(`${key}-strengths-${index}`);
                             }
                         });
                         jsonRes[key].weaknesses.forEach(function (value, index) {
-                            if (!isChinese(value)) {
+                            if (!isChinese(value) && lang === 'cn') {
                                 needTransString.push(value);
                                 needTransIndex.push(`${key}-weaknesses-${index}`);
                             }
                         });
                     } else if (key === 'evaluation') {
-                        if (!isChinese(jsonRes[key])) {
+                        if (!isChinese(jsonRes[key]) && lang === 'cn') {
                             needTransString.push(jsonRes[key]);
                             needTransIndex.push(`${key}`);
                         }
                     } else if (key === 'score') {
-                        if (!isChinese(jsonRes[key])) {
+                        if (!isChinese(jsonRes[key]) && lang === 'cn') {
                             needTransString.push(jsonRes[key]);
                             needTransIndex.push(`${key}`);
                         }
                     }
                 });
-                const translatedStrings = (await syncTranslate(needTransString.join('|'))).split('|')
+                const translatedStrings = (await syncTranslate(needTransString.join('|'), lang)).split('|')
 
                 translatedStrings.forEach(function (value, index) {
                     if (needTransIndex[index].includes("vocab")) {
@@ -511,18 +517,18 @@ export async function getScore(chat: Chat) {
 }
 
 
-async function syncTranslate(content: string) {
+async function syncTranslate(content: string, lang='cn') {
     'use server'
 
-    if (!langchainTools.translator) {
-        langchainTools.translator = await createTranslator();
+    if (!langchainTools.translator[lang]) {
+        langchainTools.translator[lang] = await createTranslator(lang);
     }
 
     const maxRetries = 3;
     let retries = 0;
     let res = '';
     const proceed = async ()=>{
-        res = await langchainTools.translator.invoke(
+        res = await langchainTools.translator[lang].invoke(
             {input: content},
         );
     }
@@ -542,23 +548,21 @@ async function syncTranslate(content: string) {
 
 
 
-export async function getTranslate(content: string) {
+export async function getTranslate(content: string, lang='cn') {
     'use server'
 
     const textStream = createStreamableValue("");
 
     runAsyncFnWithoutBlocking(async () => {
-        if (!langchainTools.translator) {
-            langchainTools.translator = await createTranslator();
+        if (!langchainTools.translator[lang]) {
+            langchainTools.translator[lang] = await createTranslator(lang);
         }
-
-
 
         const maxRetries = 3;
         let retries = 0;
         const proceed = async ()=>{
             let buf = "";
-            const res = await langchainTools.translator.invoke(
+            const res = await langchainTools.translator[lang].invoke(
                 {input: content},
                 {
                     callbacks: [

@@ -19,6 +19,7 @@ import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {usePathname} from "next/navigation";
 import Image from 'next/image'
+import {useTranslations} from "next-intl";
 
 // Different types of message bubbles.
 
@@ -78,7 +79,8 @@ export const BotMessage = React.memo(forwardRef(({
     const [readingLoud, setReadingLoud] = React.useState<boolean>(false)
     const audioRef = React.useRef(null);
     const {translate} = useActions()
-    const path = usePathname();
+    const PromptFormT = useTranslations('PromptForm');
+    // const locale = useLocale();
 
     const handleCanPlay = (e) => {
         // console.log(e);
@@ -300,10 +302,9 @@ export const BotMessage = React.memo(forwardRef(({
                                     ) : (
                                         <IconPlayMedia className="size-6"/>
                                     )}
-                                    <span className="sr-only">{readingLoud ? ("停止") : ("朗读")}</span>
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>{readingLoud ? ("停止") : ("朗读")}</TooltipContent>
+                            <TooltipContent>{readingLoud ? (PromptFormT('readingLoudStop')) : (PromptFormT('readingLoudStart'))}</TooltipContent>
                         </Tooltip>
                     )}
 
@@ -331,10 +332,9 @@ export const BotMessage = React.memo(forwardRef(({
                                     }}
                                 >
                                     <IconTranslate className="size-6"/>
-                                    <span className="sr-only">翻译</span>
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>翻译</TooltipContent>
+                            <TooltipContent>{PromptFormT('translate')}</TooltipContent>
                         </Tooltip>
                         // <button className={"btn rounded-full hover:bg-gray-200"} onClick={async () => {
                         //     setShowTranslate(true);

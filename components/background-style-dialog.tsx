@@ -12,6 +12,7 @@ import {Scrollbars} from 'react-custom-scrollbars';
 import {forwardRef, useImperativeHandle} from "react";
 import * as HoverCard from "@radix-ui/react-hover-card";
 import {Button} from "@/components/ui/button";
+import {useTranslations} from "next-intl";
 interface ChatShareDialogProps extends DialogProps {
     userId: string
     hide: boolean
@@ -30,83 +31,84 @@ export const BackgroundDialog = forwardRef(({userId,
         backgroundStyle,
     }))
 
-    const path = usePathname();
+    const t = useTranslations('BackgroundDialog');
     const [backgroundStyle, setBackgroundStyle] = React.useState(4)
     const [dialogOpen, setDialogOpen] = React.useState(false)
 
     const bgStyles = {
-        0: '无',
-        1: '胶片',
-        2: '动画',
-        3: '电影',
-        4: '漫画',
-        5: '橡皮泥',
-        6: '梦幻',
-        7: '等距',
-        8: '线条',
-        9: '多边形',
-        10: '霓虹朋克',
-        11: '折纸',
-        12: '摄影',
-        13: '像素风',
-        14: '汽车',
-        15: '时尚杂志',
-        16: '食品',
-        17: '奢侈品',
-        18: '房屋',
-        19: '包装',
-        20: '抽象派',
-        21: '装饰',
-        22: '色块拼图',
-        23: '涂鸦',
-        24: '印象派',
-        25: '点彩画',
-        26: '流行艺术',
-        27: '迷幻',
-        28: '蒸汽朋克',
-        29: '水彩画',
-        30: '生物赛博',
-        31: '赛博机器人',
-        32: '赛博城市',
-        33: '未来主义',
-        34: '复古赛博',
-        35: '复古科幻',
-        36: '科幻',
-        37: '泡泡龙',
-        38: '赛博游戏',
-        39: '格斗游戏',
-        40: '侠盗飞车',
-        41: '马里奥',
-        42: '体素风',
-        43: '宝可梦',
-        44: '街头霸王',
-        45: '迪斯科',
-        46: '世界末日',
-        47: '童话',
-        48: '哥特式',
-        49: '摇滚',
-        50: '恐怖',
-        51: '可爱',
-        52: '魔幻',
-        53: '阴森',
-        54: '摩天高楼',
-        55: '单色',
-        56: '航海',
-        57: '宇宙太空',
-        58: '染色玻璃',
-        59: '时尚赛博',
-        60: '原始部落',
-        61: '复杂单色',
-        62: '平面剪纸',
-        63: '立体剪纸',
-        64: '纸浆',
-        65: '剪纸拼图',
-        66: '地外文明',
-        67: '黑白电影',
-        68: '高清',
-        69: '宏大场景'
+        0: t('style0'),
+        1: t('style1'),
+        2: t('style2'),
+        3: t('style3'),
+        4: t('style4'),
+        5: t('style5'),
+        6: t('style6'),
+        7: t('style7'),
+        8: t('style8'),
+        9: t('style9'),
+        10: t('style10'),
+        11: t('style11'),
+        12: t('style12'),
+        13: t('style13'),
+        14: t('style14'),
+        15: t('style15'),
+        16: t('style16'),
+        17: t('style17'),
+        18: t('style18'),
+        19: t('style19'),
+        20: t('style20'),
+        21: t('style21'),
+        22: t('style22'),
+        23: t('style23'),
+        24: t('style24'),
+        25: t('style25'),
+        26: t('style26'),
+        27: t('style27'),
+        28: t('style28'),
+        29: t('style29'),
+        30: t('style30'),
+        31: t('style31'),
+        32: t('style32'),
+        33: t('style33'),
+        34: t('style34'),
+        35: t('style35'),
+        36: t('style36'),
+        37: t('style37'),
+        38: t('style38'),
+        39: t('style39'),
+        40: t('style40'),
+        41: t('style41'),
+        42: t('style42'),
+        43: t('style43'),
+        44: t('style44'),
+        45: t('style45'),
+        46: t('style46'),
+        47: t('style47'),
+        48: t('style48'),
+        49: t('style49'),
+        50: t('style50'),
+        51: t('style51'),
+        52: t('style52'),
+        53: t('style53'),
+        54: t('style54'),
+        55: t('style55'),
+        56: t('style56'),
+        57: t('style57'),
+        58: t('style58'),
+        59: t('style59'),
+        60: t('style60'),
+        61: t('style61'),
+        62: t('style62'),
+        63: t('style63'),
+        64: t('style64'),
+        65: t('style65'),
+        66: t('style66'),
+        67: t('style67'),
+        68: t('style68'),
+        69: t('style69')
     }
-    
+
+
     React.useEffect(() => {
         ;(async () => {
             // const chatId = path.includes('chat') ? path.split('/').pop() : 'default';
@@ -139,7 +141,6 @@ export const BackgroundDialog = forwardRef(({userId,
                                     }}
                                 >
                                     <IconBackground/>
-                                    <span className="sr-only">背景风格</span>
                                 </Button>
                             </HoverCard.Trigger>
                             <HoverCard.Portal>
@@ -149,7 +150,7 @@ export const BackgroundDialog = forwardRef(({userId,
                                         className={`cursor-pointer rounded-lg border bg-white p-4 hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900`}
                                         onClick={()=>setDialogOpen(!dialogOpen)}
                                     >
-                                        <div className="text-sm font-semibold mb-2">背景风格</div>
+                                        <div className="text-sm font-semibold mb-2">{t('title')}</div>
                                         <div className="text-sm text-zinc-600 items-center flex flex-col">
                                             <img className={"size-24"}
                                                  alt={bgStyles[backgroundStyle]}
@@ -170,7 +171,7 @@ export const BackgroundDialog = forwardRef(({userId,
                     <Dialog.Content
                         className="z-50 min-w-[60vw] max-w-[80vw] data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
                         <Dialog.Title className="text-mauve12 m-0 text-[17px] font-medium">
-                            背景风格
+                            {t('title')}
                         </Dialog.Title>
                         <Dialog.Description className="text-mauve11 mt-[10px] mb-1 text-[15px] leading-normal">
                         </Dialog.Description>

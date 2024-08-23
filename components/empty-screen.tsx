@@ -1,11 +1,14 @@
-import { IconVoiceContinuation } from '@/components/ui/icons'
+import {useLocale, useTranslations} from 'next-intl';
 
 export function EmptyScreen() {
+  const t = useTranslations('EmptyScreen');
+  const locale = useLocale();
+
   return (
-    <div className="mx-auto max-w-2xl px-4">
+    <div key={locale} className="mx-auto max-w-2xl px-4">
       <div className="flex flex-col gap-2 rounded-lg border bg-background p-8">
         <h1 className="text-lg font-semibold">
-          欢迎来到AI外语通!
+          {t('title')}
         </h1>
         <p className="leading-normal text-muted-foreground">
           {/*This is an open source AI chatbot app template built with{' '}*/}
@@ -18,17 +21,17 @@ export function EmptyScreen() {
           {/*  Vercel KV*/}
           {/*</ExternalLink>*/}
           {/*.*/}
-          朋友们，准备好迎接语言学习新纪元了吗?
+          {t('p0')}
 
         </p>
         <p className="leading-normal text-muted-foreground">
-          你可以随时随地与一位幽默风趣、耐心十足的外语老师对话。无论你说中文还是英文,它都能用纯正流利的外语来回应,循循善诱地帮你练习口语。
+          {t('p1')}
         </p>
         <p className="leading-normal text-primary opacity-75">
-          请允许浏览器获取麦克风权限，以确保语音转文本（STT）功能正常运行。
+          {t('p2')}
         </p>
         <p className="leading-normal text-primary opacity-75">
-          为了获得最佳的语音识别效果，请在使用语音输入功能时关闭扬声器并佩戴耳机，以确保语音输入的准确性。
+          {t('p3')}
         </p>
         {/*<p className="leading-normal text-muted-foreground flex ">*/}
         {/*  <span>点击按钮</span><span><IconVoiceContinuation /></span><span>后可自动发送语音。</span>*/}
