@@ -8,7 +8,10 @@ import {Locale, defaultLocale, locales} from '@/config';
 const COOKIE_NAME = 'NEXT_LOCALE';
 
 export async function getUserLocale() {
-  const browserLang = navigator.language || navigator.userLanguage;
+  let browserLang = navigator.language || navigator.userLanguage;
+  if (browserLang.slice(0, 2) === 'en') {
+    browserLang = 'en'
+  }
 
   return cookies().get(COOKIE_NAME)?.value || (locales.includes(browserLang) ? browserLang : defaultLocale);
 }
