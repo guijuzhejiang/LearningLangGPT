@@ -9,9 +9,17 @@ const COOKIE_NAME = 'NEXT_LOCALE';
 
 export async function getUserLocale() {
   let browserLang = navigator.language || navigator.userLanguage;
-  if (browserLang.slice(0, 2) === 'en') {
+  if (browserLang.split("-")[0] === 'en') {
     browserLang = 'en'
   }
+  // const browserLang = navigator.language.toLowerCase();
+  // if (locales.includes(browserLang)) {
+  //   location.href = `${baseUrl + browserLang}`;
+  // } else if (langs.includes(browserLang.split("-")[0])) {
+  //   location.href = `${baseUrl + browserLang.split("-")[0]}`;
+  // } else {
+  //   location.href = `${baseUrl + defaultLocale}`;
+  // }
 
   return cookies().get(COOKIE_NAME)?.value || (locales.includes(browserLang) ? browserLang : defaultLocale);
 }
