@@ -8,7 +8,7 @@ module.exports = withNextIntl({
   // output: 'export',
   experimental: {
     serverActions: {
-      allowedOrigins: process.env.NODE_ENV === "development"?[]:['zs.imegaai.com'],
+      allowedOrigins: ['*'],
     },
   },
   env: {
