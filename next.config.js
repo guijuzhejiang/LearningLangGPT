@@ -59,53 +59,53 @@ module.exports = withNextIntl({
         new CopyPlugin({
           patterns: [
             {
-              from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
+              from: "./models/ort-wasm.wasm",
               to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
-              from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
+              from: "./models/ort-wasm-simd.wasm",
               to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
-              from: "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
+              from: "./models/vad.worklet.bundle.min.js",
               to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
-              from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
+              from: "./models/*.onnx",
               to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
 
             {
-              from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
+              from: "./models/ort-wasm.wasm",
               to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
-              from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
+              from: "./models/ort-wasm-simd.wasm",
               to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
-              from: "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
+              from: "./models/vad.worklet.bundle.min.js",
               to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
-              from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
+              from: "./models/*.onnx",
               to: `static/chunks/chat/[id]/[name][ext]`,
             },
 
             {
-              from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
+              from: "./models/ort-wasm.wasm",
               to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
             {
-              from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
+              from: "./models/ort-wasm-simd.wasm",
               to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
             {
-              from: "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
+              from: "./models/vad.worklet.bundle.min.js",
               to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
             {
-              from: "node_modules/@ricky0123/vad-web/dist/*.onnx",
+              from: "./models/*.onnx",
               to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
           ],
