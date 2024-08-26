@@ -10,17 +10,17 @@ export interface ChatList {
   messages: UIState
   session?: Session
   isShared: boolean
-  // clickDiv: ()=>void
+  commonT: (k:string)=>string
   // childDivRef: React.Ref<any>
 }
 
-export function ChatList({ messages, session, isShared }: ChatList) {
+export function ChatList({ messages, session, isShared, commonT }: ChatList) {
 
   if (!messages.length) {
     return null
   }
 
-  const t = useTranslations('Common');
+  // const t = useTranslations('Common');
 
   return (
 
@@ -38,15 +38,15 @@ export function ChatList({ messages, session, isShared }: ChatList) {
             </div>
             <div className="ml-4 flex-1 space-y-2 overflow-hidden px-1">
               <p className="text-muted-foreground leading-normal">
-                {t('needLoginHint0')}{' '}
+                {commonT('needLoginHint0')}{' '}
                 <Link href="/login" className="underline">
-                  {t('needLoginHint1')}
+                  {commonT('needLoginHint1')}
                 </Link>{' '}
-                {t('needLoginHint2')}{' '}
+                {commonT('needLoginHint2')}{' '}
                 <Link href="/signup" className="underline">
-                  {t('needLoginHint3')}
+                  {commonT('needLoginHint3')}
                 </Link>{' '}
-                {t('needLoginHint4')}
+                {commonT('needLoginHint4')}
               </p>
             </div>
           </div>

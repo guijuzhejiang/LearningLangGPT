@@ -8,6 +8,7 @@ import {cn} from "@/lib/utils";
 import {CheckIcon, LanguageIcon} from "@heroicons/react/24/solid";
 import {Button} from "@/components/ui/button";
 import {IconLang} from "@/components/ui/icons";
+import Cookies from "js-cookie";
 
 export async function LocaleSwitcherSelect({
                                         defaultValue,
@@ -20,6 +21,26 @@ export async function LocaleSwitcherSelect({
 }) {
     const [isPending, startTransition] = useTransition();
     const [selectedLocale, setSelectedLocale] = useState(items.findIndex(lang => lang.value === defaultValue));
+
+    React.useEffect(() => {
+        let browserLang = navigator.language || navigator.userLanguage;
+        if (browserLang.split("-")[0] === 'en') {
+          browserLang = 'en'
+        }
+
+        if (!Cookies.get('NEXT_LOCALE')) {
+            setUserLocale(browserLang);
+
+        }
+        // const browserLang = navigator.language.toLowerCase();
+        // if (locales.includes(browserLang)) {
+        //   location.href = `${baseUrl + browserLang}`;
+        // } else if (langs.includes(browserLang.split("-")[0])) {
+        //   location.href = `${baseUrl + browserLang.split("-")[0]}`;
+        // } else {
+        //   location.href = `${baseUrl + defaultLocale}`;
+        // }
+    }, [])
 
     function onChange(value: string) {
         const locale = value as Locale;

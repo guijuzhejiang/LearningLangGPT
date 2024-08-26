@@ -31,9 +31,16 @@ export function UserGuideButton({
 
     React.useEffect(() => {
         if (!Cookies.get('guideBefore')) {
-            Cookies.set('guideBefore', 'true');
-            driverObj.drive();
+            const intervalId = setInterval(() => {
+                // alert('sdsd');
+                if (Cookies.get('NEXT_LOCALE')) {
+                    Cookies.set('guideBefore', 'true');
+                    driverObj.drive();
+                    clearInterval(intervalId);
+                }
+            }, 250);
         }
+
     }, [])
 
     const [displayBtnDesc, setDisplayBtnDesc] = React.useState(false)

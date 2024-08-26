@@ -8,10 +8,10 @@ import {Locale, defaultLocale, locales} from '@/config';
 const COOKIE_NAME = 'NEXT_LOCALE';
 
 export async function getUserLocale() {
-  let browserLang = navigator.language || navigator.userLanguage;
-  if (browserLang.split("-")[0] === 'en') {
-    browserLang = 'en'
-  }
+  // let browserLang = navigator.language || navigator.userLanguage;
+  // if (browserLang.split("-")[0] === 'en') {
+  //   browserLang = 'en'
+  // }
   // const browserLang = navigator.language.toLowerCase();
   // if (locales.includes(browserLang)) {
   //   location.href = `${baseUrl + browserLang}`;
@@ -21,7 +21,7 @@ export async function getUserLocale() {
   //   location.href = `${baseUrl + defaultLocale}`;
   // }
 
-  return cookies().get(COOKIE_NAME)?.value || (locales.includes(browserLang) ? browserLang : defaultLocale);
+  return cookies().get(COOKIE_NAME)?.value || defaultLocale;
 }
 
 export async function setUserLocale(locale: Locale) {

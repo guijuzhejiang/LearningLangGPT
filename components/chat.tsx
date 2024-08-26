@@ -263,7 +263,7 @@ export function Chat({id, chat, session, chatParams, remainingSecs}: ChatProps) 
                 ref={messagesRef}
             >
                 {messages.length ? (
-                    <ChatList messages={messages} isShared={false} session={session}/>
+                    <ChatList messages={messages} isShared={false} session={session} commonT={t}/>
                 ) : (
                     <EmptyScreen/>
                 )}
