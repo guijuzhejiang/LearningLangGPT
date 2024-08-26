@@ -159,7 +159,9 @@ export function ChatPanel({
                                     level: tLevel,
                                 }
 
-                                cacheUserCookies(session?.user?.id ? session?.user?.id:"default", id, chatParams)
+                                if (!session?.user?.id) {
+                                    cacheUserCookies(session?.user?.id ? session?.user?.id:"default", id, chatParams);
+                                }
                                 const responseMessage = await submitUserMessage(
                                     exampleMsg,
                                     chatParams,

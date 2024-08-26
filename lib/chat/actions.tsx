@@ -282,6 +282,7 @@ async function getHint(msg: string, chatParams: ChatParams | undefined | null) {
     'use server'
     console.log("getHint:");
     console.log(msg);
+
     if (!chatParams) {
         const session = await auth();
         const userId = (session && session.user) ? session.user.id : "default";

@@ -36,7 +36,7 @@ import {readStreamableValue} from "ai/rsc";
 import {spinner} from "@/components/stocks";
 import {loadCacheUserCookies, loadUserCookies, pauseAllAudio, stopAllAudio} from "@/lib/utils";
 import {useMicVAD, utils} from "@ray8716397/vad-react";
-import {saveCountDown} from "@/app/actions";
+import {getChat, saveCountDown} from "@/app/actions";
 import {BackgroundDialog} from "@/components/background-style-dialog";
 import {Chat} from "@/lib/types";
 import {useTranslations, useLocale} from "next-intl";
@@ -503,9 +503,15 @@ export function PromptForm({
         setCanPlay(false);
         setCanPlayThrough(false);
         setHintContent('');
-        const cacheCookie = loadCacheUserCookies(userId, chatId);
+        let chatParams = null;
 
-        const hintText = await getHint(msg, cacheCookie ? cacheCookie : loadUserCookies(userId));
+        if (userId == 'default') {
+            chatParams = loadCacheUserCookies(userId, chatId);
+        } else {
+            chatParams = (await getChat(chatId, userId))?.chatParams;
+        }
+
+        const hintText = await getHint(msg, chatParams ? chatParams : loadUserCookies(userId));
         //
         if (typeof hintText === 'object') {
             let value = ''
@@ -646,8 +652,14 @@ export function PromptForm({
                     }
                 ])
 
+                let chatParams = null;
+                if (userId == 'default') {
+                    chatParams = loadCacheUserCookies(userId, chatId);
+                } else {
+                    chatParams = (await getChat(chatId, userId))?.chatParams;
+                }
                 // Submit and get response message
-                const responseMessage = await submitUserMessage(value, loadCacheUserCookies(userId, chatId), remainingSecs)
+                const responseMessage = await submitUserMessage(value, chatParams ? chatParams : loadUserCookies(userId), remainingSecs)
                 responseMessage.display.ref = lastMsgRef;
                 setMessages(currentMessages => [...currentMessages, responseMessage])
                 setLastMessage(responseMessage);
