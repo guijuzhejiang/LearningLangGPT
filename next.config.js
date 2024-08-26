@@ -8,7 +8,8 @@ module.exports = withNextIntl({
   // output: 'export',
   experimental: {
     serverActions: {
-      allowedOrigins: ['*'],
+      allowedForwardedHosts: ['zs.imegaai.com'],
+      allowedOrigins: ['zs.imegaai.com'],
     },
   },
   env: {
