@@ -68,7 +68,7 @@ module.exports = withNextIntl({
               to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
-              from: "./models/vad.worklet.bundle.min.js",
+              from: "./node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
               to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
@@ -85,7 +85,7 @@ module.exports = withNextIntl({
               to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
-              from: "./models/vad.worklet.bundle.min.js",
+              from: "./node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
               to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
@@ -102,7 +102,7 @@ module.exports = withNextIntl({
               to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
             {
-              from: "./models/vad.worklet.bundle.min.js",
+              from: "./node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
               to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
             {
