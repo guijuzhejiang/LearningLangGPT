@@ -750,7 +750,7 @@ export function PromptForm({
 
                                         }
                                     }
-                                    handleUpdateHint(lastMessage.display.ref?.current?.text ? lastMessage.display.ref?.current?.text : messages[messages.length - 1].display.props.content);
+                                    handleUpdateHint(lastMessage?.display.ref?.current?.text ? lastMessage.display.ref?.current?.text : messages[messages.length - 1].display.props.content);
                                 }}
                             >
                                 <IconRefresh/>

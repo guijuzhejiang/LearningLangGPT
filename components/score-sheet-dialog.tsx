@@ -58,6 +58,8 @@ export const ScoreSheetDialog = forwardRef(({
                         setDisplayJSON(false);
                         setSummaryContent('');
                         const res = await getScore(chat, locale.includes('zh') ? 'cn':'en');
+                        console.log("re!!!!!!!!!!!!!!!!!!!!!!s")
+                        console.log(res)
                         setDisplayJSON(typeof res === 'string')
                         setSummaryContent(res);
 

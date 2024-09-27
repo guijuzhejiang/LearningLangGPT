@@ -254,7 +254,7 @@ export const ScoreSheet = forwardRef(({
                                 <div>
                                     <div className={"pb-1"}>{t('pros')}:</div>
                                     <ul className={"pl-5 list-disc space-y-1"}>
-                                        {summaryString['summary']['strengths'].map((s, index) => {
+                                        {summaryString.summary.strengths.map((s, index) => {
                                             return (
                                                 <li key={`s${index}`}>{s}</li>
                                             )
@@ -280,16 +280,16 @@ export const ScoreSheet = forwardRef(({
 
             <AccordionItem value="item-evaluation">
                 <AccordionTrigger
-                    // btn={
-                    //     <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['evaluation']}分数:${summaryString['score']}`:''} chat={chat}/>
-                    // }
+                    btn={
+                        <TTSButton lang={"zh-cn"} text={summaryString ? `${summaryString['evaluation']}分数:${summaryString['score']}`:''} chat={chat}/>
+                    }
                 >
                     {t('evaluation')}
                 </AccordionTrigger>
                 <AccordionContent>
                     {typeof summaryString === 'string' ? (spinner) : (
                         <div className={"flex items-center justify-between"}>
-                            <span className={"flex flex-grow pr-4"}>{summaryString['evaluation']}</span>
+                            <span className={"flex flex-grow pr-4"}>{typeof summaryString['evaluation'] === 'string' ? summaryString['evaluation']:(JSON.stringify(summaryString['evaluation']))}</span>
                             <span className={"flex items-center w-fit flex-shrink-0"}>
                                 <span className={"flex font-bold text-md"}>{t('scoreLabel')}:</span>
                                 <span className={"font-bold text-2xl text-red-500"}>{summaryString['score']}</span>
