@@ -24,8 +24,10 @@ export async function LocaleSwitcherSelect({
 
     React.useEffect(() => {
         let browserLang = navigator.language || navigator.userLanguage;
-        if (browserLang.split("-")[0] === 'en') {
-          browserLang = 'en'
+        if (browserLang.split("-")[0] === 'zh') {
+          browserLang = 'zh-cn'
+        } else {
+            browserLang = 'en'
         }
 
         if (!Cookies.get('NEXT_LOCALE')) {
