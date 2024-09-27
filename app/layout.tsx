@@ -44,18 +44,20 @@ export default async function RootLayout({children}: RootLayoutProps) {
     const messages = await getMessages();
     return (
         <html lang={locale} suppressHydrationWarning>
-          <head>
-              <Script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js" strategy="beforeInteractive"/>
-              {/*<Script src="https://hm.baidu.com/hm.js?d16d39a1b531ab4a982a38f9852f79ea" strategy="lazyOnload"/>*/}
-              <Script src="/learninglang/bdTrack.js" strategy="lazyOnload"/>
-          </head>
-          <body
-              className={cn(
-                  'font-sans antialiased',
-                  GeistSans.variable,
-                  GeistMono.variable
-              )}
-          >
+        <head>
+            <Script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js" strategy="beforeInteractive"/>
+            {/*<Script src="https://hm.baidu.com/hm.js?d16d39a1b531ab4a982a38f9852f79ea" strategy="lazyOnload"/>*/}
+            <Script src="/learninglang/bdTrack.js" strategy="lazyOnload"/>
+        </head>
+        <body
+            className={cn(
+                'font-sans antialiased',
+                GeistSans.variable,
+                GeistMono.variable
+            )}
+        >
+
+        <NextIntlClientProvider messages={messages}>
             <Toaster position="top-center"/>
             <Providers
                 attribute="class"
@@ -63,15 +65,15 @@ export default async function RootLayout({children}: RootLayoutProps) {
                 enableSystem
                 disableTransitionOnChange
             >
-                <NextIntlClientProvider messages={messages}>
-                  <div className="flex flex-col min-h-screen">
-                      <Header/>
-                      <main className="flex flex-col flex-1 bg-muted/50">{children}</main>
-                  </div>
-                </NextIntlClientProvider>
-                <TailwindIndicator/>
+                <div className="flex flex-col min-h-screen">
+                    <Header/>
+                    <main className="flex flex-col flex-1 bg-muted/50">{children}</main>
+                </div>
             </Providers>
-          </body>
+            <TailwindIndicator/>
+        </NextIntlClientProvider>
+
+        </body>
         </html>
     )
 }

@@ -6,15 +6,14 @@ import { cn } from '@/lib/utils'
 import { SidebarList } from '@/components/sidebar-list'
 import { buttonVariants } from '@/components/ui/button'
 import { IconPlus } from '@/components/ui/icons'
-import {useLocale, useTranslations} from "next-intl";
+import {useTranslations} from "next-intl";
 
 interface ChatHistoryProps {
   userId?: string
 }
 
-export async function ChatHistory({ userId }: ChatHistoryProps) {
+export function ChatHistory({ userId }: ChatHistoryProps) {
     const t = useTranslations('ChatHistory');
-    const locale = useLocale();
 
   return (
     <div className="flex flex-col h-full">
