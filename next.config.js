@@ -60,11 +60,11 @@ module.exports = withNextIntl({
         new CopyPlugin({
           patterns: [
             {
-              from: "./models/ort-wasm.wasm",
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
               to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
-              from: "./models/ort-wasm-simd.wasm",
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
               to: `static/chunks/${process.env.NODE_ENV === "development" ? 'app/(chat)/':''}[name][ext]`,
             },
             {
@@ -77,11 +77,11 @@ module.exports = withNextIntl({
             },
 
             {
-              from: "./models/ort-wasm.wasm",
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
               to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
-              from: "./models/ort-wasm-simd.wasm",
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
               to: `static/chunks/chat/[id]/[name][ext]`,
             },
             {
@@ -94,11 +94,11 @@ module.exports = withNextIntl({
             },
 
             {
-              from: "./models/ort-wasm.wasm",
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm.wasm",
               to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
             {
-              from: "./models/ort-wasm-simd.wasm",
+              from: "./node_modules/onnxruntime-web/dist/ort-wasm-simd.wasm",
               to: `static/chunks/app/(chat)/chat/[id]/[name][ext]`,
             },
             {

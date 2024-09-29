@@ -68,7 +68,7 @@
     "next-images": "^1.8.5",
     "next-intl": "^3.20.0",
     "next-themes": "^0.2.1",
-    "onnxruntime-web": "^1.19.2",
+    "onnxruntime-web": "^1.14.0",
     "openai": "^4.65.0",
     "promisify-child-process": "^4.1.2",
     "query-string": "^9.1.0",
